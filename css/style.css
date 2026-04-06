@@ -840,12 +840,6 @@ body.intro-locked { overflow: hidden; }
     .palette-row {
         gap: 10px 12px;
     }
-    .dress-grid {
-        gap: 14px;
-    }
-    .dress-card {
-        padding: 28px 20px;
-    }
 }
 
 /* DRESS CODE */
@@ -853,6 +847,7 @@ body.intro-locked { overflow: hidden; }
     margin-top: 0;
 }
 .dress-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.dress-grid > .dress-card { min-width: 0; }
 .dress-card {
     text-align: center; padding: 40px 24px;
     background: rgba(255,255,255,.05);
@@ -861,8 +856,16 @@ body.intro-locked { overflow: hidden; }
 }
 .dress-card:hover { border-color: rgba(168,200,224,.3); transform: translateY(-2px); }
 .dress-icon { font-size: 28px; color: var(--sky); margin-bottom: 16px; }
-.dress-card h3 { font-family: var(--ft); font-size: 24px; font-weight: 600; margin-bottom: 10px; }
-.dress-card p { font-size: 15px; color: rgba(255,255,255,.6); line-height: 1.6; font-weight: 400; }
+.dress-card h3 {
+    font-family: var(--ft); font-size: 24px; font-weight: 600; margin-bottom: 10px;
+    line-height: 1.2; text-wrap: balance;
+}
+.dress-card p {
+    font-size: 15px; color: rgba(255,255,255,.72); line-height: 1.65; font-weight: 400;
+    overflow-wrap: anywhere;
+    hyphens: auto; -webkit-hyphens: auto;
+    text-wrap: pretty;
+}
 .dress-avoid { border-color: rgba(217,107,107,.25); }
 .dress-avoid .dress-icon { color: var(--red); }
 
@@ -1024,6 +1027,28 @@ textarea { resize: vertical; }
     .hero-actions { flex-direction: column; align-items: center; gap: 10px; }
     .btn { width: 100%; max-width: 280px; justify-content: center; padding: 14px 24px; }
     .dress-grid { grid-template-columns: 1fr; }
+    #dresscode .dress-grid { gap: 14px; }
+    #dresscode .dress-card {
+        padding: 24px 18px;
+        text-align: left;
+    }
+    #dresscode .dress-icon {
+        font-size: 26px;
+        margin-bottom: 12px;
+    }
+    #dresscode .dress-card h3 {
+        font-size: clamp(20px, 5.4vw, 22px);
+        margin-bottom: 8px;
+    }
+    #dresscode .dress-card p {
+        font-size: 16px;
+        line-height: 1.6;
+        color: rgba(255,255,255,.86);
+        letter-spacing: 0.01em;
+    }
+    #dresscode .dress-avoid p {
+        color: rgba(255,255,255,.9);
+    }
     .venues { grid-template-columns: 1fr; }
     .venue-links { gap: 6px; }
     .venue-link { padding: 8px 12px; font-size: 10px; }
