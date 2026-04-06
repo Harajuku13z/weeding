@@ -100,7 +100,7 @@ $groom = $s('groom_name', 'Christ');
     <div class="container">
         <div class="section-head" data-anim="fade-up">
             <span class="section-label">Galerie</span>
-            <h2 class="section-title">Nos plus beaux instants</h2>
+            <h2 class="section-title">Un peu de nous</h2>
         </div>
         <div class="gallery" data-anim="fade-up">
             <?php if (empty($gallery)): ?>
