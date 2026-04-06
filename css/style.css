@@ -452,25 +452,80 @@ body.env-locked { overflow: hidden; }
 .tl-content p { font-size: 14px; color: var(--muted); line-height: 1.7; }
 
 /* VENUES */
-.venues { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.venues { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; }
 .venue-card {
-    background: #fff; border-radius: 4px; overflow: hidden;
+    background: #fff; border-radius: 16px; overflow: hidden;
     border: 1px solid rgba(168,200,224,.1);
-    transition: transform .4s var(--ease);
+    box-shadow: 0 4px 24px rgba(0,0,0,.04);
+    transition: transform .5s var(--ease), box-shadow .5s var(--ease);
 }
-.venue-card:hover { transform: translateY(-3px); }
-.venue-photo { aspect-ratio: 16/9; overflow: hidden; }
-.venue-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
-.venue-card:hover .venue-photo img { transform: scale(1.05); }
-.venue-map { aspect-ratio: 16/9; }
-.venue-map iframe { width: 100%; height: 100%; border: 0; }
-.venue-info { padding: 24px; }
-.venue-info h3 {
-    font-family: var(--ft); font-size: 20px; font-weight: 500;
-    color: var(--dark); margin-bottom: 8px;
+.venue-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 48px rgba(0,0,0,.08);
 }
-.venue-info h3 i { color: var(--sky-d); margin-right: 6px; }
-.venue-info p { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+
+.venue-visual {
+    position: relative; aspect-ratio: 16/10; overflow: hidden;
+    background: linear-gradient(135deg, var(--beige), var(--beige-d));
+}
+.venue-visual img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .7s var(--ease);
+}
+.venue-card:hover .venue-visual img { transform: scale(1.06); }
+.venue-visual-empty {
+    display: flex; align-items: center; justify-content: center;
+}
+.venue-visual-empty > i {
+    font-size: 48px; color: var(--sky-d); opacity: .3;
+}
+.venue-badge {
+    position: absolute; top: 16px; left: 16px;
+    background: var(--sky-d); color: #fff;
+    font-size: 9px; letter-spacing: .2em; text-transform: uppercase; font-weight: 500;
+    padding: 6px 14px; border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(123,158,196,.3);
+}
+
+.venue-body { padding: 28px; }
+.venue-body h3 {
+    font-family: var(--ft); font-size: 24px; font-weight: 500;
+    color: var(--dark); margin-bottom: 10px; line-height: 1.2;
+}
+.venue-address {
+    display: flex; align-items: flex-start; gap: 6px;
+    font-size: 13px; color: var(--muted); line-height: 1.6;
+    margin-bottom: 20px;
+}
+.venue-address i { color: var(--sky-d); margin-top: 3px; flex-shrink: 0; }
+
+.venue-links {
+    display: flex; gap: 8px; flex-wrap: wrap;
+}
+.venue-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border-radius: 999px;
+    font-size: 11px; font-weight: 500; letter-spacing: .04em;
+    text-decoration: none;
+    transition: all .3s var(--ease);
+    border: 1px solid transparent;
+}
+.venue-link i { font-size: 13px; }
+.venue-link--gmaps {
+    background: rgba(66,133,244,.08); color: #4285F4;
+    border-color: rgba(66,133,244,.15);
+}
+.venue-link--gmaps:hover { background: rgba(66,133,244,.15); }
+.venue-link--waze {
+    background: rgba(51,205,255,.06); color: #33CDFF;
+    border-color: rgba(51,205,255,.15);
+}
+.venue-link--waze:hover { background: rgba(51,205,255,.15); }
+.venue-link--apple {
+    background: rgba(0,0,0,.04); color: #555;
+    border-color: rgba(0,0,0,.08);
+}
+.venue-link--apple:hover { background: rgba(0,0,0,.08); }
 
 /* DRESS CODE */
 .dress-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
@@ -616,6 +671,8 @@ textarea { resize: vertical; }
     .btn { width: 100%; max-width: 280px; justify-content: center; padding: 14px 24px; }
     .dress-grid { grid-template-columns: 1fr; }
     .venues { grid-template-columns: 1fr; }
+    .venue-links { gap: 6px; }
+    .venue-link { padding: 8px 12px; font-size: 10px; }
     .status-group { flex-direction: column; }
     .rsvp-form { padding: 32px 20px; }
 }

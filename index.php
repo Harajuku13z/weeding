@@ -219,27 +219,42 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <?php if (empty($lieux)): ?>
             <p style="text-align:center;color:var(--muted)">Lieux à venir.</p>
             <?php else: ?>
-                <?php foreach ($lieux as $lieu): ?>
+                <?php $labels = ['Cérémonie', 'Réception', 'Brunch']; ?>
+                <?php foreach ($lieux as $idx => $lieu):
+                    $addr = $lieu['address'] ?: '';
+                    $addrEncoded = urlencode($lieu['name'] . ' ' . $addr);
+                    $gmapsLink = $lieu['maps_url'] ?: 'https://www.google.com/maps/search/?api=1&query=' . $addrEncoded;
+                    $wazeLink = 'https://waze.com/ul?q=' . $addrEncoded . '&navigate=yes';
+                    $appleLink = 'https://maps.apple.com/?q=' . $addrEncoded;
+                ?>
                 <div class="venue-card">
                     <?php if (!empty($lieu['photo'])): ?>
-                    <div class="venue-photo">
+                    <div class="venue-visual">
                         <img src="<?= sanitize(UPLOAD_URL_LIEUX . $lieu['photo']) ?>" alt="<?= sanitize($lieu['name']) ?>" loading="lazy">
+                        <div class="venue-badge"><?= $labels[$idx] ?? 'Lieu' ?></div>
                     </div>
-                    <?php elseif ($lieu['maps_embed']): ?>
-                    <div class="venue-map">
-                        <iframe src="<?= sanitize($lieu['maps_embed']) ?>" allowfullscreen loading="lazy"></iframe>
+                    <?php else: ?>
+                    <div class="venue-visual venue-visual-empty">
+                        <i class="bi <?= sanitize($lieu['icon'] ?: 'bi-geo-alt-fill') ?>"></i>
+                        <div class="venue-badge"><?= $labels[$idx] ?? 'Lieu' ?></div>
                     </div>
                     <?php endif; ?>
-                    <div class="venue-info">
-                        <h3><i class="bi <?= sanitize($lieu['icon'] ?: 'bi-geo-alt-fill') ?>"></i> <?= sanitize($lieu['name']) ?></h3>
-                        <?php if ($lieu['address']): ?>
-                        <p><?= sanitize($lieu['address']) ?></p>
+                    <div class="venue-body">
+                        <h3><?= sanitize($lieu['name']) ?></h3>
+                        <?php if ($addr): ?>
+                        <p class="venue-address"><i class="bi bi-geo-alt"></i> <?= sanitize($addr) ?></p>
                         <?php endif; ?>
-                        <?php if ($lieu['maps_url']): ?>
-                        <a href="<?= sanitize($lieu['maps_url']) ?>" target="_blank" class="btn btn-sm">
-                            <i class="bi bi-map-fill"></i> Itinéraire
-                        </a>
-                        <?php endif; ?>
+                        <div class="venue-links">
+                            <a href="<?= sanitize($gmapsLink) ?>" target="_blank" class="venue-link venue-link--gmaps">
+                                <i class="bi bi-google"></i> Google Maps
+                            </a>
+                            <a href="<?= sanitize($wazeLink) ?>" target="_blank" class="venue-link venue-link--waze">
+                                <i class="bi bi-cursor-fill"></i> Waze
+                            </a>
+                            <a href="<?= sanitize($appleLink) ?>" target="_blank" class="venue-link venue-link--apple">
+                                <i class="bi bi-apple"></i> Plans
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
