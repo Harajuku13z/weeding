@@ -527,6 +527,57 @@ body.env-locked { overflow: hidden; }
 }
 .venue-link--apple:hover { background: rgba(0,0,0,.08); }
 
+/* AMBIANCE PHOTOS */
+.ambiance-photos {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px; margin-bottom: 56px;
+}
+.ambiance-photo {
+    position: relative; border-radius: 12px; overflow: hidden;
+    aspect-ratio: 4/3;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+}
+.ambiance-photo img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .7s var(--ease);
+}
+.ambiance-photo:hover img { transform: scale(1.05); }
+.ambiance-caption {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 20px 24px; font-family: var(--ft);
+    font-size: 15px; font-style: italic; color: #fff;
+    background: linear-gradient(transparent, rgba(0,0,0,.55));
+}
+
+/* PALETTE */
+.palette-section {
+    text-align: center; margin-bottom: 56px;
+}
+.palette-label {
+    font-size: 10px; letter-spacing: .4em; text-transform: uppercase;
+    color: var(--sky); margin-bottom: 24px; font-weight: 400;
+}
+.palette-row {
+    display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+}
+.palette-swatch {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.palette-color {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    transition: transform .3s var(--ease), box-shadow .3s;
+}
+.palette-swatch:hover .palette-color {
+    transform: scale(1.12);
+    box-shadow: 0 8px 28px rgba(0,0,0,.3);
+}
+.palette-name {
+    font-size: 10px; letter-spacing: .1em;
+    color: rgba(255,255,255,.45); font-weight: 300;
+}
+
 /* DRESS CODE */
 .dress-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .dress-card {

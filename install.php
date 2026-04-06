@@ -63,6 +63,21 @@ run($pdo, "CREATE TABLE IF NOT EXISTS lieux (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table lieux', $log);
 
+run($pdo, "CREATE TABLE IF NOT EXISTS ambiance_photos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL,
+    caption VARCHAR(255) DEFAULT '',
+    sort_order INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table ambiance_photos', $log);
+
+run($pdo, "CREATE TABLE IF NOT EXISTS ambiance_colors (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    color_hex VARCHAR(7) NOT NULL DEFAULT '#FFFFFF',
+    color_name VARCHAR(50) DEFAULT '',
+    sort_order INT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table ambiance_colors', $log);
+
 run($pdo, "CREATE TABLE IF NOT EXISTS settings (
     skey VARCHAR(50) PRIMARY KEY,
     svalue TEXT
@@ -79,6 +94,14 @@ run($pdo, "ALTER TABLE lieux ADD COLUMN photo VARCHAR(255) DEFAULT '' AFTER addr
 /* ================================================================
    3. DONNÉES PAR DÉFAUT (INSERT IGNORE = pas de doublon)
    ================================================================ */
+
+$stmtC = $pdo->prepare("INSERT IGNORE INTO ambiance_colors (id, color_hex, color_name, sort_order) VALUES (:id, :h, :n, :s)");
+$stmtC->execute(['id' => 1, 'h' => '#F5EFE6', 'n' => 'Beige doux', 's' => 1]);
+$stmtC->execute(['id' => 2, 'h' => '#A8C8E0', 'n' => 'Bleu ciel', 's' => 2]);
+$stmtC->execute(['id' => 3, 'h' => '#6AAF7B', 'n' => 'Vert sauge', 's' => 3]);
+$stmtC->execute(['id' => 4, 'h' => '#D4A853', 'n' => 'Or doux', 's' => 4]);
+$stmtC->execute(['id' => 5, 'h' => '#E8DFD2', 'n' => 'Champagne', 's' => 5]);
+$log[] = ['ok', 'Données par défaut → ambiance_colors'];
 
 $stmtL = $pdo->prepare("INSERT IGNORE INTO lieux (id, name, address, maps_url, maps_embed, icon, sort_order) VALUES (:id, :n, :a, :mu, :me, :ic, :s)");
 $stmtL->execute(['id' => 1, 'n' => 'Mairie de Chevigny', 'a' => 'Place du Général de Gaulle, 21800 Chevigny-Saint-Sauveur', 'mu' => 'https://maps.google.com/?q=Mairie+Chevigny-Saint-Sauveur', 'me' => '', 'ic' => 'bi-building', 's' => 1]);

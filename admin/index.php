@@ -88,6 +88,7 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
         <nav class="sidebar-nav">
             <a href="#" class="active" data-page="gallery"><i class="bi bi-images"></i><span>Galerie</span></a>
             <a href="#" data-page="programme"><i class="bi bi-clock-history"></i><span>Programme</span></a>
+            <a href="#" data-page="ambiance"><i class="bi bi-brush"></i><span>Ambiance</span></a>
             <a href="#" data-page="lieux"><i class="bi bi-geo-alt"></i><span>Lieux</span></a>
             <a href="#" data-page="guests"><i class="bi bi-people"></i><span>Invités</span></a>
             <a href="#" data-page="theme"><i class="bi bi-palette"></i><span>Thème</span></a>
@@ -139,6 +140,45 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
                     <thead><tr><th>Ordre</th><th>Heure</th><th>Titre</th><th>Description</th><th></th><th></th></tr></thead>
                     <tbody id="progTable"></tbody>
                 </table></div>
+            </div>
+        </div>
+
+        <!-- AMBIANCE -->
+        <div class="page" id="page-ambiance">
+            <h2>Ambiance &amp; Univers</h2>
+
+            <div class="card">
+                <h3><i class="bi bi-image"></i> Photos d'ambiance</h3>
+                <p style="font-size:13px;color:#888;margin-bottom:16px">Ajoutez 1 ou 2 photos qui illustrent l'univers de votre mariage (moodboard, déco, nature…).</p>
+                <form id="uploadAmbianceForm" enctype="multipart/form-data">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+                        <div class="form-row" style="flex:1;min-width:200px"><label>Image (JPG, PNG, WEBP – max 5 Mo)</label><input type="file" name="image" accept="image/*" required style="padding:6px"></div>
+                        <div class="form-row" style="flex:1;min-width:180px"><label>Légende (optionnel)</label><input type="text" name="caption" placeholder="Ex: Notre inspiration…"></div>
+                        <button type="submit" class="btn btn-blue btn-sm"><i class="bi bi-cloud-upload"></i> Uploader</button>
+                    </div>
+                </form>
+                <div class="gallery-grid" id="ambianceGallery" style="margin-top:16px"></div>
+            </div>
+
+            <div class="card">
+                <h3><i class="bi bi-palette-fill"></i> Palette de couleurs</h3>
+                <p style="font-size:13px;color:#888;margin-bottom:16px">Définissez les couleurs de votre mariage. Elles seront affichées sous forme de ronds sur le site.</p>
+                <form id="addColorForm" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:20px">
+                    <div class="form-row">
+                        <label>Couleur</label>
+                        <input type="color" name="color_hex" value="#A8C8E0" style="width:48px;height:36px;padding:2px;border:1px solid #ddd;border-radius:6px;cursor:pointer">
+                    </div>
+                    <div class="form-row" style="flex:1;min-width:120px">
+                        <label>Nom</label>
+                        <input type="text" name="color_name" placeholder="Bleu ciel">
+                    </div>
+                    <div class="form-row" style="width:60px">
+                        <label>Ordre</label>
+                        <input type="number" name="sort_order" value="0" min="0">
+                    </div>
+                    <button type="submit" class="btn btn-blue btn-sm"><i class="bi bi-plus"></i> Ajouter</button>
+                </form>
+                <div id="colorsList"></div>
             </div>
         </div>
 
@@ -358,6 +398,91 @@ async function delProg(id) {
     loadProgramme();
 }
 
+/* ─── AMBIANCE PHOTOS ────────────────────────────── */
+async function loadAmbiancePhotos() {
+    const res = await fetch(API + '?action=ambiance_photos_list');
+    const json = await res.json();
+    const grid = document.getElementById('ambianceGallery');
+    if (!json.data.length) { grid.innerHTML = '<p style="color:#888;font-size:13px">Aucune photo d\'ambiance.</p>'; return; }
+    grid.innerHTML = json.data.map(img => `
+        <div class="gallery-thumb">
+            <img src="../uploads/ambiance/${img.filename}" alt="${img.caption || ''}">
+            <button class="del-btn" onclick="delAmbiancePhoto(${img.id})"><i class="bi bi-trash"></i></button>
+        </div>
+    `).join('');
+}
+
+document.getElementById('uploadAmbianceForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('action', 'ambiance_photo_upload');
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    if (json.success) { e.target.reset(); loadAmbiancePhotos(); }
+});
+
+async function delAmbiancePhoto(id) {
+    if (!confirm('Supprimer cette photo d\'ambiance ?')) return;
+    const fd = new FormData();
+    fd.append('action', 'ambiance_photo_delete');
+    fd.append('id', id);
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    loadAmbiancePhotos();
+}
+
+/* ─── AMBIANCE COLORS ────────────────────────────── */
+async function loadAmbianceColors() {
+    const res = await fetch(API + '?action=ambiance_colors_list');
+    const json = await res.json();
+    const box = document.getElementById('colorsList');
+    if (!json.data.length) { box.innerHTML = '<p style="color:#888;font-size:13px">Aucune couleur. Ajoutez-en via le formulaire.</p>'; return; }
+    box.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:12px">' + json.data.map(c => `
+        <div style="border:1px solid #eee;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;min-width:240px">
+            <input type="color" value="${c.color_hex}" data-cf="color_hex" data-cid="${c.id}" style="width:40px;height:32px;padding:1px;border:1px solid #ddd;border-radius:6px;cursor:pointer">
+            <input type="text" value="${c.color_name||''}" data-cf="color_name" data-cid="${c.id}" placeholder="Nom" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;min-width:80px">
+            <input type="number" value="${c.sort_order}" data-cf="sort_order" data-cid="${c.id}" style="width:45px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px">
+            <button class="btn btn-blue btn-sm" onclick="saveColor(${c.id})" style="padding:6px 10px"><i class="bi bi-check-lg"></i></button>
+            <button class="btn btn-red btn-sm" onclick="delColor(${c.id})" style="padding:6px 10px"><i class="bi bi-trash"></i></button>
+        </div>
+    `).join('') + '</div>';
+}
+
+document.getElementById('addColorForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('action', 'ambiance_color_add');
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    if (json.success) { e.target.reset(); loadAmbianceColors(); }
+});
+
+async function saveColor(id) {
+    const fd = new FormData();
+    fd.append('action', 'ambiance_color_update');
+    fd.append('id', id);
+    document.querySelectorAll('[data-cid="' + id + '"]').forEach(inp => {
+        fd.append(inp.dataset.cf, inp.value);
+    });
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+}
+
+async function delColor(id) {
+    if (!confirm('Supprimer cette couleur ?')) return;
+    const fd = new FormData();
+    fd.append('action', 'ambiance_color_delete');
+    fd.append('id', id);
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    loadAmbianceColors();
+}
+
 /* ─── LIEUX ──────────────────────────────────────── */
 async function loadLieux() {
     const res = await fetch(API + '?action=lieux_list');
@@ -529,6 +654,8 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
 /* INIT */
 loadGallery();
 loadProgramme();
+loadAmbiancePhotos();
+loadAmbianceColors();
 loadLieux();
 loadGuests();
 loadSettings();

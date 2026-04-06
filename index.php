@@ -16,6 +16,8 @@ $groom = $s('groom_name', 'Christ');
 
 $programme = $pdo->query("SELECT * FROM programme ORDER BY sort_order ASC, id ASC")->fetchAll();
 $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fetchAll();
+$ambiancePhotos = $pdo->query("SELECT * FROM ambiance_photos ORDER BY sort_order ASC, id DESC")->fetchAll();
+$ambianceColors = $pdo->query("SELECT * FROM ambiance_colors ORDER BY sort_order ASC, id ASC")->fetchAll();
 
 $themePrimary = $s('theme_primary', '#A8C8E0');
 $themeAccent  = $s('theme_accent', '#7B9EC4');
@@ -268,9 +270,39 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
     <div class="container">
         <div class="section-head" data-anim="fade-up">
             <span class="section-label">Dress code</span>
-            <h2 class="section-title">L'élégance du jour</h2>
+            <h2 class="section-title">L'univers de notre mariage</h2>
             <p class="section-sub">Une atmosphère romantique et champêtre — pensez lumière douce, nature et raffinement.</p>
         </div>
+
+        <?php if (!empty($ambiancePhotos)): ?>
+        <div class="ambiance-photos" data-anim="fade-up">
+            <?php foreach ($ambiancePhotos as $ap): ?>
+            <div class="ambiance-photo">
+                <img src="<?= sanitize(UPLOAD_URL_AMBIANCE . $ap['filename']) ?>" alt="<?= sanitize($ap['caption'] ?: 'Ambiance mariage') ?>" loading="lazy">
+                <?php if ($ap['caption']): ?>
+                <div class="ambiance-caption"><?= sanitize($ap['caption']) ?></div>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+
+        <?php if (!empty($ambianceColors)): ?>
+        <div class="palette-section" data-anim="fade-up">
+            <p class="palette-label">Notre palette de couleurs</p>
+            <div class="palette-row">
+                <?php foreach ($ambianceColors as $ac): ?>
+                <div class="palette-swatch">
+                    <div class="palette-color" style="background:<?= sanitize($ac['color_hex']) ?>"></div>
+                    <?php if ($ac['color_name']): ?>
+                    <span class="palette-name"><?= sanitize($ac['color_name']) ?></span>
+                    <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="dress-grid" data-anim="fade-up">
             <div class="dress-card">
                 <div class="dress-icon"><i class="bi bi-suit-heart-fill"></i></div>

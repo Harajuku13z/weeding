@@ -193,6 +193,77 @@ switch ($action) {
         jsonResponse(['success' => true, 'message' => 'Lieu supprimé.']);
         break;
 
+    /* ─── AMBIANCE PHOTOS ─────────────────────────────── */
+    case 'ambiance_photos_list':
+        $rows = $pdo->query("SELECT * FROM ambiance_photos ORDER BY sort_order ASC, id DESC")->fetchAll();
+        jsonResponse(['success' => true, 'data' => $rows]);
+        break;
+
+    case 'ambiance_photo_upload':
+        if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            jsonResponse(['success' => false, 'message' => 'Aucun fichier reçu.']);
+        }
+        $file = $_FILES['image'];
+        $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!in_array($file['type'], $allowed)) jsonResponse(['success' => false, 'message' => 'Format non supporté.']);
+        if ($file['size'] > 5 * 1024 * 1024) jsonResponse(['success' => false, 'message' => 'Fichier trop lourd (max 5 Mo).']);
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $name = uniqid('amb_') . '.' . $ext;
+        if (!is_dir(UPLOAD_DIR_AMBIANCE)) mkdir(UPLOAD_DIR_AMBIANCE, 0775, true);
+        if (!move_uploaded_file($file['tmp_name'], UPLOAD_DIR_AMBIANCE . $name)) {
+            jsonResponse(['success' => false, 'message' => 'Erreur upload.']);
+        }
+        $caption = sanitize($_POST['caption'] ?? '');
+        $stmt = $pdo->prepare("INSERT INTO ambiance_photos (filename, caption) VALUES (:f, :c)");
+        $stmt->execute(['f' => $name, 'c' => $caption]);
+        jsonResponse(['success' => true, 'message' => 'Photo ambiance ajoutée.']);
+        break;
+
+    case 'ambiance_photo_delete':
+        $id = (int) ($_POST['id'] ?? 0);
+        $row = $pdo->prepare("SELECT filename FROM ambiance_photos WHERE id = :id");
+        $row->execute(['id' => $id]);
+        $img = $row->fetch();
+        if ($img) {
+            @unlink(UPLOAD_DIR_AMBIANCE . $img['filename']);
+            $pdo->prepare("DELETE FROM ambiance_photos WHERE id = :id")->execute(['id' => $id]);
+        }
+        jsonResponse(['success' => true, 'message' => 'Photo supprimée.']);
+        break;
+
+    /* ─── AMBIANCE COLORS ─────────────────────────────── */
+    case 'ambiance_colors_list':
+        $rows = $pdo->query("SELECT * FROM ambiance_colors ORDER BY sort_order ASC, id ASC")->fetchAll();
+        jsonResponse(['success' => true, 'data' => $rows]);
+        break;
+
+    case 'ambiance_color_add':
+        $hex  = trim($_POST['color_hex'] ?? '#FFFFFF');
+        $name = sanitize($_POST['color_name'] ?? '');
+        $order = (int) ($_POST['sort_order'] ?? 0);
+        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $hex)) jsonResponse(['success' => false, 'message' => 'Couleur invalide.']);
+        $stmt = $pdo->prepare("INSERT INTO ambiance_colors (color_hex, color_name, sort_order) VALUES (:h, :n, :s)");
+        $stmt->execute(['h' => $hex, 'n' => $name, 's' => $order]);
+        jsonResponse(['success' => true, 'message' => 'Couleur ajoutée.']);
+        break;
+
+    case 'ambiance_color_update':
+        $id   = (int) ($_POST['id'] ?? 0);
+        $hex  = trim($_POST['color_hex'] ?? '#FFFFFF');
+        $name = sanitize($_POST['color_name'] ?? '');
+        $order = (int) ($_POST['sort_order'] ?? 0);
+        if (!$id) jsonResponse(['success' => false, 'message' => 'ID manquant.']);
+        $stmt = $pdo->prepare("UPDATE ambiance_colors SET color_hex = :h, color_name = :n, sort_order = :s WHERE id = :id");
+        $stmt->execute(['h' => $hex, 'n' => $name, 's' => $order, 'id' => $id]);
+        jsonResponse(['success' => true, 'message' => 'Couleur mise à jour.']);
+        break;
+
+    case 'ambiance_color_delete':
+        $id = (int) ($_POST['id'] ?? 0);
+        $pdo->prepare("DELETE FROM ambiance_colors WHERE id = :id")->execute(['id' => $id]);
+        jsonResponse(['success' => true, 'message' => 'Couleur supprimée.']);
+        break;
+
     /* ─── SETTINGS ─────────────────────────────────────── */
     case 'settings_get':
         $rows = $pdo->query("SELECT skey, svalue FROM settings")->fetchAll();

@@ -13,6 +13,8 @@ define('UPLOAD_DIR', __DIR__ . '/uploads/gallery/');
 define('UPLOAD_URL', 'uploads/gallery/');
 define('UPLOAD_DIR_LIEUX', __DIR__ . '/uploads/lieux/');
 define('UPLOAD_URL_LIEUX', 'uploads/lieux/');
+define('UPLOAD_DIR_AMBIANCE', __DIR__ . '/uploads/ambiance/');
+define('UPLOAD_URL_AMBIANCE', 'uploads/ambiance/');
 
 function db(): PDO {
     static $pdo = null;
