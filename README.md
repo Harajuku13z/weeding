@@ -1,21 +1,29 @@
-# Site statique — invitation
+# Site Mariage Lisa & Christ
 
-## Contenu du dépôt Git
+Site de mariage statique PHP + MySQL, hébergé sur Hostinger.
 
-**Ce dépôt ne contient plus l’application Laravel.** Tous les dossiers et fichiers du projet Laravel ont été supprimés du dépôt.
+## Structure
 
-### Fichiers conservés sur Git
+| Fichier / Dossier | Rôle |
+|---|---|
+| `index.php` | Page d'accueil du mariage |
+| `config.php` | Connexion DB + constantes |
+| `install.php` | Création des tables (à supprimer après) |
+| `css/style.css` | Styles |
+| `js/main.js` | Animations GSAP, countdown, RSVP |
+| `api/rsvp.php` | Traitement du formulaire RSVP |
+| `admin/` | Mini admin (galerie, invités, paramètres) |
+| `uploads/gallery/` | Images uploadées |
+| `.htaccess` | Config serveur |
 
-| Fichier        | Rôle                                      |
-|----------------|-------------------------------------------|
-| `index.html`   | **Seule page du site** (à modifier ici)   |
-| `README.md`    | Cette documentation                       |
-| `.gitignore`   | Liste des fichiers/dossiers **non** suivis par Git (voir le fichier) |
+## Installation sur Hostinger
 
-### Éléments supprimés (historique Git)
+1. Uploadez tous les fichiers dans `public_html/`
+2. Allez sur `https://votre-domaine.fr/install.php`
+3. Supprimez `install.php` après l'installation
+4. Admin : `https://votre-domaine.fr/admin/` — identifiants : `admin` / `motsdepasse`
 
-Les commits précédents contenaient une app Laravel complète : `app/`, `bootstrap/`, `config/`, `database/`, `public/`, `resources/`, `routes/`, `storage/`, `tests/`, `vendor/`, `composer.json`, `artisan`, vues Blade, etc. **Tout cela a été retiré du dépôt.** L’historique Git garde encore les anciens commits si besoin de récupération.
+## Base de données
 
-### Déploiement
-
-Déployer uniquement `index.html` à la racine de `public_html` (Hostinger ou autre hébergeur).
+- DB : `u686558857_weeding`
+- Tables : `guests`, `gallery`, `settings`
