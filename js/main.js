@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    const EP = window.__ENDPOINTS || {};
+    const rsvpUrl = EP.rsvp || '/api/rsvp.php';
+    const succesUrl = EP.succes || '/succes.php';
+
     /* ─── INTRO MODERNE (plein écran) ───────────────────── */
     const introOverlay = document.getElementById('introOverlay');
     const introBtn     = document.getElementById('introBtn');
@@ -188,15 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = new FormData(form);
             try {
-                const res = await fetch('api/rsvp.php', { method: 'POST', body: data });
+                const res = await fetch(rsvpUrl, { method: 'POST', body: data });
                 const json = await res.json();
                 if (json.success) {
                     const params = new URLSearchParams({
                         status: statusInput.value,
-                        name: data.get('code') || '',
-                        gid: json.guest_id || 0
+                        code: data.get('code') || '',
+                        gid: String(json.guest_id || 0)
                     });
-                    window.location.href = 'succes.php?' + params.toString();
+                    window.location.href = succesUrl + '?' + params.toString();
                 } else {
                     showAlert(json.message, 'err');
                 }

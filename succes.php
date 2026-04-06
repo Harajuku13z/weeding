@@ -15,8 +15,8 @@ $themePrimary = $s('theme_primary', '#A8C8E0');
 $themeAccent  = $s('theme_accent', '#7B9EC4');
 $themeDark    = $s('theme_dark', '#2C3E50');
 
-$status = $_GET['status'] ?? 'accepted';
-$guestName = sanitize($_GET['name'] ?? '');
+$statusRaw = $_GET['status'] ?? 'accepted';
+$status = in_array($statusRaw, ['accepted', 'maybe', 'declined'], true) ? $statusRaw : 'accepted';
 $guestId = (int) ($_GET['gid'] ?? 0);
 $reminderSaved = isset($_GET['reminder']);
 ?>
@@ -30,6 +30,10 @@ $reminderSaved = isset($_GET['reminder']);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Great+Vibes&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script>window.__ENDPOINTS = <?= json_encode([
+        'reminder' => app_url('api/reminder.php'),
+        'home'     => app_url(''),
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;</script>
     <style>
         :root {
             --sky: <?= $themePrimary ?>;
@@ -209,6 +213,10 @@ $reminderSaved = isset($_GET['reminder']);
                     <div class="reminder-saved" id="reminderSaved"><i class="bi bi-check-circle-fill"></i> Rappel enregistré avec succès !</div>
                 </div>
             <?php endif; ?>
+        <?php else: ?>
+            <div class="success-icon icon-accepted"><i class="bi bi-heart-fill"></i></div>
+            <h1 class="success-title">Merci !</h1>
+            <p class="success-msg">Votre réponse a bien été enregistrée.</p>
         <?php endif; ?>
 
         <div class="success-orn">
@@ -220,10 +228,12 @@ $reminderSaved = isset($_GET['reminder']);
         <div class="success-names"><?= sanitize($bride) ?> & <?= sanitize($groom) ?></div>
         <div class="success-date"><?= date('d F Y', strtotime($weddingDate)) ?></div>
 
-        <a href="/" class="back-link"><i class="bi bi-arrow-left"></i> Retour au site</a>
+        <a href="<?= htmlspecialchars(app_url(''), ENT_QUOTES, 'UTF-8') ?>" class="back-link"><i class="bi bi-arrow-left"></i> Retour au site</a>
     </div>
 
     <script>
+    (function(){
+    const reminderUrl = (window.__ENDPOINTS && window.__ENDPOINTS.reminder) || '/api/reminder.php';
     document.querySelectorAll('.reminder-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             const delay = btn.dataset.delay;
@@ -237,7 +247,7 @@ $reminderSaved = isset($_GET['reminder']);
                 fd.append('guest_id', gid);
                 fd.append('delay_days', delay);
 
-                const res = await fetch('api/reminder.php', { method: 'POST', body: fd });
+                const res = await fetch(reminderUrl, { method: 'POST', body: fd });
                 const json = await res.json();
 
                 if (json.success) {
@@ -252,6 +262,7 @@ $reminderSaved = isset($_GET['reminder']);
             } catch(e) {}
         });
     });
+    })();
     </script>
 </body>
 </html>

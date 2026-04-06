@@ -594,6 +594,11 @@ body.intro-locked { overflow: hidden; }
     border-radius: 4px; padding: 52px;
     backdrop-filter: blur(16px);
 }
+.rsvp-redirect-hint {
+    max-width: 560px; margin: 24px auto 0; padding: 0 12px;
+    text-align: center; font-size: 13px; line-height: 1.6;
+    color: rgba(255,255,255,.36); font-weight: 400;
+}
 .form-group { margin-bottom: 24px; }
 .form-group label {
     display: block; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;

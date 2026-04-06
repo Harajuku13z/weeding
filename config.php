@@ -55,6 +55,29 @@ function sanitize(string $str): string {
     return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8');
 }
 
+/** Préfixe URL du dossier de l'app (ex. '' à la racine, '/mariage' en sous-dossier). */
+function app_base_path(): string {
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+    $script = $_SERVER['SCRIPT_NAME'] ?? '/';
+    $dir = str_replace('\\', '/', dirname($script));
+    if ($dir === '/' || $dir === '.' || $dir === '') {
+        $cached = '';
+        return $cached;
+    }
+    $cached = rtrim($dir, '/');
+    return $cached;
+}
+
+/** Chemin absolu depuis le domaine : /api/rsvp.php ou /dossier/api/rsvp.php */
+function app_url(string $path): string {
+    $path = ltrim($path, '/');
+    $base = app_base_path();
+    return ($base === '' ? '/' : $base . '/') . $path;
+}
+
 /** Normalise une couleur hex (#RRGGBB), accepte #888888, 888888, #888. */
 function normalize_hex_color(string $raw): ?string {
     $h = strtoupper(trim($raw));

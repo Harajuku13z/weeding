@@ -429,6 +429,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             </div>
             <button type="submit" class="btn btn-primary btn-full"><i class="bi bi-send-fill"></i> Envoyer ma réponse</button>
         </form>
+        <p class="rsvp-redirect-hint">En validant, vous serez redirigé·e vers une page de remerciement adaptée à votre réponse (présence, à confirmer ou déclin).</p>
     </div>
 </section>
 
@@ -441,8 +442,12 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
     <p class="footer-credit">Fait avec amour</p>
 </footer>
 
+<script>window.__ENDPOINTS = <?= json_encode([
+    'rsvp'   => app_url('api/rsvp.php'),
+    'succes' => app_url('succes.php'),
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;</script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-<script src="js/main.js"></script>
+<script src="<?= htmlspecialchars(app_url('js/main.js')) ?>"></script>
 </body>
 </html>
