@@ -10,7 +10,7 @@
 |----------------|-------------------------------------------|
 | `index.html`   | **Seule page du site** (à modifier ici)   |
 | `README.md`    | Cette documentation                       |
-| `.gitignore`   | Fichiers ignorés par Git                  |
+| `.gitignore`   | Liste des fichiers/dossiers **non** suivis par Git (voir le fichier) |
 
 ### Éléments supprimés (historique Git)
 

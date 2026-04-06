@@ -1,3 +1,15 @@
+# ─── Système & éditeurs ─────────────────────────────────────
 .DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ─── Ancien Laravel / secrets (ne jamais versionner) ─────────
 .env
 .env.*
+
+# ─── Outils locaux (optionnel) ──────────────────────────────
+.idea/
+.vscode/
+*.log
