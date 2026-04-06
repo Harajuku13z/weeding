@@ -135,6 +135,38 @@ function mail_phpmailer_fill_message(
     }
 }
 
+/**
+ * En-têtes et EHLO alignés sur le domaine d’expéditeur + DKIM optionnel (livrabilité).
+ */
+function mail_phpmailer_apply_deliverability(PHPMailer $mail, string $from): void
+{
+    $domain = '';
+    if ($from !== '' && str_contains($from, '@')) {
+        $domain = strtolower(substr(strrchr($from, '@'), 1));
+    }
+    if ($domain !== '' && preg_match('/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?\.[a-z]{2,}$/i', $domain) === 1) {
+        $mail->Hostname = $domain;
+        $mail->MessageID = sprintf('<%s@%s>', bin2hex(random_bytes(16)), $domain);
+    }
+
+    $mail->XMailer = ' ';
+
+    if (
+        defined('MAIL_DKIM_DOMAIN') && MAIL_DKIM_DOMAIN !== ''
+        && defined('MAIL_DKIM_SELECTOR') && MAIL_DKIM_SELECTOR !== ''
+        && defined('MAIL_DKIM_PRIVATE_FILE') && MAIL_DKIM_PRIVATE_FILE !== ''
+        && is_file(MAIL_DKIM_PRIVATE_FILE)
+        && is_readable(MAIL_DKIM_PRIVATE_FILE)
+    ) {
+        $mail->DKIM_domain = MAIL_DKIM_DOMAIN;
+        $mail->DKIM_selector = MAIL_DKIM_SELECTOR;
+        $mail->DKIM_private = MAIL_DKIM_PRIVATE_FILE;
+        if (filter_var($from, FILTER_VALIDATE_EMAIL)) {
+            $mail->DKIM_identity = $from;
+        }
+    }
+}
+
 function mail_send_phpmailer_smtp(
     string $to,
     string $subject,
@@ -187,6 +219,7 @@ function mail_send_phpmailer_smtp(
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         }
 
+        mail_phpmailer_apply_deliverability($mail, $from);
         mail_phpmailer_fill_message($mail, $to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
         $mail->send();
 
@@ -232,6 +265,7 @@ function mail_send_phpmailer_is_mail(
             $mail->Sender = $from;
         }
 
+        mail_phpmailer_apply_deliverability($mail, $from);
         mail_phpmailer_fill_message($mail, $to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
         $mail->send();
 
@@ -459,7 +493,7 @@ function mail_rsvp_confirmation(
 
     if ($status === 'accepted') {
         $body = "Bonjour" . ($guestName !== '' ? " {$guestName}" : '') . ",\n\n"
-            . "CONFIRMATION — Présence confirmée\n\n"
+            . "Confirmation — Présence confirmée\n\n"
             . "Merci d'avoir confirmé votre présence au mariage de {$bride} et {$groom}.\n\n"
             . "Date : {$weddingDateFormatted}\n"
             . "Heure : {$timeFr}" . $locBlock
@@ -469,7 +503,7 @@ function mail_rsvp_confirmation(
             . "— {$bride} & {$groom}\n";
     } elseif ($status === 'declined') {
         $body = "Bonjour" . ($guestName !== '' ? " {$guestName}" : '') . ",\n\n"
-            . "CONFIRMATION — Réponse enregistrée\n\n"
+            . "Confirmation — Réponse enregistrée\n\n"
             . "Nous avons bien enregistré que vous ne pourrez pas être des nôtres pour le mariage de {$bride} et {$groom}.\n\n"
             . "Date de l'événement : {$weddingDateFormatted}\n"
             . "Heure : {$timeFr}" . $locBlock
@@ -478,7 +512,7 @@ function mail_rsvp_confirmation(
             . "— {$bride} & {$groom}\n";
     } else {
         $body = "Bonjour" . ($guestName !== '' ? " {$guestName}" : '') . ",\n\n"
-            . "CONFIRMATION — Réponse « à confirmer »\n\n"
+            . "Confirmation — Réponse « à confirmer »\n\n"
             . "Nous avons bien enregistré votre réponse pour le mariage de {$bride} et {$groom}.\n\n"
             . "Date : {$weddingDateFormatted}\n"
             . "Heure : {$timeFr}" . $locBlock

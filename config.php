@@ -39,6 +39,14 @@ unset($_mailSmtpPass);
 define('MAIL_SMTP_SSL_VERIFY', true);
 /** Si SMTP échoue, tenter la fonction mail() PHP (souvent configurée chez Hostinger). */
 define('MAIL_SMTP_FALLBACK_PHP_MAIL', true);
+/**
+ * DKIM : signature des e-mails (fortement recommandé contre les spams).
+ * Chez Hostinger : E-mails → DKIM, activer puis copier sélecteur + enregistrer la clé privée
+ * dans un fichier hors webroot (non versionné). Laisser MAIL_DKIM_DOMAIN vide pour désactiver.
+ */
+define('MAIL_DKIM_DOMAIN', '');
+define('MAIL_DKIM_SELECTOR', 'default');
+define('MAIL_DKIM_PRIVATE_FILE', '');
 /** URL du site dans les e-mails ; ex. https://lisalovechrist.fr ou '' pour la deviner (HTTP_HOST). */
 define('SITE_PUBLIC_URL', 'https://lisalovechrist.fr');
 /**
