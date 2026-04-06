@@ -1,11 +1,14 @@
 <?php
 /**
- * E-mails : SMTP Hostinger (465 SSL) si configuré, sinon mail() PHP.
+ * E-mails : PHPMailer (SMTP) si configuré, sinon mail() PHP.
  */
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/smtp.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+use PHPMailer\PHPMailer\Exception as MailerException;
+use PHPMailer\PHPMailer\PHPMailer;
 
 function mail_is_enabled(): bool
 {
@@ -90,91 +93,159 @@ function mail_wedding_ics(
         . "END:VCALENDAR\r\n";
 }
 
-function mail_part_base64(string $content, string $contentType): string
-{
-    return "Content-Type: {$contentType}\r\n"
-        . "Content-Transfer-Encoding: base64\r\n\r\n"
-        . chunk_split(base64_encode($content), 76, "\r\n");
-}
-
-function mail_build_mime_body(string $plain, ?string $html, ?string $icsFilename, ?string $icsRaw): string
-{
-    $altB = 'alt_' . bin2hex(random_bytes(8));
-
-    $altPart = '--' . $altB . "\r\n" . mail_part_base64($plain, 'text/plain; charset=UTF-8') . "\r\n";
-    if ($html !== null && $html !== '') {
-        $altPart .= '--' . $altB . "\r\n" . mail_part_base64($html, 'text/html; charset=UTF-8') . "\r\n";
-    }
-    $altPart .= '--' . $altB . "--\r\n";
-
-    if ($icsRaw === null || $icsRaw === '') {
-        return "Content-Type: multipart/alternative; boundary=\"{$altB}\"\r\n\r\n" . $altPart;
-    }
-
-    $mixB = 'mix_' . bin2hex(random_bytes(8));
-    $fn = preg_replace('/[^a-zA-Z0-9._-]/', '_', $icsFilename ?: 'evenement.ics');
-
-    $icsPart = '--' . $mixB . "\r\n"
-        . 'Content-Type: text/calendar; charset=UTF-8; method=PUBLISH; name="' . $fn . "\"\r\n"
-        . "Content-Transfer-Encoding: base64\r\n"
-        . 'Content-Disposition: attachment; filename="' . $fn . "\"\r\n\r\n"
-        . chunk_split(base64_encode($icsRaw), 76, "\r\n");
-
-    return "Content-Type: multipart/mixed; boundary=\"{$mixB}\"\r\n\r\n"
-        . '--' . $mixB . "\r\n"
-        . "Content-Type: multipart/alternative; boundary=\"{$altB}\"\r\n\r\n"
-        . $altPart
-        . $icsPart
-        . '--' . $mixB . "--\r\n";
-}
-
-function mail_deliver_php(string $to, string $subject, string $from, string $fromName, string $bodyText, ?string $bodyHtml, ?string $icsFilename, ?string $icsRaw): bool
-{
-    $headers = [
-        'MIME-Version: 1.0',
-    ];
-    if ($icsRaw !== null && $icsRaw !== '') {
-        $mime = mail_build_mime_body($bodyText, $bodyHtml, $icsFilename, $icsRaw);
-        if (preg_match('/^Content-Type: (.+)\r\n\r\n(.*)/s', $mime, $m)) {
-            $headers[] = 'Content-Type: ' . trim($m[1]);
-            $body = $m[2];
-        } else {
-            $headers[] = 'Content-Type: text/plain; charset=UTF-8';
-            $body = $bodyText;
-        }
-    } elseif ($bodyHtml !== null && $bodyHtml !== '') {
-        $b = 'b_' . bin2hex(random_bytes(6));
-        $headers[] = 'Content-Type: multipart/alternative; boundary="' . $b . '"';
-        $body = "--{$b}\r\n"
-            . mail_part_base64($bodyText, 'text/plain; charset=UTF-8') . "\r\n"
-            . "--{$b}\r\n"
-            . mail_part_base64($bodyHtml, 'text/html; charset=UTF-8') . "\r\n"
-            . "--{$b}--";
-    } else {
-        $headers[] = 'Content-Type: text/plain; charset=UTF-8';
-        $headers[] = 'Content-Transfer-Encoding: 8bit';
-        $body = $bodyText;
-    }
-    $headers[] = 'From: ' . mb_encode_mimeheader($fromName, 'UTF-8', 'Q') . " <{$from}>";
+/**
+ * Corps HTML + texte + pièce jointe (commun SMTP et isMail).
+ */
+function mail_phpmailer_fill_message(
+    PHPMailer $mail,
+    string $to,
+    string $subject,
+    string $from,
+    string $fromName,
+    string $bodyText,
+    ?string $bodyHtml,
+    ?string $icsFilename,
+    ?string $icsRaw
+): void {
+    $mail->setFrom($from, $fromName);
     if (defined('MAIL_REPLY_TO') && MAIL_REPLY_TO !== '' && filter_var(MAIL_REPLY_TO, FILTER_VALIDATE_EMAIL)) {
-        $headers[] = 'Reply-To: ' . MAIL_REPLY_TO;
+        $mail->addReplyTo(MAIL_REPLY_TO);
+    }
+
+    $mail->addAddress($to);
+    $mail->Subject = $subject;
+
+    if ($bodyHtml !== null && $bodyHtml !== '') {
+        $mail->isHTML(true);
+        $mail->Body = $bodyHtml;
+        $mail->AltBody = $bodyText;
     } else {
-        $headers[] = 'Reply-To: ' . $from;
+        $mail->isHTML(false);
+        $mail->Body = $bodyText;
     }
 
-    $hdr = implode("\r\n", $headers);
-    $extra = '';
-    if (filter_var($from, FILTER_VALIDATE_EMAIL)) {
-        $extra = '-f' . $from;
+    if ($icsRaw !== null && $icsRaw !== '') {
+        $fn = preg_replace('/[^a-zA-Z0-9._-]/', '_', $icsFilename ?: 'evenement.ics');
+        $mail->addStringAttachment(
+            $icsRaw,
+            $fn,
+            PHPMailer::ENCODING_BASE64,
+            'text/calendar; charset=UTF-8; method=PUBLISH'
+        );
+    }
+}
+
+function mail_send_phpmailer_smtp(
+    string $to,
+    string $subject,
+    string $from,
+    string $fromName,
+    string $bodyText,
+    ?string $bodyHtml,
+    ?string $icsFilename,
+    ?string $icsRaw
+): bool {
+    if (!filter_var($from, FILTER_VALIDATE_EMAIL) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        error_log('[mariage-mail] PHPMailer SMTP : expéditeur ou destinataire invalide');
+
+        return false;
     }
 
-    return @mail(
-        $to,
-        mb_encode_mimeheader($subject, 'UTF-8', 'Q'),
-        $body,
-        $hdr,
-        $extra
-    );
+    $pass = defined('MAIL_SMTP_PASS') ? (string) MAIL_SMTP_PASS : '';
+    if ($pass === '') {
+        error_log('[mariage-mail] PHPMailer SMTP : mot de passe vide');
+
+        return false;
+    }
+
+    $mail = null;
+
+    try {
+        $mail = new PHPMailer(true);
+        $mail->CharSet = PHPMailer::CHARSET_UTF8;
+        $mail->isSMTP();
+        $mail->Host = MAIL_SMTP_HOST;
+        $mail->SMTPAuth = true;
+        $mail->Username = MAIL_SMTP_USER;
+        $mail->Password = $pass;
+
+        $port = defined('MAIL_SMTP_PORT') ? (int) MAIL_SMTP_PORT : 465;
+        $mail->Port = $port;
+
+        $verify = !defined('MAIL_SMTP_SSL_VERIFY') || MAIL_SMTP_SSL_VERIFY === true;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer'       => $verify,
+                'verify_peer_name'  => $verify,
+                'allow_self_signed' => false,
+            ],
+        ];
+
+        if ($port === 465) {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        } else {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        }
+
+        mail_phpmailer_fill_message($mail, $to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
+        $mail->send();
+
+        return true;
+    } catch (MailerException $e) {
+        $info = ($mail instanceof PHPMailer) ? $mail->ErrorInfo : $e->getMessage();
+        error_log('[mariage-mail] PHPMailer SMTP : ' . $info);
+
+        return false;
+    } catch (Throwable $e) {
+        error_log('[mariage-mail] PHPMailer SMTP : ' . $e->getMessage());
+
+        return false;
+    }
+}
+
+/**
+ * Secours ou envoi sans SMTP : utilise la fonction mail() de PHP via PHPMailer (MIME correct).
+ */
+function mail_send_phpmailer_is_mail(
+    string $to,
+    string $subject,
+    string $from,
+    string $fromName,
+    string $bodyText,
+    ?string $bodyHtml,
+    ?string $icsFilename,
+    ?string $icsRaw
+): bool {
+    if (!filter_var($from, FILTER_VALIDATE_EMAIL) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        error_log('[mariage-mail] PHPMailer isMail : expéditeur ou destinataire invalide');
+
+        return false;
+    }
+
+    $mail = null;
+
+    try {
+        $mail = new PHPMailer(true);
+        $mail->CharSet = PHPMailer::CHARSET_UTF8;
+        $mail->isMail();
+        if (filter_var($from, FILTER_VALIDATE_EMAIL)) {
+            $mail->Sender = $from;
+        }
+
+        mail_phpmailer_fill_message($mail, $to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
+        $mail->send();
+
+        return true;
+    } catch (MailerException $e) {
+        $info = ($mail instanceof PHPMailer) ? $mail->ErrorInfo : $e->getMessage();
+        error_log('[mariage-mail] PHPMailer isMail : ' . $info);
+
+        return false;
+    } catch (Throwable $e) {
+        error_log('[mariage-mail] PHPMailer isMail : ' . $e->getMessage());
+
+        return false;
+    }
 }
 
 function mail_deliver(string $to, string $subject, string $bodyText, ?string $bodyHtml = null, ?string $icsFilename = null, ?string $icsRaw = null): bool
@@ -189,37 +260,21 @@ function mail_deliver(string $to, string $subject, string $bodyText, ?string $bo
     $from = defined('MAIL_FROM') ? MAIL_FROM : 'noreply@localhost';
     $fromName = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : 'Mariage';
 
-    $mime = mail_build_mime_body($bodyText, $bodyHtml, $icsFilename, $icsRaw);
-
     if (mail_uses_smtp()) {
-        $port = defined('MAIL_SMTP_PORT') ? (int) MAIL_SMTP_PORT : 465;
-        $pass = defined('MAIL_SMTP_PASS') ? MAIL_SMTP_PASS : '';
-        $user = MAIL_SMTP_USER;
-
-        $ok = smtp_send_mail(
-            MAIL_SMTP_HOST,
-            $port,
-            $user,
-            $pass,
-            $from,
-            $fromName,
-            $to,
-            $subject,
-            $mime
-        );
+        $ok = mail_send_phpmailer_smtp($to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
         if ($ok) {
             return true;
         }
         if (!defined('MAIL_SMTP_FALLBACK_PHP_MAIL') || MAIL_SMTP_FALLBACK_PHP_MAIL !== false) {
-            mail_smtp_log('Secours : envoi via mail() PHP');
+            error_log('[mariage-mail] Secours : PHPMailer isMail()');
 
-            return mail_deliver_php($to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
+            return mail_send_phpmailer_is_mail($to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
         }
 
         return false;
     }
 
-    return mail_deliver_php($to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
+    return mail_send_phpmailer_is_mail($to, $subject, $from, $fromName, $bodyText, $bodyHtml, $icsFilename, $icsRaw);
 }
 
 /** @deprecated logique interne — utiliser mail_deliver */

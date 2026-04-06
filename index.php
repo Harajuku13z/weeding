@@ -388,7 +388,7 @@ $skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN) |
             <h2 class="section-title">Quelques mots avant le grand jour</h2>
         </div>
         <div class="rules-list" data-anim="fade-up" data-stagger-children="true" data-stagger="0.07">
-            <div class="rule-item rule-ok"><i class="bi bi-check-circle-fill"></i><span>Enfants bienvenus</span></div>
+            <div class="rule-item rule-warn"><i class="bi bi-x-circle-fill"></i><span>Les enfants ne sont pas autorisés — merci pour votre compréhension</span></div>
             <div class="rule-item rule-warn"><i class="bi bi-phone-fill"></i><span>Téléphones en mode silencieux pendant la cérémonie</span></div>
             <div class="rule-item rule-info"><i class="bi bi-clock-fill"></i><span>Arrivez 15 minutes avant le début</span></div>
             <div class="rule-item rule-info"><i class="bi bi-car-front-fill"></i><span>Covoiturage encouragé</span></div>
