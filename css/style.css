@@ -13,6 +13,7 @@
     --ft:      'Cormorant Garamond', Georgia, serif;
     --fb:      'Jost', sans-serif;
     --script:  'Great Vibes', cursive;
+    --logo:    'Playfair Display', Georgia, serif;
     --ease:    cubic-bezier(.4,0,.2,1);
 }
 
@@ -170,9 +171,9 @@ body.env-locked { overflow: hidden; }
     box-shadow: 0 1px 0 rgba(168,200,224,.15);
 }
 .nav-brand {
-    font-family: var(--script);
-    font-size: 22px;
-    color: #fff;
+    font-family: var(--logo);
+    font-size: 22px; font-weight: 500; font-style: italic;
+    color: #fff; letter-spacing: .02em;
     transition: color .4s;
 }
 .nav.scrolled .nav-brand { color: var(--dark); }
@@ -709,7 +710,7 @@ textarea { resize: vertical; }
     content: ''; position: absolute; top: 0; left: 20%; right: 20%;
     height: 1px; background: linear-gradient(90deg, transparent, rgba(168,200,224,.15), transparent);
 }
-.footer-names { font-family: var(--script); font-size: 40px; color: #fff; margin-bottom: 10px; }
+.footer-names { font-family: var(--logo); font-size: 36px; font-weight: 500; font-style: italic; color: #fff; margin-bottom: 10px; letter-spacing: .02em; }
 .footer-date {
     font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
     color: var(--sky); margin-bottom: 28px; font-weight: 500;

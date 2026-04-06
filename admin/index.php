@@ -239,15 +239,16 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
             <div class="card">
                 <h3><i class="bi bi-person-plus"></i> Ajouter un invité</h3>
                 <form id="addGuestForm" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
-                    <div class="form-row" style="flex:1;min-width:140px"><label>Code</label><input type="text" name="code" placeholder="INVITE06" required style="text-transform:uppercase"></div>
-                    <div class="form-row" style="flex:1;min-width:140px"><label>Nom (optionnel)</label><input type="text" name="name" placeholder="Jean Dupont"></div>
+                    <div class="form-row" style="flex:1;min-width:180px"><label>Nom <span style="color:#e74c3c">*</span></label><input type="text" name="name" placeholder="Jean Dupont" required></div>
+                    <div class="form-row" style="flex:1;min-width:180px"><label>Email (optionnel)</label><input type="email" name="email" placeholder="jean@email.com"></div>
                     <button type="submit" class="btn btn-blue btn-sm"><i class="bi bi-plus"></i> Ajouter</button>
                 </form>
+                <p style="font-size:12px;color:#888;margin-top:8px"><i class="bi bi-info-circle"></i> Le code d'invitation est généré automatiquement.</p>
             </div>
             <div class="card">
                 <h3><i class="bi bi-table"></i> Liste des invités</h3>
                 <div style="overflow-x:auto"><table>
-                    <thead><tr><th>Code</th><th>Nom</th><th>Statut</th><th>Accomp.</th><th>Régime</th><th>Message</th><th>Répondu</th><th></th></tr></thead>
+                    <thead><tr><th>Code</th><th>Nom</th><th>Email</th><th>Statut</th><th>Accomp.</th><th>Lien invitation</th><th>Répondu</th><th></th></tr></thead>
                     <tbody id="guestsTable"></tbody>
                 </table></div>
             </div>
@@ -650,6 +651,22 @@ async function delHotel(id) {
 }
 
 /* ─── GUESTS ─────────────────────────────────────── */
+const siteBase = window.location.origin + '/';
+
+function inviteLink(code) {
+    return siteBase + 'invitation.php?code=' + encodeURIComponent(code);
+}
+
+async function copyLink(code) {
+    const url = inviteLink(code);
+    try {
+        await navigator.clipboard.writeText(url);
+        toast('Lien copié !');
+    } catch {
+        prompt('Copiez ce lien :', url);
+    }
+}
+
 async function loadGuests() {
     const res = await fetch(API + '?action=guests_list');
     const json = await res.json();
@@ -657,18 +674,25 @@ async function loadGuests() {
     if (!json.data.length) { tb.innerHTML = '<tr><td colspan="8" style="color:#888">Aucun invité.</td></tr>'; return; }
     const badges = { accepted: 'badge-ok', maybe: 'badge-warn', declined: 'badge-err', pending: 'badge-grey' };
     const labels = { accepted: 'Accepté', maybe: 'Peut-être', declined: 'Décliné', pending: 'En attente' };
-    tb.innerHTML = json.data.map(g => `
+    tb.innerHTML = json.data.map(g => {
+        const link = inviteLink(g.code);
+        return `
         <tr>
-            <td><code>${g.code}</code></td>
-            <td>${g.name || '—'}</td>
+            <td><code style="background:#f0f4f8;padding:4px 10px;border-radius:6px;font-weight:600;font-size:13px;letter-spacing:.05em">${g.code}</code></td>
+            <td><strong>${g.name || '—'}</strong></td>
+            <td style="font-size:12px;color:#888">${g.email || '—'}</td>
             <td><span class="badge ${badges[g.status] || 'badge-grey'}">${labels[g.status] || g.status}</span></td>
             <td>${g.companions || 0}</td>
-            <td>${g.dietary || '—'}</td>
-            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.message || '—'}</td>
+            <td>
+                <div style="display:flex;gap:4px;align-items:center">
+                    <button class="btn btn-sm" style="background:#e8f0fe;color:#4285f4;border:none;font-size:11px" onclick="copyLink('${g.code}')"><i class="bi bi-link-45deg"></i> Copier</button>
+                    <a href="${link}" target="_blank" class="btn btn-sm" style="background:#f0f4f8;color:#555;border:none;font-size:11px"><i class="bi bi-box-arrow-up-right"></i></a>
+                </div>
+            </td>
             <td>${g.responded_at ? new Date(g.responded_at).toLocaleDateString('fr') : '—'}</td>
             <td><button class="btn btn-red btn-sm" onclick="delGuest(${g.id})"><i class="bi bi-trash"></i></button></td>
-        </tr>
-    `).join('');
+        </tr>`;
+    }).join('');
 }
 
 document.getElementById('addGuestForm').addEventListener('submit', async e => {

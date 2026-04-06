@@ -60,15 +60,23 @@ switch ($action) {
         break;
 
     case 'guest_add':
-        $code = strtoupper(trim($_POST['code'] ?? ''));
         $name = sanitize($_POST['name'] ?? '');
-        if (empty($code)) jsonResponse(['success' => false, 'message' => 'Code requis.']);
-        $stmt = $pdo->prepare("INSERT IGNORE INTO guests (code, name) VALUES (:c, :n)");
-        $stmt->execute(['c' => $code, 'n' => $name]);
-        if ($stmt->rowCount() === 0) {
-            jsonResponse(['success' => false, 'message' => 'Ce code existe déjà.']);
+        $email = trim($_POST['email'] ?? '');
+        if (empty($name)) jsonResponse(['success' => false, 'message' => 'Nom requis.']);
+
+        $prefix = strtoupper(preg_replace('/[^A-Z]/i', '', substr($name, 0, 4)));
+        if (strlen($prefix) < 2) $prefix = 'INV';
+        $code = $prefix . str_pad(random_int(100, 9999), 4, '0', STR_PAD_LEFT);
+
+        $check = $pdo->prepare("SELECT id FROM guests WHERE code = :c");
+        $check->execute(['c' => $code]);
+        if ($check->fetch()) {
+            $code = $prefix . str_pad(random_int(1000, 99999), 5, '0', STR_PAD_LEFT);
         }
-        jsonResponse(['success' => true, 'message' => 'Invité ajouté.']);
+
+        $stmt = $pdo->prepare("INSERT INTO guests (code, name, email) VALUES (:c, :n, :e)");
+        $stmt->execute(['c' => $code, 'n' => $name, 'e' => $email]);
+        jsonResponse(['success' => true, 'message' => 'Invité ajouté — Code : ' . $code, 'code' => $code, 'id' => $pdo->lastInsertId()]);
         break;
 
     case 'guest_delete':

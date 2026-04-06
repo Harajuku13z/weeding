@@ -35,7 +35,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
     <title><?= sanitize($bride) ?> &amp; <?= sanitize($groom) ?> — Notre Mariage</title>
     <meta name="description" content="Invitation au mariage de <?= sanitize($bride) ?> et <?= sanitize($groom) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@200;300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@200;300;400;500;600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>:root{--sky:<?= sanitize($themePrimary) ?>;--sky-d:<?= sanitize($themeAccent) ?>;--dark:<?= sanitize($themeDark) ?>}</style>

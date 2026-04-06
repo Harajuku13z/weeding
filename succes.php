@@ -28,7 +28,7 @@ $reminderSaved = isset($_GET['reminder']);
     <title>Merci — <?= sanitize($bride) ?> & <?= sanitize($groom) ?></title>
     <meta name="robots" content="noindex,nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Great+Vibes&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Great+Vibes&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
@@ -38,6 +38,7 @@ $reminderSaved = isset($_GET['reminder']);
             --ft: 'Cormorant Garamond', Georgia, serif;
             --fb: 'Jost', sans-serif;
             --script: 'Great Vibes', cursive;
+            --logo: 'Playfair Display', Georgia, serif;
             --ease: cubic-bezier(.4,0,.2,1);
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -96,8 +97,8 @@ $reminderSaved = isset($_GET['reminder']);
         .s-orn-heart { color: var(--sky); font-size: 10px; }
 
         .success-names {
-            font-family: var(--script); font-size: 28px;
-            color: var(--sky); margin-bottom: 8px;
+            font-family: var(--logo); font-size: 28px; font-weight: 500; font-style: italic;
+            color: var(--sky); margin-bottom: 8px; letter-spacing: .02em;
         }
         .success-date {
             font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
