@@ -88,6 +88,7 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
         <nav class="sidebar-nav">
             <a href="#" class="active" data-page="gallery"><i class="bi bi-images"></i><span>Galerie</span></a>
             <a href="#" data-page="programme"><i class="bi bi-clock-history"></i><span>Programme</span></a>
+            <a href="#" data-page="lieux"><i class="bi bi-geo-alt"></i><span>Lieux</span></a>
             <a href="#" data-page="guests"><i class="bi bi-people"></i><span>Invités</span></a>
             <a href="#" data-page="settings"><i class="bi bi-gear"></i><span>Paramètres</span></a>
         </nav>
@@ -137,6 +138,30 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
                     <thead><tr><th>Ordre</th><th>Heure</th><th>Titre</th><th>Description</th><th></th><th></th></tr></thead>
                     <tbody id="progTable"></tbody>
                 </table></div>
+            </div>
+        </div>
+
+        <!-- LIEUX -->
+        <div class="page" id="page-lieux">
+            <h2>Lieux</h2>
+            <div class="card">
+                <h3><i class="bi bi-plus-circle"></i> Ajouter un lieu</h3>
+                <form id="addLieuForm">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                        <div class="form-row" style="flex:1;min-width:180px"><label>Nom du lieu</label><input type="text" name="name" placeholder="Mairie de Chevigny" required></div>
+                        <div class="form-row" style="flex:2;min-width:200px"><label>Adresse</label><input type="text" name="address" placeholder="Place du Général de Gaulle, 21800..."></div>
+                        <div class="form-row" style="width:70px"><label>Ordre</label><input type="number" name="sort_order" value="0" min="0"></div>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                        <div class="form-row" style="flex:1;min-width:200px"><label>Lien Google Maps (itinéraire)</label><input type="url" name="maps_url" placeholder="https://maps.google.com/?q=..."></div>
+                        <div class="form-row" style="flex:1;min-width:200px"><label>Lien iframe embed Maps</label><input type="url" name="maps_embed" placeholder="https://www.google.com/maps/embed?pb=..."></div>
+                    </div>
+                    <button type="submit" class="btn btn-blue"><i class="bi bi-plus"></i> Ajouter</button>
+                </form>
+            </div>
+            <div class="card">
+                <h3><i class="bi bi-geo-alt-fill"></i> Lieux actuels</h3>
+                <div id="lieuxList"></div>
             </div>
         </div>
 
@@ -287,6 +312,64 @@ async function delProg(id) {
     loadProgramme();
 }
 
+/* ─── LIEUX ──────────────────────────────────────── */
+async function loadLieux() {
+    const res = await fetch(API + '?action=lieux_list');
+    const json = await res.json();
+    const box = document.getElementById('lieuxList');
+    if (!json.data.length) { box.innerHTML = '<p style="color:#888;font-size:13px">Aucun lieu. Ajoutez-en via le formulaire.</p>'; return; }
+    box.innerHTML = json.data.map(l => `
+        <div id="lieu-${l.id}" style="border:1px solid #eee;border-radius:8px;padding:20px;margin-bottom:12px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+                <div class="form-row" style="flex:1;min-width:160px"><label>Nom</label><input type="text" value="${l.name}" data-f="name" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                <div class="form-row" style="flex:2;min-width:200px"><label>Adresse</label><input type="text" value="${l.address||''}" data-f="address" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                <div class="form-row" style="width:60px"><label>Ordre</label><input type="number" value="${l.sort_order}" data-f="sort_order" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                <div class="form-row" style="flex:1;min-width:200px"><label>Lien itinéraire</label><input type="url" value="${l.maps_url||''}" data-f="maps_url" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                <div class="form-row" style="flex:1;min-width:200px"><label>Iframe embed</label><input type="url" value="${l.maps_embed||''}" data-f="maps_embed" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-blue btn-sm" onclick="saveLieu(${l.id})"><i class="bi bi-check-lg"></i> Sauvegarder</button>
+                <button class="btn btn-red btn-sm" onclick="delLieu(${l.id})"><i class="bi bi-trash"></i> Supprimer</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+document.getElementById('addLieuForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('action', 'lieux_add');
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    if (json.success) { e.target.reset(); loadLieux(); }
+});
+
+async function saveLieu(id) {
+    const fd = new FormData();
+    fd.append('action', 'lieux_update');
+    fd.append('id', id);
+    document.querySelectorAll('[data-lid="' + id + '"]').forEach(inp => {
+        fd.append(inp.dataset.f, inp.value);
+    });
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+}
+
+async function delLieu(id) {
+    if (!confirm('Supprimer ce lieu ?')) return;
+    const fd = new FormData();
+    fd.append('action', 'lieux_delete');
+    fd.append('id', id);
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    loadLieux();
+}
+
 /* ─── GUESTS ─────────────────────────────────────── */
 async function loadGuests() {
     const res = await fetch(API + '?action=guests_list');
@@ -354,6 +437,7 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
 /* INIT */
 loadGallery();
 loadProgramme();
+loadLieux();
 loadGuests();
 loadSettings();
 </script>

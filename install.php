@@ -33,6 +33,21 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS programme (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+$pdo->exec("CREATE TABLE IF NOT EXISTS lieux (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL DEFAULT '',
+    address VARCHAR(255) DEFAULT '',
+    maps_url VARCHAR(500) DEFAULT '',
+    maps_embed VARCHAR(500) DEFAULT '',
+    icon VARCHAR(50) DEFAULT 'bi-geo-alt-fill',
+    sort_order INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$stmtL = $pdo->prepare("INSERT IGNORE INTO lieux (id, name, address, maps_url, maps_embed, icon, sort_order) VALUES (:id, :n, :a, :mu, :me, :ic, :s)");
+$stmtL->execute(['id' => 1, 'n' => 'Mairie de Chevigny', 'a' => 'Place du Général de Gaulle, 21800 Chevigny-Saint-Sauveur', 'mu' => 'https://maps.google.com/?q=Mairie+Chevigny-Saint-Sauveur', 'me' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2710.5!2d5.1312!3d47.2972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f29e3e3b2c0001%3A0x1!2sPlace+du+G%C3%A9n%C3%A9ral+de+Gaulle%2C+21800+Chevigny-Saint-Sauveur!5e0!3m2!1sfr!2sfr', 'ic' => 'bi-building', 's' => 1]);
+$stmtL->execute(['id' => 2, 'n' => 'Le Lieu Dit', 'a' => '5 Rue Parmentier, 21000 Dijon', 'mu' => 'https://maps.google.com/?q=5+Rue+Parmentier+21000+Dijon', 'me' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2710.5!2d5.0415!3d47.3220!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f29e3e3b2c0001%3A0x1!2s5+Rue+Parmentier%2C+21000+Dijon!5e0!3m2!1sfr!2sfr', 'ic' => 'bi-geo-alt-fill', 's' => 2]);
+
 $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
     skey VARCHAR(50) PRIMARY KEY,
     svalue TEXT

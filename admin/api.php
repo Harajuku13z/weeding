@@ -112,6 +112,45 @@ switch ($action) {
         jsonResponse(['success' => true, 'message' => 'Élément supprimé.']);
         break;
 
+    /* ─── LIEUX ────────────────────────────────────────── */
+    case 'lieux_list':
+        $rows = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fetchAll();
+        jsonResponse(['success' => true, 'data' => $rows]);
+        break;
+
+    case 'lieux_add':
+        $name    = sanitize($_POST['name'] ?? '');
+        $address = sanitize($_POST['address'] ?? '');
+        $mapsUrl = trim($_POST['maps_url'] ?? '');
+        $embed   = trim($_POST['maps_embed'] ?? '');
+        $icon    = sanitize($_POST['icon'] ?? 'bi-geo-alt-fill');
+        $order   = (int) ($_POST['sort_order'] ?? 0);
+        if (empty($name)) jsonResponse(['success' => false, 'message' => 'Nom du lieu requis.']);
+        $stmt = $pdo->prepare("INSERT INTO lieux (name, address, maps_url, maps_embed, icon, sort_order) VALUES (:n, :a, :mu, :me, :ic, :s)");
+        $stmt->execute(['n' => $name, 'a' => $address, 'mu' => $mapsUrl, 'me' => $embed, 'ic' => $icon, 's' => $order]);
+        jsonResponse(['success' => true, 'message' => 'Lieu ajouté.']);
+        break;
+
+    case 'lieux_update':
+        $id      = (int) ($_POST['id'] ?? 0);
+        $name    = sanitize($_POST['name'] ?? '');
+        $address = sanitize($_POST['address'] ?? '');
+        $mapsUrl = trim($_POST['maps_url'] ?? '');
+        $embed   = trim($_POST['maps_embed'] ?? '');
+        $icon    = sanitize($_POST['icon'] ?? 'bi-geo-alt-fill');
+        $order   = (int) ($_POST['sort_order'] ?? 0);
+        if (!$id || empty($name)) jsonResponse(['success' => false, 'message' => 'Données manquantes.']);
+        $stmt = $pdo->prepare("UPDATE lieux SET name = :n, address = :a, maps_url = :mu, maps_embed = :me, icon = :ic, sort_order = :s WHERE id = :id");
+        $stmt->execute(['n' => $name, 'a' => $address, 'mu' => $mapsUrl, 'me' => $embed, 'ic' => $icon, 's' => $order, 'id' => $id]);
+        jsonResponse(['success' => true, 'message' => 'Lieu mis à jour.']);
+        break;
+
+    case 'lieux_delete':
+        $id = (int) ($_POST['id'] ?? 0);
+        $pdo->prepare("DELETE FROM lieux WHERE id = :id")->execute(['id' => $id]);
+        jsonResponse(['success' => true, 'message' => 'Lieu supprimé.']);
+        break;
+
     /* ─── SETTINGS ─────────────────────────────────────── */
     case 'settings_get':
         $rows = $pdo->query("SELECT skey, svalue FROM settings")->fetchAll();

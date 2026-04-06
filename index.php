@@ -15,6 +15,7 @@ $bride = $s('bride_name', 'Lisa');
 $groom = $s('groom_name', 'Christ');
 
 $programme = $pdo->query("SELECT * FROM programme ORDER BY sort_order ASC, id ASC")->fetchAll();
+$lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -193,30 +194,30 @@ $programme = $pdo->query("SELECT * FROM programme ORDER BY sort_order ASC, id AS
             <h2 class="section-title">Où nous vous accueillons</h2>
         </div>
         <div class="venues" data-anim="fade-up">
-            <div class="venue-card">
-                <div class="venue-map">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2710.5!2d5.1312!3d47.2972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f29e3e3b2c0001%3A0x1!2sPlace+du+G%C3%A9n%C3%A9ral+de+Gaulle%2C+21800+Chevigny-Saint-Sauveur!5e0!3m2!1sfr!2sfr" allowfullscreen loading="lazy"></iframe>
+            <?php if (empty($lieux)): ?>
+            <p style="text-align:center;color:var(--muted)">Lieux à venir.</p>
+            <?php else: ?>
+                <?php foreach ($lieux as $lieu): ?>
+                <div class="venue-card">
+                    <?php if ($lieu['maps_embed']): ?>
+                    <div class="venue-map">
+                        <iframe src="<?= sanitize($lieu['maps_embed']) ?>" allowfullscreen loading="lazy"></iframe>
+                    </div>
+                    <?php endif; ?>
+                    <div class="venue-info">
+                        <h3><i class="bi <?= sanitize($lieu['icon'] ?: 'bi-geo-alt-fill') ?>"></i> <?= sanitize($lieu['name']) ?></h3>
+                        <?php if ($lieu['address']): ?>
+                        <p><?= sanitize($lieu['address']) ?></p>
+                        <?php endif; ?>
+                        <?php if ($lieu['maps_url']): ?>
+                        <a href="<?= sanitize($lieu['maps_url']) ?>" target="_blank" class="btn btn-sm">
+                            <i class="bi bi-map-fill"></i> Itinéraire
+                        </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <div class="venue-info">
-                    <h3><i class="bi bi-building"></i> Mairie de Chevigny</h3>
-                    <p>Place du Général de Gaulle, 21800 Chevigny-Saint-Sauveur</p>
-                    <a href="https://maps.google.com/?q=Mairie+Chevigny-Saint-Sauveur" target="_blank" class="btn btn-sm">
-                        <i class="bi bi-map-fill"></i> Itinéraire
-                    </a>
-                </div>
-            </div>
-            <div class="venue-card">
-                <div class="venue-map">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2710.5!2d5.0415!3d47.3220!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f29e3e3b2c0001%3A0x1!2s5+Rue+Parmentier%2C+21000+Dijon!5e0!3m2!1sfr!2sfr" allowfullscreen loading="lazy"></iframe>
-                </div>
-                <div class="venue-info">
-                    <h3><i class="bi bi-geo-alt-fill"></i> Le Lieu Dit</h3>
-                    <p>5 Rue Parmentier, 21000 Dijon</p>
-                    <a href="https://maps.google.com/?q=5+Rue+Parmentier+21000+Dijon" target="_blank" class="btn btn-sm">
-                        <i class="bi bi-map-fill"></i> Itinéraire
-                    </a>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>
