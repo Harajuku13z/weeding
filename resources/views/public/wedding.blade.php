@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="{{ asset('css/wedding.css') }}">
 
     @php $theme = $wedding->theme; @endphp
@@ -63,169 +64,170 @@
     }
 
     /* ═══════════════════════════════════════════════════════
-       ENVELOPE OVERLAY
+       INVITATION OVERLAY — Cinematic Split Reveal
     ═══════════════════════════════════════════════════════ */
-    .envelope-overlay {
+    .inv-overlay {
         position: fixed; inset: 0; z-index: 9999;
-        background: radial-gradient(ellipse at 50% 40%, #1a150f 0%, #0a0806 100%);
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        cursor: pointer;
-    }
-    .envelope-overlay.is-dismissed {
-        opacity: 0; visibility: hidden; pointer-events: none;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
     }
 
-    .env-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-    .env-particle {
+    .inv-panel {
+        position: absolute; top: 0; width: 50%; height: 100%;
+        will-change: transform;
+    }
+    .inv-panel--left {
+        left: 0;
+        background: linear-gradient(135deg, #0f0b14 0%, #1a1422 40%, #0d0a10 100%);
+    }
+    .inv-panel--right {
+        right: 0;
+        background: linear-gradient(225deg, #0f0b14 0%, #1a1422 40%, #0d0a10 100%);
+    }
+
+    .inv-split-line {
+        position: absolute; top: 5%; bottom: 5%; left: 50%;
+        width: 1px; z-index: 2;
+        background: linear-gradient(to bottom, transparent 0%, var(--gold) 20%, var(--gold) 80%, transparent 100%);
+        opacity: .25;
+        transform: translateX(-50%);
+    }
+    .inv-split-glow {
+        position: absolute; top: 30%; bottom: 30%; left: 50%;
+        width: 80px; z-index: 1;
+        background: radial-gradient(ellipse at center, rgba(184,151,90,.06) 0%, transparent 70%);
+        transform: translateX(-50%);
+    }
+
+    .inv-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 3; }
+    .inv-particle {
         position: absolute; border-radius: 50%;
         background: var(--gold); opacity: 0;
-        animation: envFloat var(--dur,7s) var(--delay,0s) infinite ease-in-out;
+        animation: invFloat var(--dur,8s) var(--delay,0s) infinite ease-in-out;
     }
-    @keyframes envFloat {
+    @keyframes invFloat {
         0%   { transform: translateY(0) scale(1); opacity: 0; }
-        15%  { opacity: var(--op,.2); }
-        85%  { opacity: var(--op,.2); }
+        12%  { opacity: var(--op,.15); }
+        88%  { opacity: var(--op,.15); }
         100% { transform: translateY(-100vh) scale(.3); opacity: 0; }
     }
 
-    .envelope-wrapper {
-        position: relative; z-index: 1;
-        display: flex; flex-direction: column;
-        align-items: center; gap: 40px;
+    .inv-content {
+        position: relative; z-index: 4;
+        text-align: center;
+        padding: 40px 24px;
+        max-width: 640px;
     }
 
-    .env-scene-label {
-        font-family: var(--ft);
-        font-size: clamp(12px,1.8vw,15px);
-        font-weight: 300;
+    .inv-label {
+        font-family: var(--fb);
+        font-size: 10px;
         letter-spacing: 6px;
         text-transform: uppercase;
         color: rgba(255,255,255,.3);
-        text-align: center;
-        padding: 0 20px;
+        margin-bottom: 28px;
+        font-weight: 300;
     }
 
-    .envelope-body {
-        position: relative; width: 380px; height: 250px;
-        filter: drop-shadow(0 40px 80px rgba(0,0,0,.65));
-        transition: transform .4s ease;
-        perspective: 1200px;
-    }
-    .envelope-body:hover { transform: translateY(-6px) scale(1.02); }
-
-    .env-clip {
-        position: absolute; inset: 0;
-        overflow: hidden; border-radius: var(--radius);
-        perspective: 1200px;
-    }
-
-    .env-back {
-        position: absolute; inset: 0;
-        background: linear-gradient(155deg, #2c2318 0%, #1b1710 100%);
-        border: 1px solid rgba(184,151,90,.18);
-        border-radius: var(--radius);
-    }
-
-    .env-deco-line {
-        position: absolute; height: 1px; left: 14%; right: 14%; z-index: 2;
-        background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    }
-    .env-deco-line.top { top: 26px; }
-    .env-deco-line.bottom { bottom: 22px; }
-
-    .envelope-left {
-        position: absolute; top: 0; left: 0;
-        width: 50%; height: 100%; z-index: 3;
-        clip-path: polygon(0 0, 0 100%, 100% 50%);
-        background: linear-gradient(135deg, #261f14, #1e1911);
-    }
-    .envelope-right {
-        position: absolute; top: 0; right: 0;
-        width: 50%; height: 100%; z-index: 3;
-        clip-path: polygon(100% 0, 0 50%, 100% 100%);
-        background: linear-gradient(225deg, #261f14, #1e1911);
-    }
-    .envelope-flap-bottom {
-        position: absolute; bottom: 0; left: 0;
-        width: 100%; height: 55%; z-index: 4;
-        clip-path: polygon(0 100%, 50% 0%, 100% 100%);
-        background: linear-gradient(175deg, #2b2217, #1a1610);
-    }
-    .envelope-flap {
-        position: absolute; top: 0; left: 0;
-        width: 100%; height: 55%; z-index: 10;
-        clip-path: polygon(0 0, 100% 0, 50% 100%);
-        background: linear-gradient(170deg, #372d1e 0%, #261f14 100%);
-        transform-origin: top center;
-        transition: transform 1s cubic-bezier(.4,0,.2,1);
-        backface-visibility: hidden;
-        will-change: transform;
-    }
-    .envelope-body.is-open .envelope-flap { transform: rotateX(-180deg); }
-
-    .envelope-seal {
-        position: absolute; top: 50%; left: 50%;
-        transform: translate(-50%,-50%);
-        width: 54px; height: 54px; border-radius: 50%; z-index: 11;
-        background: radial-gradient(circle at 38% 33%, #d6b87c, #8a6a30);
-        border: 2px solid rgba(255,255,255,.12);
+    .inv-ornament {
         display: flex; align-items: center; justify-content: center;
-        font-size: 20px; color: rgba(255,255,255,.85);
-        box-shadow: 0 4px 24px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.18);
-        transition: transform .4s ease .1s, opacity .4s ease .1s;
+        gap: 16px; margin-bottom: 32px;
     }
-    .envelope-body.is-open .envelope-seal {
-        transform: translate(-50%,-50%) scale(0); opacity: 0;
+    .inv-orn-line {
+        width: 60px; height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold));
+    }
+    .inv-orn-line:last-child {
+        background: linear-gradient(270deg, transparent, var(--gold));
+    }
+    .inv-orn-diamond {
+        width: 6px; height: 6px;
+        background: var(--gold);
+        transform: rotate(45deg);
+        box-shadow: 0 0 14px rgba(184,151,90,.4);
     }
 
-    .envelope-card {
-        position: absolute;
-        left: 8%; right: 8%; top: 8%; height: 84%;
-        background: linear-gradient(155deg, #fdf9f5 0%, #f3e9df 100%);
-        border-radius: 3px; z-index: 2;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center; gap: 12px;
+    .inv-names {
+        font-family: var(--ft);
+        font-size: clamp(44px, 10vw, 82px);
+        font-weight: 400;
+        color: #fff;
+        line-height: 1.1;
+        margin: 0 0 8px;
+        letter-spacing: -.02em;
+    }
+    .inv-name { display: inline-block; }
+    .inv-amp {
+        display: block;
+        font-style: italic;
+        color: var(--gold);
+        font-size: .38em;
+        line-height: 2;
+        font-weight: 300;
+    }
+
+    .inv-date {
+        display: inline-flex; align-items: center; gap: 16px;
+        font-family: var(--fb);
+        font-size: 11px;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.45);
+        margin-bottom: 48px;
+        font-weight: 400;
+    }
+    .inv-date-line {
+        width: 24px; height: 1px;
+        background: rgba(255,255,255,.12);
+    }
+
+    .inv-open-btn {
+        display: inline-flex; align-items: center; gap: 14px;
+        background: transparent;
+        border: 1px solid rgba(184,151,90,.35);
+        color: var(--gold);
+        padding: 16px 38px;
+        border-radius: 999px;
+        font-family: var(--fb);
+        font-size: 10px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all .4s cubic-bezier(.4,0,.2,1);
+        position: relative;
         overflow: hidden;
-        box-shadow: 0 -16px 48px rgba(0,0,0,.45);
-        text-align: center;
-        padding: 10px 16px;
-        will-change: transform;
+        margin-bottom: 36px;
     }
-    .envelope-card::before {
-        content: '';
-        position: absolute; inset: 9px;
-        border: 1px solid rgba(184,151,90,.28);
-        border-radius: 2px;
-        pointer-events: none;
-    }
-    .envelope-card::after {
+    .inv-open-btn::before {
         content: '';
         position: absolute; inset: 0;
-        background: linear-gradient(to bottom, rgba(184,151,90,.06) 0%, transparent 30%);
-        pointer-events: none;
+        background: linear-gradient(135deg, rgba(184,151,90,.12), transparent);
+        opacity: 0;
+        transition: opacity .4s ease;
     }
+    .inv-open-btn:hover {
+        border-color: var(--gold);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(184,151,90,.2);
+    }
+    .inv-open-btn:hover::before { opacity: 1; }
+    .inv-btn-icon {
+        display: flex; align-items: center;
+        transition: transform .3s ease;
+    }
+    .inv-open-btn:hover .inv-btn-icon { transform: translateX(4px); }
 
-    .envelope-hint {
-        display: flex; flex-direction: column; align-items: center; gap: 12px;
-        font-family: var(--fb); font-size: 10px; letter-spacing: 4px;
-        text-transform: uppercase; color: rgba(255,255,255,.28); font-weight: 300;
-        text-align: center;
-        padding: 0 20px;
+    .inv-hint {
+        font-family: var(--fb);
+        font-size: 9px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.15);
+        animation: invPulse 2.5s ease-in-out infinite;
     }
-    .env-hint-arrow {
-        display: flex; flex-direction: column; align-items: center; gap: 4px;
-        animation: envBounce 2s ease-in-out infinite;
-    }
-    .env-hint-arrow span {
-        display: block; width: 1px; height: 12px;
-        background: linear-gradient(to bottom, var(--gold), transparent);
-    }
-    .env-hint-arrow span:nth-child(2) { opacity: .6; }
-    .env-hint-arrow span:nth-child(3) { opacity: .3; }
-    @keyframes envBounce {
-        0%,100% { transform: translateY(0); }
-        50% { transform: translateY(6px); }
+    @keyframes invPulse {
+        0%, 100% { opacity: .15; }
+        50% { opacity: .35; }
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -1396,7 +1398,9 @@
         }
         .nav-links a:hover { color: var(--gold) !important; }
 
-        .envelope-body { width: 300px; height: 200px; }
+        .inv-names { font-size: clamp(36px, 12vw, 52px); }
+        .inv-label { font-size: 8px; letter-spacing: 4px; }
+        .inv-open-btn { padding: 14px 28px; font-size: 9px; letter-spacing: 3px; }
 
         .wedding-section { padding: 80px 0; }
         .section-inner { padding: 0 20px; }
@@ -1487,48 +1491,42 @@
 <body>
 
 @if($wedding->envelope_animation)
-<div id="envelopeOverlay" class="envelope-overlay">
-    <div class="env-particles" id="envParticles"></div>
+<div id="invOverlay" class="inv-overlay">
+    <div class="inv-panel inv-panel--left" id="invPanelLeft"></div>
+    <div class="inv-panel inv-panel--right" id="invPanelRight"></div>
+    <div class="inv-split-line" id="invSplitLine"></div>
+    <div class="inv-split-glow"></div>
+    <div class="inv-particles" id="invParticles"></div>
 
-    <div id="envelopeWrapper" class="envelope-wrapper">
-        <span class="env-scene-label">
-            {{ $wedding->bride_name }} &amp; {{ $wedding->groom_name }}
-            @if($wedding->wedding_date) · {{ $wedding->wedding_date->translatedFormat('d F Y') }} @endif
-        </span>
+    <div class="inv-content" id="invContent">
+        <div class="inv-label">Vous êtes invité(e) au mariage de</div>
 
-        <div class="envelope-body" id="envelopeBody">
-            <div class="env-clip" id="envClip">
-                <div class="env-back"></div>
-                <div class="env-deco-line top"></div>
-                <div class="env-deco-line bottom"></div>
-                <div class="envelope-left"></div>
-                <div class="envelope-right"></div>
-                <div class="envelope-flap-bottom"></div>
-
-                <div class="envelope-card">
-                    <span style="font-family:var(--fb);font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);font-weight:500">
-                        Invitation au mariage
-                    </span>
-                    <span style="font-family:var(--ft);font-size:22px;font-weight:500;color:var(--dark);letter-spacing:1px">
-                        {{ $wedding->getCoupleName() }}
-                    </span>
-                    <div style="width:32px;height:1px;background:var(--gold)"></div>
-                    @if($wedding->wedding_date)
-                    <span style="font-family:var(--fb);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#8c7d70;font-weight:300">
-                        {{ $wedding->wedding_date->translatedFormat('d F Y') }}
-                    </span>
-                    @endif
-                </div>
-
-                <div class="envelope-seal"><i class="bi bi-heart-fill"></i></div>
-                <div class="envelope-flap"></div>
-            </div>
+        <div class="inv-ornament">
+            <span class="inv-orn-line"></span>
+            <span class="inv-orn-diamond"></span>
+            <span class="inv-orn-line"></span>
         </div>
 
-        <div class="envelope-hint">
-            Cliquez pour ouvrir l'invitation
-            <div class="env-hint-arrow"><span></span><span></span><span></span></div>
+        <h2 class="inv-names">
+            <span class="inv-name">{{ $wedding->bride_name }}</span>
+            <span class="inv-amp">&amp;</span>
+            <span class="inv-name">{{ $wedding->groom_name }}</span>
+        </h2>
+
+        @if($wedding->wedding_date)
+        <div class="inv-date">
+            <span class="inv-date-line"></span>
+            {{ $wedding->wedding_date->translatedFormat('d F Y') }}
+            <span class="inv-date-line"></span>
         </div>
+        @endif
+
+        <button class="inv-open-btn" id="invOpenBtn" type="button">
+            <span>Ouvrir l'invitation</span>
+            <span class="inv-btn-icon"><i class="bi bi-arrow-right"></i></span>
+        </button>
+
+        <div class="inv-hint">Appuyez pour découvrir</div>
     </div>
 </div>
 @endif
@@ -2169,68 +2167,84 @@ GLightbox({ selector: '[data-gallery]' });
 
 @if($wedding->envelope_animation)
 (function () {
-    const container = document.getElementById('envParticles');
-    for (let i = 0; i < 40; i++) {
+    const container = document.getElementById('invParticles');
+    for (let i = 0; i < 35; i++) {
         const p = document.createElement('div');
-        p.className = 'env-particle';
+        p.className = 'inv-particle';
         const size = Math.random() * 3 + 1;
         p.style.cssText = `
             width:${size}px; height:${size}px;
             left:${Math.random() * 100}%;
             top:${Math.random() * 100}%;
-            --dur:${Math.random() * 8 + 5}s;
+            --dur:${Math.random() * 8 + 6}s;
             --delay:${Math.random() * 6}s;
-            --op:${Math.random() * 0.25 + 0.05};
+            --op:${Math.random() * 0.2 + 0.04};
         `;
         container.appendChild(p);
     }
 
-    const overlay = document.getElementById('envelopeOverlay');
-    const body = document.getElementById('envelopeBody');
-    const clip = document.getElementById('envClip');
-    const seal = body.querySelector('.envelope-seal');
-    const flap = body.querySelector('.envelope-flap');
-    const card = body.querySelector('.envelope-card');
-    const hint = document.querySelector('.envelope-hint');
+    const overlay  = document.getElementById('invOverlay');
+    const content  = document.getElementById('invContent');
+    const panelL   = document.getElementById('invPanelLeft');
+    const panelR   = document.getElementById('invPanelRight');
+    const splitLine = document.getElementById('invSplitLine');
+    const btn      = document.getElementById('invOpenBtn');
     let opened = false;
 
-    gsap.set(flap, { rotateX: 0 });
-    gsap.set(card, { y: 0 });
+    const contentEls = content.children;
+    gsap.set(contentEls, { opacity: 0, y: 30 });
+    gsap.to(contentEls, {
+        opacity: 1, y: 0, duration: 0.9,
+        stagger: 0.1, ease: 'power3.out', delay: 0.3
+    });
 
-    overlay.addEventListener('click', function () {
+    function fireGoldenConfetti() {
+        const gold = ['#b8975a', '#d4b47a', '#c9a96e', '#e8d5b5', '#f5e6d3', '#fff8ee'];
+        const count = window.innerWidth < 600 ? 60 : 120;
+        confetti({ particleCount: count, spread: 100, startVelocity: 55,
+            origin: { x: 0.5, y: 0.45 }, colors: gold, ticks: 250,
+            gravity: 0.7, scalar: 1.3, shapes: ['circle'], disableForReducedMotion: true });
+        setTimeout(() => {
+            confetti({ particleCount: Math.floor(count * 0.6), spread: 140, startVelocity: 35,
+                origin: { x: 0.5, y: 0.5 }, colors: gold, ticks: 200,
+                gravity: 0.5, scalar: 0.9, shapes: ['circle'], disableForReducedMotion: true });
+        }, 200);
+    }
+
+    function openInvitation() {
         if (opened) return;
         opened = true;
 
-        if (hint) gsap.to(hint, { opacity: 0, y: 10, duration: 0.3, ease: 'power2.in' });
-
         const tl = gsap.timeline();
 
-        tl.to(seal, {
-            scale: 0, opacity: 0, duration: 0.5,
-            ease: 'back.in(2.5)',
+        tl.to(content, {
+            opacity: 0, y: -40, scale: 0.95, duration: 0.5, ease: 'power3.in'
         });
 
-        tl.to(flap, {
-            rotateX: -180, duration: 1,
-            ease: 'power3.inOut',
-        }, '-=0.15');
+        tl.to(splitLine, {
+            opacity: 1, boxShadow: '0 0 40px 8px rgba(184,151,90,.5)',
+            duration: 0.3, ease: 'power2.out'
+        }, '-=0.1');
 
-        tl.call(() => { clip.style.overflow = 'visible'; }, null, '-=0.3');
+        tl.call(fireGoldenConfetti);
 
-        tl.to(card, {
-            y: '-110%', duration: 1.3,
-            ease: 'power3.out',
-        }, '-=0.5');
+        tl.to(panelL, {
+            xPercent: -105, duration: 1, ease: 'power4.inOut'
+        }, '-=0.1');
+        tl.to(panelR, {
+            xPercent: 105, duration: 1, ease: 'power4.inOut'
+        }, '<');
+        tl.to(splitLine, {
+            opacity: 0, duration: 0.4, ease: 'power2.in'
+        }, '-=0.6');
 
-        tl.to(overlay, {
-            opacity: 0, duration: 1,
-            ease: 'power2.inOut',
-            onComplete: () => {
-                overlay.style.visibility = 'hidden';
-                overlay.style.pointerEvents = 'none';
-            }
-        }, '-=0.3');
-    });
+        tl.set(overlay, {
+            visibility: 'hidden', pointerEvents: 'none'
+        });
+    }
+
+    overlay.addEventListener('click', openInvitation);
+    if (btn) btn.addEventListener('click', function(e) { e.stopPropagation(); openInvitation(); });
 })();
 @endif
 
@@ -2266,15 +2280,15 @@ GLightbox({ selector: '[data-gallery]' });
             });
         }
 
-        const overlay = document.getElementById('envelopeOverlay');
+        const overlay = document.getElementById('invOverlay');
         if (overlay) {
             const observer = new MutationObserver(() => {
-                if (overlay.style.visibility === 'hidden' || overlay.classList.contains('is-dismissed')) {
+                if (overlay.style.visibility === 'hidden') {
                     animateHero();
                     observer.disconnect();
                 }
             });
-            observer.observe(overlay, { attributes: true, attributeFilter: ['style', 'class'] });
+            observer.observe(overlay, { attributes: true, attributeFilter: ['style'] });
         } else {
             animateHero();
         }
