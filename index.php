@@ -8,7 +8,7 @@ foreach ($pdo->query("SELECT skey, svalue FROM settings")->fetchAll() as $r) {
 }
 $s = fn($k, $d = '') => $settings[$k] ?? $d;
 
-$gallery = $pdo->query("SELECT * FROM gallery ORDER BY sort_order ASC, id DESC")->fetchAll();
+$gallery = $pdo->query("SELECT * FROM gallery ORDER BY sort_order ASC, id DESC LIMIT 3")->fetchAll();
 
 $weddingDate = $s('wedding_date', '2026-06-06');
 $bride = $s('bride_name', 'Lisa');
@@ -128,9 +128,9 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <span class="section-label">Galerie</span>
             <h2 class="section-title">Un peu de nous</h2>
         </div>
-        <div class="gallery" data-anim="fade-up">
+        <div class="gallery gallery-three" data-anim="fade-up">
             <?php if (empty($gallery)): ?>
-                <?php for ($i = 1; $i <= 4; $i++): ?>
+                <?php for ($i = 1; $i <= 3; $i++): ?>
                 <div class="gallery-item">
                     <div class="gallery-placeholder"><i class="bi bi-image"></i><span>Photo <?= $i ?></span></div>
                 </div>

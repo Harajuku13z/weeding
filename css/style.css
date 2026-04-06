@@ -383,6 +383,14 @@ body.env-locked { overflow: hidden; }
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 8px;
 }
+@media (min-width: 768px) {
+    .gallery-three {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
 .gallery-item {
     position: relative; overflow: hidden; border-radius: 4px;
     aspect-ratio: 1; background: var(--beige-d);
