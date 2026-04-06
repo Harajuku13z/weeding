@@ -709,7 +709,7 @@ async function delHotel(id) {
 const siteBase = window.location.origin + '/';
 
 function inviteLink(code) {
-    return siteBase + 'invitation.php?code=' + encodeURIComponent(code);
+    return siteBase + '?invite=' + encodeURIComponent(code) + '&skip_intro=1';
 }
 
 async function copyLink(code) {

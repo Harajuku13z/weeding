@@ -27,8 +27,25 @@ $themeDark    = $s('theme_dark', '#2C3E50');
 $brideInitial = mb_strtoupper(mb_substr($bride, 0, 1));
 $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
 $introDateFr = format_date_fr($weddingDate);
-/** Désactive l’intro plein écran (ex. lien depuis invitation.php ?skip_intro=1) */
-$skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN);
+$weddingTime = $s('wedding_time', '15:00');
+
+/** Lien partagé ?invite=CODE : accueil direct sur le hero + faire-part en modale */
+$inviteGuest = null;
+$inviteCodeParam = strtoupper(trim((string) ($_GET['invite'] ?? '')));
+if ($inviteCodeParam !== '') {
+    $stInv = $pdo->prepare('SELECT * FROM guests WHERE code = :c LIMIT 1');
+    $stInv->execute(['c' => $inviteCodeParam]);
+    $inviteGuest = $stInv->fetch() ?: null;
+}
+
+/** Désactive l’intro plein écran si paramètre ou lien d’invitation valide */
+$skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN) || (bool) $inviteGuest;
+$inviteCeremony = $lieux[0] ?? null;
+$inviteReception = $lieux[1] ?? null;
+$inviteGuestName = '';
+if ($inviteGuest) {
+    $inviteGuestName = trim((string) ($inviteGuest['name'] ?? '')) ?: 'Cher(e) invité(e)';
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -124,6 +141,10 @@ $skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN);
         <a href="#rsvp">RSVP</a>
     </div>
 </nav>
+
+<?php if ($inviteGuest): ?>
+<?php include __DIR__ . '/partials/invite_modal.php'; ?>
+<?php endif; ?>
 
 <!-- HERO -->
 <section class="hero" id="hero">
@@ -501,6 +522,7 @@ $skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN);
     <p class="footer-credit">Fait avec amour</p>
 </footer>
 
+<script>window.__INVITE_CODE__ = <?= json_encode($inviteGuest ? $inviteGuest['code'] : null, JSON_UNESCAPED_UNICODE) ?>;</script>
 <script>window.__ENDPOINTS = <?= json_encode([
     'rsvp'   => app_url('api/rsvp.php'),
     'succes' => app_url('succes.php'),
