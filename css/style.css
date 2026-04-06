@@ -866,6 +866,19 @@ body.intro-locked { overflow: hidden; }
     hyphens: auto; -webkit-hyphens: auto;
     text-wrap: pretty;
 }
+/* Contraste garanti (section sombre + pas d’héritage fragile sur mobile) */
+#dresscode .dress-card h3 {
+    color: #fff;
+}
+#dresscode .dress-card p {
+    color: rgba(255, 255, 255, 0.92);
+}
+#dresscode .dress-avoid h3 {
+    color: #fff;
+}
+#dresscode .dress-avoid p {
+    color: rgba(255, 248, 248, 0.95);
+}
 .dress-avoid { border-color: rgba(217,107,107,.25); }
 .dress-avoid .dress-icon { color: var(--red); }
 
@@ -1031,6 +1044,8 @@ textarea { resize: vertical; }
     #dresscode .dress-card {
         padding: 24px 18px;
         text-align: left;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(168, 200, 224, 0.28);
     }
     #dresscode .dress-icon {
         font-size: 26px;
@@ -1039,15 +1054,16 @@ textarea { resize: vertical; }
     #dresscode .dress-card h3 {
         font-size: clamp(20px, 5.4vw, 22px);
         margin-bottom: 8px;
+        color: #fff;
     }
     #dresscode .dress-card p {
         font-size: 16px;
         line-height: 1.6;
-        color: rgba(255,255,255,.86);
+        color: rgba(255, 255, 255, 0.94);
         letter-spacing: 0.01em;
     }
     #dresscode .dress-avoid p {
-        color: rgba(255,255,255,.9);
+        color: rgba(255, 245, 245, 0.96);
     }
     .venues { grid-template-columns: 1fr; }
     .venue-links { gap: 6px; }

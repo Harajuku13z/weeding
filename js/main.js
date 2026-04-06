@@ -209,15 +209,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (staggerKids) {
                 const children = Array.from(el.children).filter((c) => c.nodeType === 1);
                 if (!children.length) return;
+                // Cartes tenues : pas de fondu (opacity 0 restait si ScrollTrigger tardif → texte « invisible » sur mobile).
+                const skipOpacityFade = el.classList.contains('dress-grid');
                 gsap.from(children, {
-                    y: reduceScroll ? 0 : 52,
-                    opacity: 0,
+                    y: reduceScroll ? 0 : 48,
+                    opacity: skipOpacityFade || reduceScroll ? 1 : 0,
                     duration: reduceScroll ? 0.01 : 1.02,
                     stagger: reduceScroll ? 0 : parseFloat(el.dataset.stagger || '0.1'),
                     ease: reduceScroll ? 'none' : 'power4.out',
                     scrollTrigger: {
                         trigger: el,
-                        start: 'top 88%',
+                        start: skipOpacityFade ? 'top 92%' : 'top 88%',
                         once: true,
                     },
                 });
