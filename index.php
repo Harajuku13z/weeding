@@ -174,11 +174,6 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
                 <strong><?= sanitize($lieu['name']) ?></strong>
             </div>
             <?php endforeach; ?>
-            <div class="info-card">
-                <i class="bi bi-envelope-check-fill"></i>
-                <span class="info-label">Répondez avant le</span>
-                <strong><?= sanitize($s('rsvp_deadline', '15 Mai 2025')) ?></strong>
-            </div>
         </div>
     </div>
 </section>
