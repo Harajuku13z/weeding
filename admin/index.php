@@ -240,6 +240,7 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
                     <div class="form-row"><label>Date du mariage</label><input type="date" name="wedding_date" id="set_wedding_date"></div>
                     <div class="form-row"><label>Sous-titre hero</label><input type="text" name="hero_subtitle" id="set_hero_subtitle"></div>
                     <div class="form-row"><label>Citation</label><input type="text" name="quote" id="set_quote"></div>
+                    <div class="form-row"><label>Date limite RSVP</label><input type="text" name="rsvp_deadline" id="set_rsvp_deadline" placeholder="15 Mai 2025"></div>
                     <div class="form-row"><label>Texte histoire</label><textarea name="story_text" id="set_story_text" rows="5"></textarea></div>
                     <button type="submit" class="btn btn-blue"><i class="bi bi-check-lg"></i> Sauvegarder</button>
                 </form>

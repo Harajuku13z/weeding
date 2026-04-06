@@ -99,6 +99,7 @@ $defaults = [
     'story_text'    => 'Notre histoire a commencé un soir d\'automne à Paris, lors d\'une soirée entre amis. Un regard, un sourire, et le monde s\'est mis à tourner différemment. Après trois années d\'une belle aventure partagée, il était temps de dire oui pour la vie.',
     'quote'         => 'L\'amour est notre seul vrai trésor',
     'hero_subtitle' => 'Nous nous disons oui',
+    'rsvp_deadline' => '15 Mai 2025',
     'theme_primary' => '#A8C8E0',
     'theme_accent'  => '#7B9EC4',
     'theme_dark'    => '#2C3E50',
