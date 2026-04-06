@@ -59,11 +59,34 @@ foreach ($pdo->query("SELECT skey, svalue FROM settings")->fetchAll() as $r) {
 }
 $bride = $settings['bride_name'] ?? '';
 $groom = $settings['groom_name'] ?? '';
-$w    = $settings['wedding_date'] ?? '';
-$wFmt = format_date_fr($w);
+$w     = $settings['wedding_date'] ?? '';
+$wFmt  = format_date_fr($w);
+$wTime = $settings['wedding_time'] ?? '15:00';
+$wTime = preg_match('/^\d{1,2}:\d{2}$/', $wTime) ? $wTime : '15:00';
+
+$lieuRow = $pdo->query('SELECT name, address FROM lieux ORDER BY sort_order ASC, id ASC LIMIT 1')->fetch();
+$ceremonyLoc = '';
+if ($lieuRow) {
+    $n = trim((string) ($lieuRow['name'] ?? ''));
+    $a = trim((string) ($lieuRow['address'] ?? ''));
+    $ceremonyLoc = $n . ($a !== '' ? ($n !== '' ? ', ' : '') . $a : '');
+}
+
+$icsUid = sha1(($bride ?: 'b') . '|' . ($groom ?: 'g') . '|' . $w . '|llc-wedding') . '@lisalovechrist.fr';
 
 if ($emailSave !== '' && filter_var($emailSave, FILTER_VALIDATE_EMAIL)) {
-    mail_rsvp_confirmation($emailSave, (string) $guest['name'], $status, $bride, $groom, $wFmt);
+    mail_rsvp_confirmation(
+        $emailSave,
+        (string) $guest['name'],
+        $status,
+        $bride,
+        $groom,
+        $wFmt,
+        $w,
+        $wTime,
+        $ceremonyLoc,
+        $icsUid
+    );
 }
 
 $labels = ['accepted' => 'acceptée', 'maybe' => 'en attente', 'declined' => 'déclinée'];

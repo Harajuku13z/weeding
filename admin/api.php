@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/mail.php';
 
 if (!isAdmin()) {
     jsonResponse(['success' => false, 'message' => 'Non autorisé.'], 401);
@@ -116,6 +117,147 @@ switch ($action) {
             $pdo->prepare("DELETE FROM guests WHERE id = :id")->execute(['id' => $id]);
         }
         jsonResponse(['success' => true, 'message' => 'Invité supprimé.']);
+        break;
+
+    case 'reminders_list':
+        $sql = 'SELECT r.id AS reminder_id, r.guest_id, r.delay_days, r.remind_at, r.sent, r.created_at,
+                        g.code, g.name, g.email, g.status
+                 FROM reminders r
+                 INNER JOIN guests g ON g.id = r.guest_id
+                 ORDER BY r.sent ASC, r.remind_at ASC, r.id DESC';
+        $rows = $pdo->query($sql)->fetchAll();
+        jsonResponse(['success' => true, 'data' => $rows]);
+        break;
+
+    case 'reminder_send_due':
+        $rid = (int) ($_POST['reminder_id'] ?? 0);
+        if (!$rid) {
+            jsonResponse(['success' => false, 'message' => 'Rappel invalide.']);
+        }
+        $st = $pdo->prepare(
+            'SELECT r.id, r.sent, r.guest_id, g.name, g.email, g.status
+             FROM reminders r INNER JOIN guests g ON g.id = r.guest_id
+             WHERE r.id = :id LIMIT 1'
+        );
+        $st->execute(['id' => $rid]);
+        $row = $st->fetch();
+        if (!$row) {
+            jsonResponse(['success' => false, 'message' => 'Rappel introuvable.']);
+        }
+        if (($row['status'] ?? '') !== 'maybe') {
+            jsonResponse(['success' => false, 'message' => 'Le rappel automatique ne concerne que les invités « à confirmer ».']);
+        }
+        $email = trim((string) ($row['email'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(['success' => false, 'message' => 'Pas d\'e-mail valide pour cet invité.']);
+        }
+        $settings = [];
+        foreach ($pdo->query('SELECT skey, svalue FROM settings')->fetchAll() as $r) {
+            $settings[$r['skey']] = $r['svalue'];
+        }
+        $bride = $settings['bride_name'] ?? '';
+        $groom = $settings['groom_name'] ?? '';
+        $wFmt = format_date_fr($settings['wedding_date'] ?? '');
+        $ok = mail_reminder_due($email, (string) $row['name'], $bride, $groom, $wFmt);
+        if ($ok && (int) $row['sent'] === 0) {
+            $pdo->prepare('UPDATE reminders SET sent = 1 WHERE id = :id')->execute(['id' => $rid]);
+        }
+        jsonResponse([
+            'success' => $ok,
+            'message'   => $ok ? 'E-mail de rappel « pensez à confirmer » envoyé.' : 'Échec de l\'envoi (SMTP ou mail désactivé).',
+        ]);
+        break;
+
+    case 'reminder_resend_ack':
+        $rid = (int) ($_POST['reminder_id'] ?? 0);
+        if (!$rid) {
+            jsonResponse(['success' => false, 'message' => 'Rappel invalide.']);
+        }
+        $st = $pdo->prepare(
+            'SELECT r.delay_days, r.remind_at, g.name, g.email
+             FROM reminders r INNER JOIN guests g ON g.id = r.guest_id
+             WHERE r.id = :id LIMIT 1'
+        );
+        $st->execute(['id' => $rid]);
+        $row = $st->fetch();
+        if (!$row) {
+            jsonResponse(['success' => false, 'message' => 'Rappel introuvable.']);
+        }
+        $email = trim((string) ($row['email'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(['success' => false, 'message' => 'Pas d\'e-mail valide pour cet invité.']);
+        }
+        $delay = (int) ($row['delay_days'] ?? 0);
+        $labels = [7 => 'dans une semaine', 14 => 'dans deux semaines', 30 => 'dans un mois'];
+        $when = $labels[$delay] ?? ('dans ' . $delay . ' jours');
+        $remYmd = $row['remind_at'] ?? '';
+        $remindFr = ($remYmd !== '') ? format_date_fr(substr((string) $remYmd, 0, 10)) : '';
+        if ($remindFr === '') {
+            $remindFr = (string) $remYmd;
+        }
+        $ok = mail_reminder_scheduled($email, (string) $row['name'], $when, $remindFr);
+        jsonResponse([
+            'success' => $ok,
+            'message'   => $ok ? 'Accusé « rappel enregistré » renvoyé.' : 'Échec de l\'envoi.',
+        ]);
+        break;
+
+    case 'guest_resend_confirmation':
+        $gid = (int) ($_POST['guest_id'] ?? 0);
+        if (!$gid) {
+            jsonResponse(['success' => false, 'message' => 'Invité invalide.']);
+        }
+        $gq = $pdo->prepare('SELECT * FROM guests WHERE id = :id LIMIT 1');
+        $gq->execute(['id' => $gid]);
+        $guest = $gq->fetch();
+        if (!$guest) {
+            jsonResponse(['success' => false, 'message' => 'Invité introuvable.']);
+        }
+        $email = trim((string) ($guest['email'] ?? ''));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            jsonResponse(['success' => false, 'message' => 'Pas d\'e-mail valide pour cet invité.']);
+        }
+        if (empty($guest['responded_at'])) {
+            jsonResponse(['success' => false, 'message' => 'Cet invité n\'a pas encore répondu au RSVP.']);
+        }
+        $status = $guest['status'] ?? '';
+        if (!in_array($status, ['accepted', 'maybe', 'declined'], true)) {
+            jsonResponse(['success' => false, 'message' => 'Statut RSVP non pris en charge pour un renvoi.']);
+        }
+        $settings = [];
+        foreach ($pdo->query('SELECT skey, svalue FROM settings')->fetchAll() as $r) {
+            $settings[$r['skey']] = $r['svalue'];
+        }
+        $bride = $settings['bride_name'] ?? '';
+        $groom = $settings['groom_name'] ?? '';
+        $w = $settings['wedding_date'] ?? '';
+        $wFmt = format_date_fr($w);
+        $wTime = $settings['wedding_time'] ?? '15:00';
+        $wTime = preg_match('/^\d{1,2}:\d{2}$/', $wTime) ? $wTime : '15:00';
+        $lieuRow = $pdo->query('SELECT name, address FROM lieux ORDER BY sort_order ASC, id ASC LIMIT 1')->fetch();
+        $ceremonyLoc = '';
+        if ($lieuRow) {
+            $n = trim((string) ($lieuRow['name'] ?? ''));
+            $a = trim((string) ($lieuRow['address'] ?? ''));
+            $ceremonyLoc = $n . ($a !== '' ? ($n !== '' ? ', ' : '') . $a : '');
+        }
+        $icsUid = sha1(($bride ?: 'b') . '|' . ($groom ?: 'g') . '|' . $w . '|llc-wedding') . '@lisalovechrist.fr';
+        $ok = mail_rsvp_confirmation(
+            $email,
+            (string) $guest['name'],
+            $status,
+            $bride,
+            $groom,
+            $wFmt,
+            $w,
+            $wTime,
+            $ceremonyLoc,
+            $icsUid
+        );
+        jsonResponse([
+            'success' => $ok,
+            'message'   => $ok ? 'E-mail de confirmation RSVP renvoyé.' : 'Échec de l\'envoi.',
+        ]);
         break;
 
     /* ─── PROGRAMME ────────────────────────────────────── */

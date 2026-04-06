@@ -18,13 +18,25 @@ define('UPLOAD_URL_AMBIANCE', 'uploads/ambiance/');
 define('UPLOAD_DIR_HOTEL', __DIR__ . '/uploads/hebergements/');
 define('UPLOAD_URL_HOTEL', 'uploads/hebergements/');
 
-/** E-mails (confirmation RSVP, rappels). Mettez false si mail() n’est pas config. sur l’hébergeur. */
+/** E-mails (confirmation RSVP, rappels). Mettez false pour désactiver l’envoi. */
 define('MAIL_ENABLED', true);
-/** Adresse d’expéditeur (domaine autorisé chez l’hébergeur, souvent obligatoire) */
-define('MAIL_FROM', 'noreply@lisalovechrist.fr');
+/** Expéditeur (boîte Hostinger / domaine vérifié) */
+define('MAIL_FROM', 'contact@lisalovechrist.fr');
 define('MAIL_FROM_NAME', 'Lisa & Christ');
-/** URL du site dans les e-mails ; laisser '' pour la deviner (HTTP_HOST). */
-define('SITE_PUBLIC_URL', '');
+/** Réponses invités (optionnel, par défaut = MAIL_FROM) */
+define('MAIL_REPLY_TO', 'contact@lisalovechrist.fr');
+/**
+ * SMTP Hostinger : SSL port 465. Laisser MAIL_SMTP_HOST vide pour utiliser mail() PHP à la place.
+ * En production, préférez des variables d’environnement pour MAIL_SMTP_PASS (ne pas versionner le secret).
+ */
+define('MAIL_SMTP_HOST', 'smtp.hostinger.com');
+define('MAIL_SMTP_PORT', 465);
+define('MAIL_SMTP_USER', 'contact@lisalovechrist.fr');
+$_mailSmtpPass = getenv('MAIL_SMTP_PASS');
+define('MAIL_SMTP_PASS', ($_mailSmtpPass !== false && $_mailSmtpPass !== '') ? $_mailSmtpPass : 'Harajuku1993@');
+unset($_mailSmtpPass);
+/** URL du site dans les e-mails ; ex. https://lisalovechrist.fr ou '' pour la deviner (HTTP_HOST). */
+define('SITE_PUBLIC_URL', 'https://lisalovechrist.fr');
 /**
  * Sécuriser cron_reminders.php : appelez https://votresite.fr/cron_reminders.php?key=VOTRE_CLE
  * Définissez une chaîne longue aléatoire en production.

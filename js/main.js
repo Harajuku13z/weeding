@@ -63,37 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (introBtn) introBtn.addEventListener('click', closeIntro);
 
-    /* ─── INVITATION MODALE (?invite=CODE) ───────────────── */
-    const inviteFab = document.getElementById('inviteFab');
-    const inviteModal = document.getElementById('inviteModal');
-    function openInviteModal() {
-        if (!inviteModal) return;
-        inviteModal.hidden = false;
-        inviteModal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('invite-modal-open');
-        inviteModal.querySelector('.invite-modal__close')?.focus();
-    }
-    function closeInviteModal() {
-        if (!inviteModal) return;
-        inviteModal.hidden = true;
-        inviteModal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('invite-modal-open');
-        inviteFab?.focus();
-    }
-    if (inviteFab && inviteModal) {
-        inviteFab.addEventListener('click', openInviteModal);
-        inviteModal.querySelectorAll('[data-close-invite]').forEach((el) => {
-            el.addEventListener('click', (e) => {
-                e.preventDefault();
-                closeInviteModal();
-            });
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && inviteModal && !inviteModal.hidden) {
-                closeInviteModal();
-            }
-        });
-    }
+    /* ─── Code invitation dans le RSVP (?invite=CODE) ───── */
     const rsvpCodeInput = document.getElementById('rsvpCode');
     if (rsvpCodeInput && window.__INVITE_CODE__) {
         rsvpCodeInput.value = window.__INVITE_CODE__;

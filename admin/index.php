@@ -97,6 +97,7 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
             <a href="#" data-page="lieux"><i class="bi bi-geo-alt"></i><span>Lieux</span></a>
             <a href="#" data-page="hotels"><i class="bi bi-house-heart"></i><span>Hébergement</span></a>
             <a href="#" data-page="guests"><i class="bi bi-people"></i><span>Invités</span></a>
+            <a href="#" data-page="relances"><i class="bi bi-bell"></i><span>Relances</span></a>
             <a href="#" data-page="theme"><i class="bi bi-palette"></i><span>Thème</span></a>
             <a href="#" data-page="settings"><i class="bi bi-gear"></i><span>Paramètres</span></a>
         </nav>
@@ -257,8 +258,21 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
             <div class="card">
                 <h3><i class="bi bi-table"></i> Liste des invités</h3>
                 <div style="overflow-x:auto"><table>
-                    <thead><tr><th>Code</th><th>Nom</th><th>Email</th><th>Statut</th><th>Accomp.</th><th>Lien invitation</th><th>Répondu</th><th></th></tr></thead>
+                    <thead><tr><th>Code</th><th>Nom</th><th>Email</th><th>Statut</th><th>Accomp.</th><th>Lien invitation</th><th>Répondu</th><th>Confirmation</th><th></th></tr></thead>
                     <tbody id="guestsTable"></tbody>
+                </table></div>
+            </div>
+        </div>
+
+        <!-- RELANCES -->
+        <div class="page" id="page-relances">
+            <h2>Relances &amp; e-mails</h2>
+            <div class="card">
+                <h3><i class="bi bi-bell"></i> Rappels programmés</h3>
+                <p style="font-size:13px;color:#888;margin-bottom:16px;max-width:720px;line-height:1.5">Liste des invités « à confirmer » qui ont choisi un rappel sur la page de remerciement. <strong>Accusé</strong> renvoie le message confirmant la date du rappel. <strong>Rappel RSVP</strong> envoie le même contenu que la relance automatique (lien vers le formulaire) — si le rappel n’était pas encore marqué comme envoyé, il le sera après envoi réussi pour éviter un doublon avec le cron.</p>
+                <div style="overflow-x:auto"><table>
+                    <thead><tr><th>Invité</th><th>E-mail</th><th>Délai</th><th>Date prévue</th><th>État</th><th style="min-width:200px">Actions</th></tr></thead>
+                    <tbody id="remindersTable"></tbody>
                 </table></div>
             </div>
         </div>
@@ -343,6 +357,7 @@ document.querySelectorAll('[data-page]').forEach(a => {
         document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
         a.classList.add('active');
         document.getElementById('page-' + a.dataset.page).classList.add('active');
+        if (a.dataset.page === 'relances') loadReminders();
     });
 });
 
@@ -753,7 +768,7 @@ async function loadGuests() {
     const res = await fetch(API + '?action=guests_list');
     const json = await res.json();
     const tb = document.getElementById('guestsTable');
-    if (!json.data.length) { tb.innerHTML = '<tr><td colspan="8" style="color:#888">Aucun invité.</td></tr>'; return; }
+    if (!json.data.length) { tb.innerHTML = '<tr><td colspan="9" style="color:#888">Aucun invité.</td></tr>'; return; }
     const badges = { accepted: 'badge-ok', maybe: 'badge-warn', declined: 'badge-err', pending: 'badge-grey' };
     const labels = { accepted: 'Accepté', maybe: 'Peut-être', declined: 'Décliné', pending: 'En attente' };
     tb.innerHTML = json.data.map(g => {
@@ -772,6 +787,7 @@ async function loadGuests() {
                 </div>
             </td>
             <td>${g.responded_at ? new Date(g.responded_at).toLocaleDateString('fr') : '—'}</td>
+            <td>${g.responded_at && g.email ? `<button type="button" class="btn btn-blue btn-sm" title="Renvoyer le mail de confirmation RSVP" onclick="resendGuestMail(${g.id})"><i class="bi bi-envelope-arrow-up"></i></button>` : '—'}</td>
             <td><button class="btn btn-red btn-sm" onclick="delGuest(${g.id})"><i class="bi bi-trash"></i></button></td>
         </tr>`;
     }).join('');
@@ -796,6 +812,72 @@ async function delGuest(id) {
     const json = await res.json();
     toast(json.message);
     loadGuests();
+}
+
+const delayLabels = { 7: '1 semaine', 14: '2 semaines', 30: '1 mois' };
+
+async function loadReminders() {
+    const tb = document.getElementById('remindersTable');
+    if (!tb) return;
+    try {
+        const res = await fetch(API + '?action=reminders_list');
+        const json = await res.json();
+        if (!json.success || !json.data.length) {
+            tb.innerHTML = '<tr><td colspan="6" style="color:#888">Aucun rappel programmé. Les invités peuvent en demander un après avoir choisi « à confirmer » sur le site.</td></tr>';
+            return;
+        }
+        tb.innerHTML = json.data.map(r => {
+            const st = r.status || '';
+            const emailOk = r.email && r.email.trim() !== '';
+            const d = r.remind_at ? new Date(r.remind_at + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+            const del = delayLabels[r.delay_days] || (r.delay_days + ' jours');
+            const sent = parseInt(r.sent, 10) === 1;
+            const canDue = st === 'maybe' && emailOk;
+            return `<tr>
+                <td><strong>${r.name || '—'}</strong> <code style="font-size:11px;background:#f0f4f8;padding:2px 6px;border-radius:4px">${r.code || ''}</code></td>
+                <td style="font-size:12px;color:#666">${emailOk ? r.email : '<span class="badge badge-err">Sans e-mail</span>'}</td>
+                <td>${del}</td>
+                <td>${d}</td>
+                <td>${sent ? '<span class="badge badge-ok">Rappel envoyé</span>' : '<span class="badge badge-warn">En attente</span>'}</td>
+                <td style="white-space:nowrap">
+                    ${emailOk ? `<button type="button" class="btn btn-sm" style="background:#e8f4fd;color:#1565c0;border:none;margin-right:6px" onclick="reminderResendAck(${r.reminder_id})" title="Renvoyer l'accusé de rappel enregistré"><i class="bi bi-check2-circle"></i> Accusé</button>` : ''}
+                    ${canDue ? `<button type="button" class="btn btn-blue btn-sm" onclick="reminderSendDue(${r.reminder_id})" title="Envoyer le message « pensez à confirmer »"><i class="bi bi-send"></i> Rappel RSVP</button>` : (st !== 'maybe' ? '<span style="font-size:11px;color:#999">Statut invité modifié</span>' : '')}
+                </td>
+            </tr>`;
+        }).join('');
+    } catch {
+        tb.innerHTML = '<tr><td colspan="6" style="color:#c0392b">Erreur de chargement.</td></tr>';
+    }
+}
+
+async function reminderResendAck(reminderId) {
+    const fd = new FormData();
+    fd.append('action', 'reminder_resend_ack');
+    fd.append('reminder_id', reminderId);
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+}
+
+async function reminderSendDue(reminderId) {
+    if (!confirm('Envoyer le mail de relance RSVP à cet invité ?')) return;
+    const fd = new FormData();
+    fd.append('action', 'reminder_send_due');
+    fd.append('reminder_id', reminderId);
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    if (json.success) loadReminders();
+}
+
+async function resendGuestMail(guestId) {
+    if (!confirm('Renvoyer l’e-mail de confirmation RSVP (HTML + agenda si présence confirmée) ?')) return;
+    const fd = new FormData();
+    fd.append('action', 'guest_resend_confirmation');
+    fd.append('guest_id', guestId);
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
 }
 
 /* ─── THEME ──────────────────────────────────────── */
@@ -861,6 +943,7 @@ loadAmbianceColors();
 loadLieux();
 loadHotels();
 loadGuests();
+loadReminders();
 loadSettings();
 </script>
 <?php endif; ?>

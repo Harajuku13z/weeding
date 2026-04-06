@@ -29,7 +29,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
 $introDateFr = format_date_fr($weddingDate);
 $weddingTime = $s('wedding_time', '15:00');
 
-/** Lien partagé ?invite=CODE : accueil direct sur le hero + faire-part en modale */
+/** Lien partagé ?invite=CODE : accueil direct + préremplissage du code RSVP */
 $inviteGuest = null;
 $inviteCodeParam = strtoupper(trim((string) ($_GET['invite'] ?? '')));
 if ($inviteCodeParam !== '') {
@@ -40,12 +40,6 @@ if ($inviteCodeParam !== '') {
 
 /** Désactive l’intro plein écran si paramètre ou lien d’invitation valide */
 $skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN) || (bool) $inviteGuest;
-$inviteCeremony = $lieux[0] ?? null;
-$inviteReception = $lieux[1] ?? null;
-$inviteGuestName = '';
-if ($inviteGuest) {
-    $inviteGuestName = trim((string) ($inviteGuest['name'] ?? '')) ?: 'Cher(e) invité(e)';
-}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -141,10 +135,6 @@ if ($inviteGuest) {
         <a href="#rsvp">RSVP</a>
     </div>
 </nav>
-
-<?php if ($inviteGuest): ?>
-<?php include __DIR__ . '/partials/invite_modal.php'; ?>
-<?php endif; ?>
 
 <!-- HERO -->
 <section class="hero" id="hero">
