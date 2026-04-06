@@ -1,19 +1,23 @@
 <?php
 
 /**
- * Hostinger / shared hosting bridge.
- * Redirects all requests to the public/ directory.
+ * Hostinger / LiteSpeed shared hosting bridge.
+ * Forwards all requests to public/index.php.
  */
 
-// Point to the public directory
+$publicPath = __DIR__ . '/public';
+
 $uri = urldecode(
     parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? ''
 );
 
-// If the requested file exists in public/, serve it directly
-if ($uri !== '/' && file_exists(__DIR__ . '/public' . $uri)) {
+if ($uri !== '/' && file_exists($publicPath . $uri)) {
     return false;
 }
 
-// Otherwise, load the Laravel front controller
-require_once __DIR__ . '/public/index.php';
+$_SERVER['SCRIPT_FILENAME'] = $publicPath . '/index.php';
+$_SERVER['DOCUMENT_ROOT'] = $publicPath;
+
+chdir($publicPath);
+
+require_once $publicPath . '/index.php';
