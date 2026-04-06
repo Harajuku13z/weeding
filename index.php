@@ -235,13 +235,13 @@ $skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN);
             <span class="section-label">Programme</span>
             <h2 class="section-title">Le fil de notre journée</h2>
         </div>
+        <?php if (empty($programme)): ?>
+        <p class="timeline-empty" data-anim="fade-up">Programme à venir.</p>
+        <?php else: ?>
         <div class="timeline" data-anim="fade-up" data-stagger-children="true" data-stagger="0.14">
-            <?php if (empty($programme)): ?>
-            <p style="text-align:center;color:var(--muted)">Programme à venir.</p>
-            <?php else: ?>
                 <?php foreach ($programme as $item): ?>
                 <div class="tl-item">
-                    <div class="tl-dot"></div>
+                    <div class="tl-dot" aria-hidden="true"></div>
                     <div class="tl-content">
                         <span class="tl-time"><?= sanitize($item['time_label']) ?></span>
                         <h3><?= sanitize($item['title']) ?></h3>
@@ -251,8 +251,8 @@ $skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN);
                     </div>
                 </div>
                 <?php endforeach; ?>
-            <?php endif; ?>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 

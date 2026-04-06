@@ -377,6 +377,18 @@ $homeWithSkipIntro = rtrim(app_url(''), '/') . '/?skip_intro=1#rsvp';
             outline: 3px solid var(--sky);
             outline-offset: 3px;
         }
+        .inv-cta-top {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            margin-bottom: clamp(1.25rem, 4vw, 1.75rem);
+        }
+        .inv-btn--top {
+            width: 100%;
+            max-width: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+        }
 
         .inv-footer {
             position: relative;
@@ -400,6 +412,10 @@ $homeWithSkipIntro = rtrim(app_url(''), '/') . '/?skip_intro=1#rsvp';
         <div class="inv-card">
             <span class="inv-card-deco" aria-hidden="true">❧</span>
             <span class="inv-card-deco bot" aria-hidden="true">❧</span>
+
+            <div class="inv-cta-top">
+                <a href="<?= htmlspecialchars($homeWithSkipIntro, ENT_QUOTES, 'UTF-8') ?>" class="inv-btn inv-btn--top"><i class="bi bi-envelope-heart-fill" aria-hidden="true"></i> Entrer sur le site &amp; répondre</a>
+            </div>
 
             <div class="inv-monogram" aria-label="Initiales"><?= sanitize($brideInitial) ?><span class="inv-mono-amp">&</span><?= sanitize($groomInitial) ?></div>
 
@@ -457,8 +473,6 @@ $homeWithSkipIntro = rtrim(app_url(''), '/') . '/?skip_intro=1#rsvp';
                 <div class="inv-code-label">Votre code d'invitation</div>
                 <div class="inv-code"><?= sanitize($guest['code']) ?></div>
             </div>
-
-            <a href="<?= htmlspecialchars($homeWithSkipIntro, ENT_QUOTES, 'UTF-8') ?>" class="inv-btn"><i class="bi bi-envelope-heart-fill" aria-hidden="true"></i> Entrer sur le site &amp; répondre</a>
 
             <p class="inv-footer">Avec toute notre affection</p>
         </div>
