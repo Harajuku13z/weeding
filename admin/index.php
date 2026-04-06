@@ -59,6 +59,11 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
 .toast{position:fixed;bottom:24px;right:24px;background:#2C3E50;color:#fff;padding:14px 24px;border-radius:8px;font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,.15);transform:translateY(100px);opacity:0;transition:all .4s;z-index:9999}
 .toast.show{transform:translateY(0);opacity:1}
 .page{display:none}.page.active{display:block}
+.guest-stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.guest-stat-card{background:#fff;border-radius:12px;padding:18px 16px;box-shadow:0 2px 12px rgba(0,0,0,.04);text-align:center}
+.guest-stat-num{font-size:26px;font-weight:600;color:#2C3E50;line-height:1.15}
+.guest-stat-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-top:6px;font-weight:500}
+.guest-stat-sub{font-size:11px;color:#7B9EC4;margin-top:4px}
 @media(max-width:768px){.sidebar{width:60px}.sidebar-brand{font-size:0;padding:12px}.sidebar-nav a span{display:none}.sidebar-nav a{padding:14px 0;justify-content:center}.sidebar-bottom{text-align:center}.sidebar-bottom a span{display:none}.main{padding:16px}}
 </style>
 </head>
@@ -239,6 +244,7 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
         <!-- INVITÉS -->
         <div class="page" id="page-guests">
             <h2>Invités &amp; RSVP</h2>
+            <div id="guestStatsRow" class="guest-stats-row" aria-label="Statistiques RSVP"></div>
             <div class="card">
                 <h3><i class="bi bi-person-plus"></i> Ajouter un invité</h3>
                 <form id="addGuestForm" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
@@ -716,7 +722,34 @@ async function copyLink(code) {
     }
 }
 
+async function loadGuestStats() {
+    const el = document.getElementById('guestStatsRow');
+    if (!el) return;
+    try {
+        const res = await fetch(API + '?action=guests_stats');
+        const json = await res.json();
+        if (!json.success || !json.data) {
+            el.innerHTML = '';
+            return;
+        }
+        const d = json.data;
+        const bs = d.by_status || {};
+        const card = (n, label, sub) => `<div class="guest-stat-card"><div class="guest-stat-num">${n}</div><div class="guest-stat-label">${label}</div>${sub ? `<div class="guest-stat-sub">${sub}</div>` : ''}</div>`;
+        el.innerHTML = [
+            card(bs.accepted ?? 0, 'Acceptés', d.covers_accepted != null ? `≈ ${d.covers_accepted} couvert(s)` : ''),
+            card(bs.maybe ?? 0, 'À confirmer', ''),
+            card(bs.declined ?? 0, 'Déclinés', ''),
+            card(bs.pending ?? 0, 'Sans réponse', ''),
+            card(d.total ?? 0, 'Total invités', `${d.responded ?? 0} ont répondu`),
+            card(d.reminders_pending ?? 0, 'Rappels à envoyer', ''),
+        ].join('');
+    } catch {
+        el.innerHTML = '';
+    }
+}
+
 async function loadGuests() {
+    await loadGuestStats();
     const res = await fetch(API + '?action=guests_list');
     const json = await res.json();
     const tb = document.getElementById('guestsTable');

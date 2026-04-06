@@ -18,6 +18,19 @@ define('UPLOAD_URL_AMBIANCE', 'uploads/ambiance/');
 define('UPLOAD_DIR_HOTEL', __DIR__ . '/uploads/hebergements/');
 define('UPLOAD_URL_HOTEL', 'uploads/hebergements/');
 
+/** E-mails (confirmation RSVP, rappels). Mettez false si mail() n’est pas config. sur l’hébergeur. */
+define('MAIL_ENABLED', true);
+/** Adresse d’expéditeur (domaine autorisé chez l’hébergeur, souvent obligatoire) */
+define('MAIL_FROM', 'noreply@lisalovechrist.fr');
+define('MAIL_FROM_NAME', 'Lisa & Christ');
+/** URL du site dans les e-mails ; laisser '' pour la deviner (HTTP_HOST). */
+define('SITE_PUBLIC_URL', '');
+/**
+ * Sécuriser cron_reminders.php : appelez https://votresite.fr/cron_reminders.php?key=VOTRE_CLE
+ * Définissez une chaîne longue aléatoire en production.
+ */
+define('CRON_SECRET', '');
+
 function db(): PDO {
     static $pdo = null;
     if ($pdo === null) {
@@ -53,6 +66,21 @@ function jsonResponse(array $data, int $code = 200): void {
 
 function sanitize(string $str): string {
     return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8');
+}
+
+/** Date affichage FR (e-mails, textes) à partir de Y-m-d */
+function format_date_fr(?string $ymd): string {
+    if ($ymd === null || $ymd === '') {
+        return '';
+    }
+    $ts = strtotime($ymd);
+    if ($ts === false) {
+        return '';
+    }
+    $mois = ['', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+    $n = (int) date('n', $ts);
+
+    return (int) date('j', $ts) . ' ' . ($mois[$n] ?? '') . ' ' . date('Y', $ts);
 }
 
 /** Préfixe URL du dossier de l'app (ex. '' à la racine, '/mariage' en sous-dossier). */

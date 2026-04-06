@@ -12,16 +12,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (introOverlay && introContent) {
-        if (typeof gsap !== 'undefined') {
-            /* from() : jamais bloqué en opacity:0 si l’anim ne part pas (contrairement à set + to) */
-            gsap.from(introContent.children, {
-                opacity: 0,
-                y: 24,
-                duration: prefersReduced ? 0.35 : 0.85,
-                stagger: prefersReduced ? 0 : 0.12,
-                ease: 'power3.out',
-                delay: 0.15,
+        if (typeof gsap !== 'undefined' && !prefersReduced) {
+            gsap.set(introContent, { opacity: 0, y: 20 });
+            gsap.to(introContent, {
+                opacity: 1,
+                y: 0,
+                duration: 1.05,
+                ease: 'sine.out',
+                delay: 0.08,
             });
+        } else if (typeof gsap !== 'undefined' && prefersReduced) {
+            gsap.set(introContent, { opacity: 1 });
         } else {
             introOverlay.classList.add('intro-fallback');
         }
@@ -33,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
         introOverlay.classList.add('is-closing');
 
         const done = () => {
+            if (introContent && typeof gsap !== 'undefined') {
+                gsap.set(introContent, { clearProps: 'opacity,transform' });
+            }
             introOverlay.style.display = 'none';
             document.body.classList.remove('intro-locked');
             animateHero();
@@ -46,13 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const tl = gsap.timeline({ onComplete: done });
         tl.to(introContent, {
-            opacity: 0, y: -28, scale: 0.97, duration: 0.45, ease: 'power2.in'
-        })
-        .to(introOverlay.querySelector('.intro-bg'),
-            { scale: 1.05, opacity: 0.4, duration: 0.5, ease: 'power2.in' },
-            '-=0.25'
-        )
-        .to(introOverlay, { opacity: 0, duration: 0.55, ease: 'power3.inOut' }, '-=0.35');
+            opacity: 0,
+            y: -14,
+            duration: 0.42,
+            ease: 'power2.in',
+        }).to(
+            introOverlay,
+            { opacity: 0, duration: 0.52, ease: 'power2.inOut' },
+            '-=0.2'
+        );
     }
 
     if (introBtn) introBtn.addEventListener('click', closeIntro);
@@ -77,19 +83,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ─── HERO GSAP ANIMATION ────────────────────────────── */
     function animateHero() {
-        const el = document.getElementById('heroContent');
-        if (!el || typeof gsap === 'undefined') return;
-        const children = el.children;
-        gsap.set(children, { opacity: 0, y: 50 });
-        gsap.to(children, {
-            opacity: 1, y: 0, duration: 1.2,
-            stagger: 0.15, ease: 'power3.out', delay: 0.2
-        });
+        const root = document.getElementById('heroContent');
+        if (!root || typeof gsap === 'undefined') return;
 
         const sd = document.getElementById('scrollDown');
+        if (prefersReduced) {
+            if (sd) gsap.set(sd, { opacity: 1, clearProps: 'opacity' });
+            return;
+        }
+
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+        tl.from('.hero-label', { opacity: 0, y: 38, duration: 0.88 }, 0)
+            .from('.hero-ornament', { opacity: 0, scale: 0.86, duration: 0.72 }, 0.1)
+            .from('.hero-names .hero-name', {
+                opacity: 0,
+                y: 54,
+                duration: 1.05,
+                stagger: 0.22,
+                ease: 'power4.out',
+            }, 0.2)
+            .from(
+                '.hero-names .hero-amp',
+                { opacity: 0, scale: 0.35, y: 22, duration: 0.92, ease: 'back.out(1.75)' },
+                0.48
+            )
+            .from('.hero-date', { opacity: 0, y: 30, duration: 0.78 }, 0.52)
+            .from(
+                '.countdown .cd-item',
+                { opacity: 0, y: 34, duration: 0.72, stagger: 0.1, ease: 'power3.out' },
+                0.62
+            )
+            .from('.hero-actions', { opacity: 0, y: 28, duration: 0.88 }, 0.78);
+
         if (sd) {
-            gsap.set(sd, { opacity: 0 });
-            gsap.to(sd, { opacity: 1, duration: .8, delay: 1.5, ease: 'power2.out' });
+            tl.fromTo(
+                sd,
+                { opacity: 0, y: 12 },
+                { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' },
+                '-=0.45'
+            );
         }
     }
 
@@ -159,16 +191,38 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ─── GSAP SCROLL ANIMATIONS ─────────────────────────── */
     if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
         gsap.registerPlugin(ScrollTrigger);
-        document.querySelectorAll('[data-anim="fade-up"]').forEach(el => {
-            gsap.from(el, {
-                y: 60, opacity: 0, duration: 1,
-                ease: 'power3.out',
-                scrollTrigger: {
-                    trigger: el,
-                    start: 'top 85%',
-                    once: true,
-                }
-            });
+        const reduceScroll = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        document.querySelectorAll('[data-anim="fade-up"]').forEach((el) => {
+            const staggerKids = el.dataset.staggerChildren === 'true';
+            if (staggerKids) {
+                const children = Array.from(el.children).filter((c) => c.nodeType === 1);
+                if (!children.length) return;
+                gsap.from(children, {
+                    y: reduceScroll ? 0 : 52,
+                    opacity: 0,
+                    duration: reduceScroll ? 0.01 : 1.02,
+                    stagger: reduceScroll ? 0 : parseFloat(el.dataset.stagger || '0.1'),
+                    ease: reduceScroll ? 'none' : 'power4.out',
+                    scrollTrigger: {
+                        trigger: el,
+                        start: 'top 88%',
+                        once: true,
+                    },
+                });
+            } else {
+                gsap.from(el, {
+                    y: reduceScroll ? 0 : 58,
+                    opacity: 0,
+                    duration: reduceScroll ? 0.01 : 1.1,
+                    ease: reduceScroll ? 'none' : 'power4.out',
+                    scrollTrigger: {
+                        trigger: el,
+                        start: 'top 85%',
+                        once: true,
+                    },
+                });
+            }
         });
     }
 

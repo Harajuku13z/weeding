@@ -17,7 +17,7 @@ if ($code) {
 }
 
 if (!$guest) {
-    header('Location: /');
+    header('Location: ' . app_url(''));
     exit;
 }
 
@@ -33,10 +33,11 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC LIMIT 
 $ceremony = $lieux[0] ?? null;
 $reception = $lieux[1] ?? null;
 
-$dateFormatted = date('d F Y', strtotime($weddingDate));
+$dateFormattedFr = format_date_fr($weddingDate);
 $guestName = $guest['name'] ?: 'Cher(e) invité(e)';
 $brideInitial = mb_strtoupper(mb_substr($bride, 0, 1));
 $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
+$homeRsvp = rtrim(app_url(''), '/') . '/#rsvp';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -44,219 +45,409 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Invitation — <?= sanitize($bride) ?> & <?= sanitize($groom) ?></title>
-    <meta name="description" content="Vous êtes invité(e) au mariage de <?= sanitize($bride) ?> et <?= sanitize($groom) ?> le <?= $dateFormatted ?>">
+    <meta name="description" content="Vous êtes cordialement invité(e)s au mariage de <?= sanitize($bride) ?> et <?= sanitize($groom) ?> — <?= $dateFormattedFr ?>">
     <meta property="og:title" content="Invitation au mariage de <?= sanitize($bride) ?> & <?= sanitize($groom) ?>">
-    <meta property="og:description" content="Le <?= $dateFormatted ?> — Vous êtes cordialement invité(e)">
+    <meta property="og:description" content="Le <?= $dateFormattedFr ?> — Vous êtes cordialement invité(e)s">
     <meta property="og:type" content="website">
     <meta name="robots" content="noindex,nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&family=Jost:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
-            --sky: <?= $themePrimary ?>;
-            --sky-d: <?= $themeAccent ?>;
-            --dark: <?= $themeDark ?>;
+            --sky: <?= htmlspecialchars($themePrimary, ENT_QUOTES, 'UTF-8') ?>;
+            --sky-d: <?= htmlspecialchars($themeAccent, ENT_QUOTES, 'UTF-8') ?>;
+            --dark: <?= htmlspecialchars($themeDark, ENT_QUOTES, 'UTF-8') ?>;
+            --paper: #faf7f1;
+            --paper-shade: #f0ebe3;
+            --ink: #2a2420;
+            --ink-soft: #4a433c;
+            --gold-line: #b8a88a;
+            --gold-soft: #d8cfc0;
             --ft: 'Cormorant Garamond', Georgia, serif;
             --fb: 'Jost', sans-serif;
             --logo: 'Playfair Display', Georgia, serif;
+            --script: 'Great Vibes', cursive;
             --ease: cubic-bezier(.4,0,.2,1);
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { height: 100%; }
         body {
-            font-family: var(--fb); font-weight: 400; color: #fff;
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, var(--dark) 0%, #1a252f 40%, #162029 100%);
-            padding: 24px;
+            font-family: var(--fb);
+            font-weight: 400;
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 20px;
             -webkit-font-smoothing: antialiased;
+            background:
+                radial-gradient(ellipse 120% 80% at 50% -20%, rgba(255,255,255,.14), transparent 55%),
+                radial-gradient(ellipse 90% 60% at 100% 100%, rgba(0,0,0,.2), transparent 45%),
+                radial-gradient(ellipse 70% 50% at 0% 80%, rgba(0,0,0,.15), transparent 40%),
+                linear-gradient(160deg, #1e2a35 0%, var(--dark) 38%, #243445 100%);
         }
 
         .inv {
-            text-align: center; max-width: 480px; width: 100%;
+            text-align: center;
+            max-width: 440px;
+            width: 100%;
             position: relative;
         }
 
         .inv-card {
-            background: rgba(255,255,255,.04);
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 24px; padding: 56px 40px;
-            backdrop-filter: blur(20px);
-            animation: cardIn .8s var(--ease) both;
             position: relative;
+            background: linear-gradient(165deg, var(--paper) 0%, var(--paper-shade) 100%);
+            color: var(--ink);
+            border: 1px solid var(--gold-line);
+            border-radius: 4px;
+            padding: 48px 36px 44px;
+            box-shadow:
+                0 2px 0 rgba(255,255,255,.75) inset,
+                0 24px 48px rgba(0,0,0,.28),
+                0 0 0 3px var(--gold-soft),
+                0 0 0 5px var(--paper-shade);
+            animation: cardIn .85s var(--ease) both;
             overflow: hidden;
         }
         .inv-card::before {
-            content: ''; position: absolute; top: -1px; left: 20%; right: 20%;
-            height: 2px; background: linear-gradient(90deg, transparent, var(--sky), transparent);
+            content: '';
+            position: absolute;
+            inset: 14px;
+            border: 1px solid rgba(184, 168, 138, .45);
+            border-radius: 2px;
+            pointer-events: none;
         }
-        .inv-card::after {
-            content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%;
-            height: 2px; background: linear-gradient(90deg, transparent, var(--sky), transparent);
+        .inv-card-deco {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--script);
+            font-size: 28px;
+            color: var(--sky-d);
+            opacity: .85;
+            line-height: 1;
+            pointer-events: none;
+        }
+        .inv-card-deco.bot {
+            top: auto;
+            bottom: 10px;
+            transform: translateX(-50%) rotate(180deg);
         }
 
         @keyframes cardIn {
-            from { opacity: 0; transform: translateY(30px) scale(.96); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .inv-monogram {
-            width: 72px; height: 72px; border-radius: 50%;
-            margin: 0 auto 28px;
-            background: rgba(255,255,255,.04);
-            border: 1px solid rgba(255,255,255,.1);
-            display: flex; align-items: center; justify-content: center;
-            font-family: var(--logo); font-size: 18px; font-weight: 500; font-style: italic;
-            color: var(--sky); letter-spacing: .05em;
-            animation: monoPop .5s var(--ease) .3s both;
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            min-height: 56px;
+            padding: 8px 22px;
+            margin-bottom: 28px;
+            border-radius: 999px;
+            background: #fff;
+            border: 2px solid var(--sky-d);
+            box-shadow: 0 6px 18px rgba(44,62,80,.12);
+            font-family: var(--logo);
+            font-size: 1.35rem;
+            font-weight: 600;
+            font-style: italic;
+            color: var(--sky-d);
+            letter-spacing: .02em;
+            animation: monoPop .55s var(--ease) .2s both;
+        }
+        .inv-mono-amp {
+            font-family: var(--ft);
+            font-size: 1rem;
+            font-weight: 500;
+            font-style: italic;
+            opacity: .9;
+            color: var(--ink-soft);
         }
         @keyframes monoPop {
-            from { opacity: 0; transform: scale(.6); }
-            60%  { transform: scale(1.05); }
+            from { opacity: 0; transform: scale(.92); }
             to   { opacity: 1; transform: scale(1); }
         }
 
-        .inv-label {
-            font-size: 11px; letter-spacing: .4em; text-transform: uppercase;
-            color: var(--sky); font-weight: 500; margin-bottom: 8px;
+        .inv-cordial {
+            position: relative;
+            z-index: 1;
+            font-family: var(--fb);
+            font-size: clamp(0.8rem, 2.8vw, 0.95rem);
+            font-weight: 600;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--ink);
+            line-height: 1.55;
+            margin-bottom: 6px;
         }
-
+        .inv-sub {
+            position: relative;
+            z-index: 1;
+            font-family: var(--ft);
+            font-size: 1.05rem;
+            font-style: italic;
+            color: var(--ink-soft);
+            margin-bottom: 14px;
+        }
         .inv-for {
-            font-family: var(--ft); font-size: 20px; font-weight: 400; font-style: italic;
-            color: rgba(255,255,255,.45); margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+            font-family: var(--logo);
+            font-size: 1.5rem;
+            font-weight: 600;
+            font-style: italic;
+            color: var(--ink);
+            margin-bottom: 22px;
+            line-height: 1.25;
         }
 
         .inv-orn {
-            display: flex; align-items: center; justify-content: center; gap: 14px;
-            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 20px;
         }
-        .inv-line { width: 40px; height: 1px; background: rgba(168,200,224,.2); }
-        .inv-orn i { color: var(--sky); font-size: 8px; }
+        .inv-line { width: 48px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-line), transparent); }
+        .inv-orn i { color: var(--sky-d); font-size: 9px; }
 
-        .inv-names {
-            font-family: var(--logo); font-size: 42px; font-weight: 500; font-style: italic;
-            color: #fff; line-height: 1.1; margin-bottom: 8px; letter-spacing: .01em;
+        .inv-names-block {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 6px;
         }
-        .inv-amp {
-            display: block; font-family: var(--ft); font-size: 20px;
-            color: var(--sky); line-height: 1.8; font-style: italic; font-weight: 300;
+        .inv-names-script {
+            font-family: var(--script);
+            font-size: clamp(2.5rem, 9vw, 3.25rem);
+            font-weight: 400;
+            color: var(--ink);
+            line-height: 1.05;
+            letter-spacing: .02em;
+        }
+        .inv-names-amp {
+            display: block;
+            font-family: var(--ft);
+            font-size: 1.35rem;
+            font-style: italic;
+            color: var(--sky-d);
+            margin: 2px 0 4px;
         }
 
         .inv-date {
-            display: inline-flex; align-items: center; gap: 10px;
-            font-size: 14px; letter-spacing: .2em; text-transform: uppercase;
-            color: rgba(255,255,255,.7); font-weight: 400;
-            margin: 20px 0 8px;
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-family: var(--fb);
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--ink);
+            margin-top: 14px;
+            margin-bottom: 4px;
         }
-        .inv-date i { color: var(--sky); font-size: 14px; }
+        .inv-date i { color: var(--sky-d); font-size: 1rem; }
 
         .inv-time {
-            font-size: 13px; color: rgba(255,255,255,.4); letter-spacing: .1em;
-            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+            font-size: 0.88rem;
+            color: var(--ink-soft);
+            letter-spacing: .06em;
+            margin-bottom: 26px;
         }
 
         .inv-details {
-            display: flex; flex-direction: column; gap: 14px;
-            margin-bottom: 32px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 28px;
+            text-align: left;
         }
         .inv-detail {
-            display: flex; align-items: center; gap: 12px;
-            padding: 14px 20px; border-radius: 12px;
-            background: rgba(255,255,255,.04);
-            border: 1px solid rgba(255,255,255,.06);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: rgba(255,255,255,.72);
+            border: 1px solid rgba(184, 168, 138, .35);
         }
         .inv-detail i {
-            font-size: 18px; color: var(--sky); flex-shrink: 0; width: 24px; text-align: center;
+            font-size: 1.1rem;
+            color: var(--sky-d);
+            flex-shrink: 0;
+            width: 24px;
+            text-align: center;
+            margin-top: 2px;
         }
-        .inv-detail-text { text-align: left; }
         .inv-detail-label {
-            font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
-            color: rgba(255,255,255,.35); font-weight: 500; margin-bottom: 2px;
+            font-size: 0.65rem;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--ink-soft);
+            margin-bottom: 4px;
         }
         .inv-detail-value {
-            font-size: 14px; color: rgba(255,255,255,.75); font-weight: 400;
+            font-size: 0.92rem;
+            color: var(--ink);
+            line-height: 1.45;
+            font-weight: 500;
+        }
+        .inv-detail-address {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--ink-soft);
+            margin-top: 4px;
         }
 
         .inv-code-box {
-            padding: 16px 20px; border-radius: 12px;
-            background: rgba(168,200,224,.06);
-            border: 1px solid rgba(168,200,224,.12);
-            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+            padding: 18px 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(168,200,224,.12), rgba(123,158,196,.08));
+            border: 1px solid rgba(123,158,196,.35);
+            margin-bottom: 26px;
         }
         .inv-code-label {
-            font-size: 10px; letter-spacing: .3em; text-transform: uppercase;
-            color: rgba(255,255,255,.35); font-weight: 500; margin-bottom: 6px;
+            font-size: 0.65rem;
+            letter-spacing: .24em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--ink-soft);
+            margin-bottom: 8px;
         }
         .inv-code {
-            font-size: 22px; font-weight: 600; letter-spacing: .15em;
-            color: var(--sky);
+            font-family: var(--fb);
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: .2em;
+            color: var(--sky-d);
         }
 
         .inv-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            font-family: var(--fb); font-size: 12px; letter-spacing: .15em; text-transform: uppercase;
-            font-weight: 500; color: var(--dark);
-            background: var(--sky); padding: 16px 36px;
-            border-radius: 999px; text-decoration: none;
-            transition: all .4s var(--ease);
-            box-shadow: 0 8px 28px rgba(168,200,224,.25);
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: var(--fb);
+            font-size: 0.72rem;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #faf7f1;
+            background: var(--dark);
+            padding: 16px 32px;
+            border-radius: 999px;
+            text-decoration: none;
+            border: 2px solid rgba(0,0,0,.12);
+            transition: transform .3s var(--ease), box-shadow .3s var(--ease), background .3s;
+            box-shadow: 0 6px 24px rgba(0,0,0,.22);
         }
         .inv-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 14px 40px rgba(168,200,224,.35);
-            filter: brightness(1.08);
+            background: #243747;
+            box-shadow: 0 12px 32px rgba(0,0,0,.28);
+        }
+        .inv-btn:focus-visible {
+            outline: 3px solid var(--sky);
+            outline-offset: 3px;
         }
 
         .inv-footer {
-            margin-top: 32px; font-size: 12px;
-            color: rgba(255,255,255,.2); font-style: italic;
+            position: relative;
+            z-index: 1;
+            margin-top: 28px;
+            font-family: var(--ft);
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--ink-soft);
         }
 
         @media (max-width: 480px) {
-            .inv-card { padding: 40px 24px; }
-            .inv-names { font-size: 32px; }
+            .inv-card { padding: 40px 22px 36px; }
+            .inv-card::before { inset: 10px; }
+            .inv-monogram { font-size: 1.15rem; padding: 6px 18px; }
         }
     </style>
 </head>
 <body>
     <div class="inv">
         <div class="inv-card">
-            <div class="inv-monogram"><?= sanitize($brideInitial) ?>&<?= sanitize($groomInitial) ?></div>
+            <span class="inv-card-deco" aria-hidden="true">❧</span>
+            <span class="inv-card-deco bot" aria-hidden="true">❧</span>
 
-            <div class="inv-label">Invitation au mariage</div>
-            <div class="inv-for"><?= sanitize($guestName) ?></div>
+            <div class="inv-monogram" aria-label="Initiales"><?= sanitize($brideInitial) ?><span class="inv-mono-amp">&</span><?= sanitize($groomInitial) ?></div>
+
+            <p class="inv-cordial">Vous êtes cordialement invité(e)s</p>
+            <p class="inv-sub">à célébrer notre mariage</p>
+            <p class="inv-for"><?= sanitize($guestName) ?></p>
 
             <div class="inv-orn">
                 <span class="inv-line"></span>
-                <i class="bi bi-diamond-fill"></i>
+                <i class="bi bi-heart-fill" aria-hidden="true"></i>
                 <span class="inv-line"></span>
             </div>
 
-            <div class="inv-names">
-                <?= sanitize($bride) ?>
-                <span class="inv-amp">&</span>
-                <?= sanitize($groom) ?>
+            <div class="inv-names-block">
+                <div class="inv-names-script"><?= sanitize($bride) ?></div>
+                <span class="inv-names-amp">et</span>
+                <div class="inv-names-script"><?= sanitize($groom) ?></div>
             </div>
 
-            <div class="inv-date"><i class="bi bi-calendar-heart"></i> <?= $dateFormatted ?></div>
-            <div class="inv-time">à <?= sanitize($weddingTime) ?></div>
+            <div class="inv-date"><i class="bi bi-calendar-heart" aria-hidden="true"></i> <?= htmlspecialchars($dateFormattedFr, ENT_QUOTES, 'UTF-8') ?></div>
+            <p class="inv-time">à <?= sanitize($weddingTime) ?></p>
 
             <div class="inv-details">
                 <?php if ($ceremony): ?>
                 <div class="inv-detail">
-                    <i class="bi bi-building"></i>
-                    <div class="inv-detail-text">
+                    <i class="bi bi-building" aria-hidden="true"></i>
+                    <div>
                         <div class="inv-detail-label">Cérémonie</div>
-                        <div class="inv-detail-value"><?= sanitize($ceremony['name']) ?><br><span style="font-size:12px;color:rgba(255,255,255,.4)"><?= sanitize($ceremony['address']) ?></span></div>
+                        <div class="inv-detail-value">
+                            <?= sanitize($ceremony['name']) ?>
+                            <?php if (!empty($ceremony['address'])): ?>
+                            <span class="inv-detail-address"><?= sanitize($ceremony['address']) ?></span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 <?php endif; ?>
                 <?php if ($reception): ?>
                 <div class="inv-detail">
-                    <i class="bi bi-geo-alt-fill"></i>
-                    <div class="inv-detail-text">
+                    <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                    <div>
                         <div class="inv-detail-label">Réception</div>
-                        <div class="inv-detail-value"><?= sanitize($reception['name']) ?><br><span style="font-size:12px;color:rgba(255,255,255,.4)"><?= sanitize($reception['address']) ?></span></div>
+                        <div class="inv-detail-value">
+                            <?= sanitize($reception['name']) ?>
+                            <?php if (!empty($reception['address'])): ?>
+                            <span class="inv-detail-address"><?= sanitize($reception['address']) ?></span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 <?php endif; ?>
@@ -267,9 +458,9 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
                 <div class="inv-code"><?= sanitize($guest['code']) ?></div>
             </div>
 
-            <a href="/#rsvp" class="inv-btn"><i class="bi bi-envelope-heart-fill"></i> Confirmer ma présence</a>
+            <a href="<?= htmlspecialchars($homeRsvp, ENT_QUOTES, 'UTF-8') ?>" class="inv-btn"><i class="bi bi-envelope-heart-fill" aria-hidden="true"></i> Entrer sur le site &amp; répondre</a>
 
-            <div class="inv-footer">Avec tout notre amour</div>
+            <p class="inv-footer">Avec toute notre affection</p>
         </div>
     </div>
 </body>

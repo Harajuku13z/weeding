@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/mail.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -16,13 +17,16 @@ if (!$guestId || !in_array($delayDays, [7, 14, 30])) {
 
 $pdo = db();
 
-$check = $pdo->prepare("SELECT id FROM guests WHERE id = :id LIMIT 1");
-$check->execute(['id' => $guestId]);
-if (!$check->fetch()) {
+$row = $pdo->prepare("SELECT id, email, name FROM guests WHERE id = :id LIMIT 1");
+$row->execute(['id' => $guestId]);
+$guest = $row->fetch();
+
+if (!$guest) {
     jsonResponse(['success' => false, 'message' => 'Invité non trouvé.']);
 }
 
 $remindAt = date('Y-m-d', strtotime("+{$delayDays} days"));
+$remindFr = date('d/m/Y', strtotime($remindAt));
 
 $existing = $pdo->prepare("SELECT id FROM reminders WHERE guest_id = :gid LIMIT 1");
 $existing->execute(['gid' => $guestId]);
@@ -35,8 +39,14 @@ if ($existing->fetch()) {
     $stmt->execute(['gid' => $guestId, 'd' => $delayDays, 'r' => $remindAt]);
 }
 
-$labels = [7 => '1 semaine', 14 => '2 semaines', 30 => '1 mois'];
+$labels = [7 => 'dans une semaine', 14 => 'dans deux semaines', 30 => 'dans un mois'];
+$when = $labels[$delayDays] ?? ($delayDays . ' jours');
+
+if (($guest['email'] ?? '') !== '' && filter_var($guest['email'], FILTER_VALIDATE_EMAIL)) {
+    mail_reminder_scheduled($guest['email'], (string) $guest['name'], $when, $remindFr);
+}
+
 jsonResponse([
     'success' => true,
-    'message' => 'Rappel enregistré pour dans ' . ($labels[$delayDays] ?? $delayDays . ' jours') . '.'
+    'message' => 'Rappel enregistré pour ' . ($labels[$delayDays] ?? $delayDays . ' jours') . '.',
 ]);

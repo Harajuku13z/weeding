@@ -200,11 +200,12 @@ $reminderSaved = isset($_GET['reminder']);
             <?php if ($reminderSaved): ?>
                 <div class="reminder-section">
                     <div class="reminder-title"><i class="bi bi-check-circle-fill"></i> Rappel enregistré !</div>
-                    <p style="font-size:13px;color:rgba(255,255,255,.45)">Nous vous enverrons un petit rappel au moment choisi.</p>
+                    <p style="font-size:13px;color:rgba(255,255,255,.45)">Si vous avez indiqué votre e-mail sur le formulaire, vous recevrez une confirmation et un rappel à la date prévue (selon l’envoi par le serveur du site).</p>
                 </div>
             <?php else: ?>
                 <div class="reminder-section" id="reminderSection">
                     <div class="reminder-title"><i class="bi bi-bell"></i> Souhaitez-vous un rappel ?</div>
+                    <p style="font-size:12px;color:rgba(255,255,255,.42);margin-bottom:14px">Indiquez votre e-mail sur la page du site si ce n’est pas déjà fait : sans e-mail, le rappel automatique ne pourra pas vous joindre par mail.</p>
                     <div class="reminder-options" id="reminderOptions">
                         <button type="button" class="reminder-btn" data-delay="7"><i class="bi bi-calendar-week"></i> Dans 1 semaine</button>
                         <button type="button" class="reminder-btn" data-delay="14"><i class="bi bi-calendar-week"></i> Dans 2 semaines</button>

@@ -26,6 +26,7 @@ $themeDark    = $s('theme_dark', '#2C3E50');
 
 $brideInitial = mb_strtoupper(mb_substr($bride, 0, 1));
 $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
+$introDateFr = format_date_fr($weddingDate);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -81,19 +82,29 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
 </head>
 <body class="intro-locked">
 
-<!-- INTRO MODERNE -->
+<!-- INTRO — minimal, une seule animation douce -->
 <div id="introOverlay" class="intro-overlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
     <div class="intro-bg" aria-hidden="true"></div>
     <div class="intro-grain" aria-hidden="true"></div>
-    <div class="intro-content" id="introContent">
-        <p class="intro-kicker">Vous êtes cordialement invité<?= mb_strtolower(mb_substr($bride, -1)) === 'a' ? 'e' : '(e)' ?>s</p>
-        <div class="intro-monogram" aria-hidden="true"><?= sanitize($brideInitial) ?><span class="intro-monogram-amp">&</span><?= sanitize($groomInitial) ?></div>
-        <h1 class="intro-title" id="introTitle"><?= sanitize($bride) ?> <span class="intro-title-amp">&</span> <?= sanitize($groom) ?></h1>
-        <p class="intro-date"><i class="bi bi-calendar-heart"></i> <?= date('d F Y', strtotime($weddingDate)) ?></p>
-        <button type="button" class="intro-cta" id="introBtn">
-            <span>Entrer sur le site</span>
-            <i class="bi bi-arrow-down-circle"></i>
-        </button>
+    <div class="intro-content">
+        <div class="intro-inner" id="introContent">
+            <span class="intro-rule intro-rule--top" aria-hidden="true"></span>
+            <p class="intro-kicker">Vous êtes cordialement invité(e)s</p>
+            <div class="intro-monogram" aria-hidden="true">
+                <span class="intro-m"><?= sanitize($brideInitial) ?></span><span class="intro-m-amp">&amp;</span><span class="intro-m"><?= sanitize($groomInitial) ?></span>
+            </div>
+            <h1 class="intro-title" id="introTitle">
+                <span class="intro-title-name"><?= sanitize($bride) ?></span>
+                <span class="intro-title-amp">&amp;</span>
+                <span class="intro-title-name"><?= sanitize($groom) ?></span>
+            </h1>
+            <time class="intro-date" datetime="<?= htmlspecialchars($weddingDate, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($introDateFr, ENT_QUOTES, 'UTF-8') ?></time>
+            <button type="button" class="intro-cta" id="introBtn">
+                <span class="intro-cta-label">Découvrir le site</span>
+                <span class="intro-cta-line" aria-hidden="true"></span>
+            </button>
+            <span class="intro-rule intro-rule--bot" aria-hidden="true"></span>
+        </div>
     </div>
 </div>
 
@@ -125,7 +136,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
         </h1>
         <div class="hero-date" id="heroDate" data-date="<?= sanitize($weddingDate) ?>">
             <i class="bi bi-calendar-heart"></i>
-            <span><?= date('d F Y', strtotime($weddingDate)) ?></span>
+            <span><?= sanitize($introDateFr) ?></span>
         </div>
         <div class="countdown" id="countdown">
             <div class="cd-item"><span class="cd-num" id="cd-d">00</span><span class="cd-lbl">Jours</span></div>
@@ -163,7 +174,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <span class="section-label">Galerie</span>
             <h2 class="section-title">Un peu de nous</h2>
         </div>
-        <div class="gallery" data-anim="fade-up">
+        <div class="gallery" data-anim="fade-up" data-stagger-children="true" data-stagger="0.1">
             <?php if (empty($gallery)): ?>
                 <?php for ($i = 1; $i <= 3; $i++): ?>
                 <div class="gallery-item">
@@ -191,11 +202,11 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <span class="section-label">Informations</span>
             <h2 class="section-title">En un coup d'œil</h2>
         </div>
-        <div class="info-grid" data-anim="fade-up">
+        <div class="info-grid" data-anim="fade-up" data-stagger-children="true" data-stagger="0.09">
             <div class="info-card">
                 <i class="bi bi-calendar-heart-fill"></i>
                 <span class="info-label">Date</span>
-                <strong><?= date('d F Y', strtotime($weddingDate)) ?></strong>
+                <strong><?= sanitize($introDateFr) ?></strong>
             </div>
             <div class="info-card">
                 <i class="bi bi-clock-fill"></i>
@@ -220,7 +231,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <span class="section-label">Programme</span>
             <h2 class="section-title">Le fil de notre journée</h2>
         </div>
-        <div class="timeline" data-anim="fade-up">
+        <div class="timeline" data-anim="fade-up" data-stagger-children="true" data-stagger="0.14">
             <?php if (empty($programme)): ?>
             <p style="text-align:center;color:var(--muted)">Programme à venir.</p>
             <?php else: ?>
@@ -248,7 +259,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <span class="section-label">Lieux</span>
             <h2 class="section-title">Où nous vous accueillons</h2>
         </div>
-        <div class="venues" data-anim="fade-up">
+        <div class="venues" data-anim="fade-up" data-stagger-children="true" data-stagger="0.12">
             <?php if (empty($lieux)): ?>
             <p style="text-align:center;color:var(--muted)">Lieux à venir.</p>
             <?php else: ?>
@@ -306,7 +317,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
         </div>
 
         <?php if (!empty($ambiancePhotos)): ?>
-        <div class="ambiance-photos" data-anim="fade-up">
+        <div class="ambiance-photos" data-anim="fade-up" data-stagger-children="true" data-stagger="0.11">
             <?php foreach ($ambiancePhotos as $ap): ?>
             <div class="ambiance-photo">
                 <img src="<?= sanitize(UPLOAD_URL_AMBIANCE . $ap['filename']) ?>" alt="<?= sanitize($ap['caption'] ?: 'Ambiance mariage') ?>" loading="lazy">
@@ -334,7 +345,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
         </div>
         <?php endif; ?>
 
-        <div class="dress-grid" data-anim="fade-up">
+        <div class="dress-grid" data-anim="fade-up" data-stagger-children="true" data-stagger="0.12">
             <div class="dress-card">
                 <div class="dress-icon"><i class="bi bi-suit-heart-fill"></i></div>
                 <h3>Hommes</h3>
@@ -361,7 +372,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <span class="section-label">Consignes</span>
             <h2 class="section-title">Quelques mots avant le grand jour</h2>
         </div>
-        <div class="rules-list" data-anim="fade-up">
+        <div class="rules-list" data-anim="fade-up" data-stagger-children="true" data-stagger="0.07">
             <div class="rule-item rule-ok"><i class="bi bi-check-circle-fill"></i><span>Enfants bienvenus</span></div>
             <div class="rule-item rule-warn"><i class="bi bi-phone-fill"></i><span>Téléphones en mode silencieux pendant la cérémonie</span></div>
             <div class="rule-item rule-info"><i class="bi bi-clock-fill"></i><span>Arrivez 15 minutes avant le début</span></div>
@@ -378,7 +389,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <span class="section-label">Hébergement</span>
             <h2 class="section-title">Où poser vos valises</h2>
         </div>
-        <div class="venues" data-anim="fade-up">
+        <div class="venues" data-anim="fade-up" data-stagger-children="true" data-stagger="0.12">
             <?php if (empty($hebergements)): ?>
             <p style="text-align:center;color:var(--muted);grid-column:1/-1">Hébergements à venir.</p>
             <?php else: ?>
@@ -443,7 +454,11 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <div id="rsvpAlert" class="alert" style="display:none"></div>
             <div class="form-group">
                 <label>Code d'invitation</label>
-                <input type="text" name="code" id="rsvpCode" placeholder="Ex: LISA2026" required>
+                <input type="text" name="code" id="rsvpCode" placeholder="Ex: LISA2026" required autocomplete="one-time-code">
+            </div>
+            <div class="form-group">
+                <label>E-mail <span class="label-hint">(recommandé — confirmation et rappel)</span></label>
+                <input type="email" name="email" id="rsvpEmail" placeholder="vous@exemple.com" autocomplete="email">
             </div>
             <div class="form-group">
                 <label>Votre réponse</label>
@@ -468,6 +483,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             </div>
             <button type="submit" class="btn btn-primary btn-full"><i class="bi bi-send-fill"></i> Envoyer ma réponse</button>
         </form>
+        <p class="rsvp-privacy-note">Votre adresse sert uniquement à l’envoi d’un accusé de réception et, si vous choisissez un rappel, à la date prévue.</p>
         <p class="rsvp-redirect-hint">En validant, vous serez redirigé·e vers une page de remerciement adaptée à votre réponse (présence, à confirmer ou déclin).</p>
     </div>
 </section>
@@ -475,7 +491,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
 <!-- FOOTER -->
 <footer class="footer">
     <div class="footer-names"><?= sanitize($bride) ?> &amp; <?= sanitize($groom) ?></div>
-    <div class="footer-date"><?= date('d F Y', strtotime($weddingDate)) ?></div>
+    <div class="footer-date"><?= sanitize($introDateFr) ?></div>
     <div class="footer-orn"><span class="f-line"></span><i class="bi bi-heart-fill"></i><span class="f-line"></span></div>
     <p class="footer-quote">« <?= sanitize($s('quote', '')) ?> »</p>
     <p class="footer-credit">Fait avec amour</p>

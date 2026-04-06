@@ -59,6 +59,36 @@ switch ($action) {
         jsonResponse(['success' => true, 'data' => $rows]);
         break;
 
+    case 'guests_stats':
+        $pairs = $pdo->query("SELECT status, COUNT(*) AS n FROM guests GROUP BY status")->fetchAll();
+        $byStatus = ['pending' => 0, 'accepted' => 0, 'maybe' => 0, 'declined' => 0];
+        foreach ($pairs as $p) {
+            $st = $p['status'];
+            if (isset($byStatus[$st])) {
+                $byStatus[$st] = (int) $p['n'];
+            }
+        }
+        $coversAccepted = (int) $pdo->query(
+            "SELECT COALESCE(SUM(1 + GREATEST(companions, 0)), 0) FROM guests WHERE status = 'accepted'"
+        )->fetchColumn();
+        $total = (int) $pdo->query('SELECT COUNT(*) FROM guests')->fetchColumn();
+        $responded = (int) $pdo->query('SELECT COUNT(*) FROM guests WHERE responded_at IS NOT NULL')->fetchColumn();
+        $remindersPending = (int) $pdo->query(
+            "SELECT COUNT(*) FROM reminders r INNER JOIN guests g ON g.id = r.guest_id WHERE r.sent = 0 AND g.status = 'maybe'"
+        )->fetchColumn();
+
+        jsonResponse([
+            'success' => true,
+            'data'    => [
+                'by_status'          => $byStatus,
+                'covers_accepted'    => $coversAccepted,
+                'total'              => $total,
+                'responded'          => $responded,
+                'reminders_pending'  => $remindersPending,
+            ],
+        ]);
+        break;
+
     case 'guest_add':
         $name = sanitize($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
@@ -81,7 +111,10 @@ switch ($action) {
 
     case 'guest_delete':
         $id = (int) ($_POST['id'] ?? 0);
-        $pdo->prepare("DELETE FROM guests WHERE id = :id")->execute(['id' => $id]);
+        if ($id) {
+            $pdo->prepare("DELETE FROM reminders WHERE guest_id = :id")->execute(['id' => $id]);
+            $pdo->prepare("DELETE FROM guests WHERE id = :id")->execute(['id' => $id]);
+        }
         jsonResponse(['success' => true, 'message' => 'Invité supprimé.']);
         break;
 
