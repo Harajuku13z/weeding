@@ -125,6 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /* Pas d’écran intro (ex. lien invitation ?skip_intro=1) → hero animé au chargement */
+    if (!introOverlay) {
+        animateHero();
+    }
+
     /* ─── PARALLAX ───────────────────────────────────────── */
     const heroBg = document.querySelector('.hero-bg');
     let ticking = false;

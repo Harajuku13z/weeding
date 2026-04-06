@@ -37,7 +37,7 @@ $dateFormattedFr = format_date_fr($weddingDate);
 $guestName = $guest['name'] ?: 'Cher(e) invité(e)';
 $brideInitial = mb_strtoupper(mb_substr($bride, 0, 1));
 $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
-$homeRsvp = rtrim(app_url(''), '/') . '/#rsvp';
+$homeWithSkipIntro = rtrim(app_url(''), '/') . '/?skip_intro=1#rsvp';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -458,7 +458,7 @@ $homeRsvp = rtrim(app_url(''), '/') . '/#rsvp';
                 <div class="inv-code"><?= sanitize($guest['code']) ?></div>
             </div>
 
-            <a href="<?= htmlspecialchars($homeRsvp, ENT_QUOTES, 'UTF-8') ?>" class="inv-btn"><i class="bi bi-envelope-heart-fill" aria-hidden="true"></i> Entrer sur le site &amp; répondre</a>
+            <a href="<?= htmlspecialchars($homeWithSkipIntro, ENT_QUOTES, 'UTF-8') ?>" class="inv-btn"><i class="bi bi-envelope-heart-fill" aria-hidden="true"></i> Entrer sur le site &amp; répondre</a>
 
             <p class="inv-footer">Avec toute notre affection</p>
         </div>

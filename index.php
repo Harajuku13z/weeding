@@ -27,6 +27,8 @@ $themeDark    = $s('theme_dark', '#2C3E50');
 $brideInitial = mb_strtoupper(mb_substr($bride, 0, 1));
 $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
 $introDateFr = format_date_fr($weddingDate);
+/** Désactive l’intro plein écran (ex. lien depuis invitation.php ?skip_intro=1) */
+$skipIntro = filter_var($_GET['skip_intro'] ?? false, FILTER_VALIDATE_BOOLEAN);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -80,9 +82,10 @@ $introDateFr = format_date_fr($weddingDate);
     }
     </style>
 </head>
-<body class="intro-locked">
+<body class="<?= $skipIntro ? '' : 'intro-locked' ?>">
 
 <!-- INTRO — minimal, une seule animation douce -->
+<?php if (!$skipIntro): ?>
 <div id="introOverlay" class="intro-overlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
     <div class="intro-bg" aria-hidden="true"></div>
     <div class="intro-grain" aria-hidden="true"></div>
@@ -107,6 +110,7 @@ $introDateFr = format_date_fr($weddingDate);
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <!-- NAV -->
 <nav class="nav" id="nav">
