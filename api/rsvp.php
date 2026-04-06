@@ -74,8 +74,9 @@ if ($lieuRow) {
 
 $icsUid = sha1(($bride ?: 'b') . '|' . ($groom ?: 'g') . '|' . $w . '|llc-wedding') . '@lisalovechrist.fr';
 
+$mailSent = false;
 if ($emailSave !== '' && filter_var($emailSave, FILTER_VALIDATE_EMAIL)) {
-    mail_rsvp_confirmation(
+    $mailSent = mail_rsvp_confirmation(
         $emailSave,
         (string) $guest['name'],
         $status,
@@ -85,13 +86,18 @@ if ($emailSave !== '' && filter_var($emailSave, FILTER_VALIDATE_EMAIL)) {
         $w,
         $wTime,
         $ceremonyLoc,
-        $icsUid
+        $icsUid,
+        (string) ($settings['rsvp_deadline'] ?? ''),
+        $companions,
+        $dietary
     );
 }
 
 $labels = ['accepted' => 'acceptée', 'maybe' => 'en attente', 'declined' => 'déclinée'];
 jsonResponse([
-    'success'  => true,
-    'guest_id' => $guest['id'],
-    'message'  => 'Merci ! Votre réponse (' . ($labels[$status] ?? $status) . ') a bien été enregistrée.',
+    'success'    => true,
+    'guest_id'   => $guest['id'],
+    'message'    => 'Merci ! Votre réponse (' . ($labels[$status] ?? $status) . ') a bien été enregistrée.',
+    'mail_sent'  => $mailSent,
+    'mail_tried' => $emailSave !== '' && filter_var($emailSave, FILTER_VALIDATE_EMAIL),
 ]);

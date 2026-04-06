@@ -252,7 +252,10 @@ switch ($action) {
             $w,
             $wTime,
             $ceremonyLoc,
-            $icsUid
+            $icsUid,
+            (string) ($settings['rsvp_deadline'] ?? ''),
+            (int) ($guest['companions'] ?? 0),
+            (string) ($guest['dietary'] ?? '')
         );
         jsonResponse([
             'success' => $ok,

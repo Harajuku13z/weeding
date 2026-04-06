@@ -35,6 +35,10 @@ define('MAIL_SMTP_USER', 'contact@lisalovechrist.fr');
 $_mailSmtpPass = getenv('MAIL_SMTP_PASS');
 define('MAIL_SMTP_PASS', ($_mailSmtpPass !== false && $_mailSmtpPass !== '') ? $_mailSmtpPass : 'Harajuku1993@');
 unset($_mailSmtpPass);
+/** Vérification stricte du certificat SSL (mettre false seulement si connexion SMTP échoue sur l’hébergeur). */
+define('MAIL_SMTP_SSL_VERIFY', true);
+/** Si SMTP échoue, tenter la fonction mail() PHP (souvent configurée chez Hostinger). */
+define('MAIL_SMTP_FALLBACK_PHP_MAIL', true);
 /** URL du site dans les e-mails ; ex. https://lisalovechrist.fr ou '' pour la deviner (HTTP_HOST). */
 define('SITE_PUBLIC_URL', 'https://lisalovechrist.fr');
 /**

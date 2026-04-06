@@ -19,6 +19,7 @@ $statusRaw = $_GET['status'] ?? 'accepted';
 $status = in_array($statusRaw, ['accepted', 'maybe', 'declined'], true) ? $statusRaw : 'accepted';
 $guestId = (int) ($_GET['gid'] ?? 0);
 $reminderSaved = isset($_GET['reminder']);
+$mailWarn = isset($_GET['mail_warn']);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -150,6 +151,15 @@ $reminderSaved = isset($_GET['reminder']);
         }
         .reminder-saved.show { display: block; }
 
+        .mail-warn-banner {
+            margin-bottom: 24px; padding: 16px 18px; border-radius: 12px;
+            font-size: 13px; line-height: 1.55; text-align: left;
+            background: rgba(217,107,107,.1);
+            border: 1px solid rgba(217,107,107,.25);
+            color: rgba(255,255,255,.75);
+        }
+        .mail-warn-banner strong { color: #e8a0a0; }
+
         .back-link {
             display: inline-flex; align-items: center; gap: 8px;
             font-size: 12px; letter-spacing: .15em; text-transform: uppercase;
@@ -173,6 +183,11 @@ $reminderSaved = isset($_GET['reminder']);
 </head>
 <body>
     <div class="success-card">
+        <?php if ($mailWarn): ?>
+            <div class="mail-warn-banner">
+                <strong>E-mail non reçu ?</strong> La réponse est bien enregistrée, mais l’envoi automatique de la confirmation a échoué (configuration serveur). Vérifiez vos courriers indésirables. Les mariés peuvent renvoyer le message depuis l’admin (invités → confirmation), ou contactez-les directement.
+            </div>
+        <?php endif; ?>
         <?php if ($status === 'accepted'): ?>
             <div class="success-icon icon-accepted"><i class="bi bi-heart-fill"></i></div>
             <h1 class="success-title">Merci de votre réponse !</h1>

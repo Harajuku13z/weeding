@@ -292,6 +292,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         code: (data.get('code') || '').toString().trim(),
                         gid: String(json.guest_id != null ? json.guest_id : 0),
                     });
+                    const hasEmail = (data.get('email') || '').toString().trim() !== '';
+                    if (hasEmail && json.mail_tried && json.mail_sent === false) {
+                        params.set('mail_warn', '1');
+                    }
                     const dest = new URL(succesUrl, window.location.origin);
                     dest.search = params.toString();
                     window.location.replace(dest.href);
