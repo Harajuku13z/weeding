@@ -339,34 +339,52 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <span class="section-label">Hébergement</span>
             <h2 class="section-title">Où poser vos valises</h2>
         </div>
-        <div class="hotels" data-anim="fade-up">
+        <div class="venues" data-anim="fade-up">
             <?php if (empty($hebergements)): ?>
-            <p style="text-align:center;color:var(--muted)">Hébergements à venir.</p>
+            <p style="text-align:center;color:var(--muted);grid-column:1/-1">Hébergements à venir.</p>
             <?php else: ?>
-                <?php foreach ($hebergements as $hotel): ?>
-                <div class="hotel-card">
+                <?php foreach ($hebergements as $hotel):
+                    $mapsQuery = urlencode(trim($hotel['name'] . ' France'));
+                    $gmapsLink = 'https://www.google.com/maps/search/?api=1&query=' . $mapsQuery;
+                    $wazeLink  = 'https://waze.com/ul?q=' . $mapsQuery . '&navigate=yes';
+                    $appleLink = 'https://maps.apple.com/?q=' . $mapsQuery;
+                ?>
+                <div class="venue-card">
                     <?php if (!empty($hotel['photo'])): ?>
-                    <div class="hotel-photo">
+                    <div class="venue-visual">
                         <img src="<?= sanitize(UPLOAD_URL_HOTEL . $hotel['photo']) ?>" alt="<?= sanitize($hotel['name']) ?>" loading="lazy">
+                        <div class="venue-badge">Hébergement</div>
                     </div>
                     <?php else: ?>
-                    <div class="hotel-photo hotel-photo-empty">
+                    <div class="venue-visual venue-visual-empty">
                         <i class="bi bi-building"></i>
+                        <div class="venue-badge">Hébergement</div>
                     </div>
                     <?php endif; ?>
-                    <div class="hotel-body">
+                    <div class="venue-body">
                         <h3><?= sanitize($hotel['name']) ?></h3>
                         <?php if ($hotel['distance']): ?>
-                        <div class="hotel-distance"><i class="bi bi-geo-alt-fill"></i> <?= sanitize($hotel['distance']) ?></div>
+                        <p class="venue-address"><i class="bi bi-signpost-2"></i> <?= sanitize($hotel['distance']) ?></p>
                         <?php endif; ?>
                         <?php if ($hotel['description']): ?>
-                        <p><?= sanitize($hotel['description']) ?></p>
+                        <p class="venue-address"><i class="bi bi-info-circle"></i> <?= sanitize($hotel['description']) ?></p>
                         <?php endif; ?>
-                        <?php if ($hotel['link']): ?>
-                        <a href="<?= sanitize($hotel['link']) ?>" target="_blank" class="btn btn-sm" style="margin-top:12px">
-                            <i class="bi bi-box-arrow-up-right"></i> Voir
-                        </a>
-                        <?php endif; ?>
+                        <div class="venue-links">
+                            <a href="<?= sanitize($gmapsLink) ?>" target="_blank" rel="noopener" class="venue-link venue-link--gmaps">
+                                <i class="bi bi-google"></i> Google Maps
+                            </a>
+                            <a href="<?= sanitize($wazeLink) ?>" target="_blank" rel="noopener" class="venue-link venue-link--waze">
+                                <i class="bi bi-cursor-fill"></i> Waze
+                            </a>
+                            <a href="<?= sanitize($appleLink) ?>" target="_blank" rel="noopener" class="venue-link venue-link--apple">
+                                <i class="bi bi-apple"></i> Plans
+                            </a>
+                            <?php if (!empty($hotel['link'])): ?>
+                            <a href="<?= sanitize($hotel['link']) ?>" target="_blank" rel="noopener" class="venue-link venue-link--site">
+                                <i class="bi bi-box-arrow-up-right"></i> Site / Réserver
+                            </a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>

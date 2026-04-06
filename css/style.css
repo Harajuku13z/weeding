@@ -507,6 +507,11 @@ body.intro-locked { overflow: hidden; }
     border-color: rgba(0,0,0,.08);
 }
 .venue-link--apple:hover { background: rgba(0,0,0,.08); }
+.venue-link--site {
+    background: rgba(106,175,123,.1); color: #4a8f5c;
+    border-color: rgba(106,175,123,.22);
+}
+.venue-link--site:hover { background: rgba(106,175,123,.18); }
 
 /* AMBIANCE PHOTOS */
 .ambiance-photos {
@@ -588,43 +593,6 @@ body.intro-locked { overflow: hidden; }
 .rule-ok i { color: var(--green); }
 .rule-warn i { color: var(--red); }
 .rule-info i { color: var(--sky-d); }
-
-/* HOTELS */
-.hotels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-.hotel-card {
-    background: #fff; border-radius: 16px; overflow: hidden;
-    border: 1px solid rgba(168,200,224,.1);
-    box-shadow: 0 4px 24px rgba(0,0,0,.04);
-    transition: transform .5s var(--ease), box-shadow .5s var(--ease);
-}
-.hotel-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 16px 48px rgba(0,0,0,.08);
-}
-.hotel-photo {
-    aspect-ratio: 16/10; overflow: hidden;
-    background: linear-gradient(135deg, var(--beige), var(--beige-d));
-    display: flex; align-items: center; justify-content: center;
-}
-.hotel-photo img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-    transition: transform .7s var(--ease);
-}
-.hotel-card:hover .hotel-photo img { transform: scale(1.05); }
-.hotel-photo-empty i { font-size: 48px; color: var(--sky-d); opacity: .25; }
-.hotel-body { padding: 28px; }
-.hotel-body h3 {
-    font-family: var(--ft); font-size: 24px; font-weight: 600;
-    color: var(--dark); margin-bottom: 8px;
-}
-.hotel-distance {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 13px; color: var(--sky-d); font-weight: 500;
-    background: rgba(168,200,224,.1); padding: 5px 14px; border-radius: 999px;
-    margin-bottom: 10px;
-}
-.hotel-distance i { font-size: 12px; }
-.hotel-body p { font-size: 15px; color: var(--muted); line-height: 1.6; font-weight: 400; }
 
 /* RSVP FORM */
 .rsvp-form {
