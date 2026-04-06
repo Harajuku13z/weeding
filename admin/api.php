@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../includes/mail.php';
 
 if (!isAdmin()) {
     jsonResponse(['success' => false, 'message' => 'Non autorisé.'], 401);
@@ -18,16 +17,13 @@ switch ($action) {
         break;
 
     case 'gallery_upload':
-        if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        $file = $_FILES['image'] ?? null;
+        if (!is_array($file)) {
             jsonResponse(['success' => false, 'message' => 'Aucun fichier reçu.']);
         }
-        $file = $_FILES['image'];
-        $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        if (!in_array($file['type'], $allowed)) {
-            jsonResponse(['success' => false, 'message' => 'Format non supporté (JPG, PNG, WEBP, GIF).']);
-        }
-        if ($file['size'] > 5 * 1024 * 1024) {
-            jsonResponse(['success' => false, 'message' => 'Fichier trop lourd (max 5 Mo).']);
+        $v = validate_image_upload($file);
+        if ($v !== null) {
+            jsonResponse(['success' => false, 'message' => $v]);
         }
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
         $name = uniqid('img_') . '.' . strtolower($ext);
@@ -158,6 +154,7 @@ switch ($action) {
         $bride = $settings['bride_name'] ?? '';
         $groom = $settings['groom_name'] ?? '';
         $wFmt = format_date_fr($settings['wedding_date'] ?? '');
+        require_once __DIR__ . '/../includes/mail.php';
         $ok = mail_reminder_due($email, (string) $row['name'], $bride, $groom, $wFmt);
         if ($ok && (int) $row['sent'] === 0) {
             $pdo->prepare('UPDATE reminders SET sent = 1 WHERE id = :id')->execute(['id' => $rid]);
@@ -195,6 +192,7 @@ switch ($action) {
         if ($remindFr === '') {
             $remindFr = (string) $remYmd;
         }
+        require_once __DIR__ . '/../includes/mail.php';
         $ok = mail_reminder_scheduled($email, (string) $row['name'], $when, $remindFr);
         jsonResponse([
             'success' => $ok,
@@ -242,6 +240,7 @@ switch ($action) {
             $ceremonyLoc = $n . ($a !== '' ? ($n !== '' ? ', ' : '') . $a : '');
         }
         $icsUid = sha1(($bride ?: 'b') . '|' . ($groom ?: 'g') . '|' . $w . '|llc-wedding') . '@lisalovechrist.fr';
+        require_once __DIR__ . '/../includes/mail.php';
         $ok = mail_rsvp_confirmation(
             $email,
             (string) $guest['name'],
@@ -461,13 +460,14 @@ switch ($action) {
         break;
 
     case 'ambiance_photo_upload':
-        if (empty($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        $file = $_FILES['image'] ?? null;
+        if (!is_array($file)) {
             jsonResponse(['success' => false, 'message' => 'Aucun fichier reçu.']);
         }
-        $file = $_FILES['image'];
-        $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-        if (!in_array($file['type'], $allowed)) jsonResponse(['success' => false, 'message' => 'Format non supporté.']);
-        if ($file['size'] > 5 * 1024 * 1024) jsonResponse(['success' => false, 'message' => 'Fichier trop lourd (max 5 Mo).']);
+        $v = validate_image_upload($file);
+        if ($v !== null) {
+            jsonResponse(['success' => false, 'message' => $v]);
+        }
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $name = uniqid('amb_') . '.' . $ext;
         if (!is_dir(UPLOAD_DIR_AMBIANCE)) mkdir(UPLOAD_DIR_AMBIANCE, 0775, true);

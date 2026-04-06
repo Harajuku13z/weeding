@@ -122,6 +122,46 @@ function app_url(string $path): string {
     return ($base === '' ? '/' : $base . '/') . $path;
 }
 
+/**
+ * Valide un upload image (taille, extension, MIME détecté).
+ * Retourne null si OK, sinon un message d'erreur affichable.
+ */
+function validate_image_upload(array $file, int $maxBytes = 5_242_880): ?string {
+    $err = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($err !== UPLOAD_ERR_OK) {
+        return match ($err) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Fichier trop lourd (max 5 Mo).',
+            UPLOAD_ERR_PARTIAL => 'Upload incomplet — réessayez.',
+            UPLOAD_ERR_NO_FILE => 'Aucun fichier reçu.',
+            default => 'Erreur lors de l\'envoi du fichier.',
+        };
+    }
+    $tmp = $file['tmp_name'] ?? '';
+    if ($tmp === '' || !is_uploaded_file($tmp)) {
+        return 'Aucun fichier reçu.';
+    }
+    if ((int) ($file['size'] ?? 0) > $maxBytes) {
+        return 'Fichier trop lourd (max 5 Mo).';
+    }
+    $ext = strtolower(pathinfo((string) ($file['name'] ?? ''), PATHINFO_EXTENSION));
+    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+        return 'Format non supporté (JPG, PNG, WEBP, GIF).';
+    }
+    if (function_exists('finfo_open')) {
+        $f = finfo_open(FILEINFO_MIME_TYPE);
+        $detected = $f ? finfo_file($f, $tmp) : '';
+        if ($f) {
+            finfo_close($f);
+        }
+        $ok = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (!in_array($detected, $ok, true)) {
+            return 'Format non supporté ou fichier corrompu (JPG, PNG, WEBP, GIF).';
+        }
+    }
+
+    return null;
+}
+
 /** Normalise une couleur hex (#RRGGBB), accepte #888888, 888888, #888. */
 function normalize_hex_color(string $raw): ?string {
     $h = strtoupper(trim($raw));
