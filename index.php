@@ -16,6 +16,13 @@ $groom = $s('groom_name', 'Christ');
 
 $programme = $pdo->query("SELECT * FROM programme ORDER BY sort_order ASC, id ASC")->fetchAll();
 $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fetchAll();
+
+$themePrimary = $s('theme_primary', '#A8C8E0');
+$themeAccent  = $s('theme_accent', '#7B9EC4');
+$themeDark    = $s('theme_dark', '#2C3E50');
+
+$brideInitial = mb_strtoupper(mb_substr($bride, 0, 1));
+$groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -28,14 +35,27 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@200;300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <style>:root{--sky:<?= sanitize($themePrimary) ?>;--sky-d:<?= sanitize($themeAccent) ?>;--dark:<?= sanitize($themeDark) ?>}</style>
 </head>
-<body>
+<body class="env-locked">
 
-<!-- LOADER -->
-<div id="loader" class="loader">
-    <div class="loader-content">
-        <div class="loader-names"><?= sanitize($bride) ?> <span>&amp;</span> <?= sanitize($groom) ?></div>
-        <div class="loader-bar"><div class="loader-progress"></div></div>
+<!-- ENVELOPE INTRO -->
+<div id="envelopeOverlay" class="env-overlay">
+    <div class="env-scene" id="envScene">
+        <p class="env-subtitle">Vous êtes cordialement invité<?= mb_strtolower(mb_substr($bride, -1)) === 'a' ? 'e' : '(e)' ?>s</p>
+        <div class="env-wrap">
+            <div class="env-card" id="envCard">
+                <div class="env-card-orn"></div>
+                <span class="env-card-names"><?= sanitize($bride) ?> &amp; <?= sanitize($groom) ?></span>
+                <span class="env-card-date"><?= date('d F Y', strtotime($weddingDate)) ?></span>
+                <div class="env-card-orn"></div>
+            </div>
+            <div class="env-body"></div>
+            <div class="env-front"></div>
+            <div class="env-flap" id="envFlap"></div>
+            <div class="env-seal" id="envSeal"><span><?= sanitize($brideInitial) ?>&amp;<?= sanitize($groomInitial) ?></span></div>
+        </div>
+        <button class="env-btn" id="envBtn"><i class="bi bi-envelope-open"></i> Ouvrir l'invitation</button>
     </div>
 </div>
 
@@ -58,7 +78,7 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
     <div class="hero-overlay"></div>
     <div class="hero-particles" id="heroParticles"></div>
     <div class="hero-content" id="heroContent">
-        <p class="hero-label"><?= sanitize($s('hero_subtitle', 'Invitation au mariage')) ?></p>
+        <p class="hero-label"><?= sanitize($s('hero_subtitle', 'Nous nous disons oui')) ?></p>
         <div class="hero-ornament"><span class="orn-line"></span><span class="orn-diamond"></span><span class="orn-line right"></span></div>
         <h1 class="hero-names">
             <span class="hero-name"><?= sanitize($bride) ?></span>
@@ -77,10 +97,10 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
         </div>
         <div class="hero-actions">
             <a href="#rsvp" class="btn btn-primary"><i class="bi bi-envelope-heart"></i> Confirmer ma présence</a>
-            <a href="#programme" class="btn btn-outline"><i class="bi bi-stars"></i> Voir le programme</a>
+            <a href="#programme" class="btn btn-outline"><i class="bi bi-stars"></i> Découvrir la journée</a>
         </div>
     </div>
-    <a href="#histoire" class="scroll-down"><span>Découvrir</span><i class="bi bi-chevron-down"></i></a>
+    <a href="#histoire" class="scroll-down" id="scrollDown"><span>Explorer</span><i class="bi bi-chevron-down"></i></a>
 </section>
 
 <!-- HISTOIRE -->
@@ -89,7 +109,7 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
         <div class="section-head" data-anim="fade-up">
             <div class="section-orn"><span class="s-line"></span><i class="bi bi-heart-fill"></i><span class="s-line"></span></div>
             <span class="section-label">Notre histoire</span>
-            <h2 class="section-title">Deux cœurs qui ne font qu'un</h2>
+            <h2 class="section-title">Comment tout a commencé</h2>
         </div>
         <div class="story" data-anim="fade-up">
             <blockquote class="story-quote">« <?= sanitize($s('quote', "L'amour est notre seul vrai trésor")) ?> »</blockquote>
@@ -131,29 +151,26 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
     <div class="container">
         <div class="section-head" data-anim="fade-up">
             <span class="section-label">Informations</span>
-            <h2 class="section-title">Les détails de notre fête</h2>
+            <h2 class="section-title">En un coup d'œil</h2>
         </div>
         <div class="info-grid" data-anim="fade-up">
             <div class="info-card">
                 <i class="bi bi-calendar-heart-fill"></i>
                 <span class="info-label">Date</span>
-                <strong>06 Juin 2026</strong>
-            </div>
-            <div class="info-card">
-                <i class="bi bi-building"></i>
-                <span class="info-label">Mairie</span>
-                <strong>Mairie de Chevigny-Saint-Sauveur</strong>
-            </div>
-            <div class="info-card">
-                <i class="bi bi-geo-alt-fill"></i>
-                <span class="info-label">Réception</span>
-                <strong>Le Lieu Dit — Dijon</strong>
+                <strong><?= date('d F Y', strtotime($weddingDate)) ?></strong>
             </div>
             <div class="info-card">
                 <i class="bi bi-clock-fill"></i>
-                <span class="info-label">Répondez avant le</span>
-                <strong>15 Juillet 2025</strong>
+                <span class="info-label">Heure</span>
+                <strong><?= sanitize($s('wedding_time', '15:00')) ?></strong>
             </div>
+            <?php foreach ($lieux as $i => $lieu): if ($i >= 2) break; ?>
+            <div class="info-card">
+                <i class="bi <?= sanitize($lieu['icon'] ?: 'bi-geo-alt-fill') ?>"></i>
+                <span class="info-label"><?= $i === 0 ? 'Cérémonie' : 'Réception' ?></span>
+                <strong><?= sanitize($lieu['name']) ?></strong>
+            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -230,9 +247,9 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
 <section class="section section-dark" id="dresscode">
     <div class="container">
         <div class="section-head" data-anim="fade-up">
-            <span class="section-label">Ambiance &amp; Tenues</span>
-            <h2 class="section-title">L'univers de notre mariage</h2>
-            <p class="section-sub">Mariage romantique et champêtre — lumière douce, nature et élégance.</p>
+            <span class="section-label">Dress code</span>
+            <h2 class="section-title">L'élégance du jour</h2>
+            <p class="section-sub">Une atmosphère romantique et champêtre — pensez lumière douce, nature et raffinement.</p>
         </div>
         <div class="dress-grid" data-anim="fade-up">
             <div class="dress-card">
@@ -259,14 +276,14 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
     <div class="container">
         <div class="section-head" data-anim="fade-up">
             <span class="section-label">Consignes</span>
-            <h2 class="section-title">Pour que ce jour soit parfait</h2>
+            <h2 class="section-title">Quelques mots avant le grand jour</h2>
         </div>
         <div class="rules-list" data-anim="fade-up">
             <div class="rule-item rule-ok"><i class="bi bi-check-circle-fill"></i><span>Enfants bienvenus</span></div>
-            <div class="rule-item rule-warn"><i class="bi bi-phone-fill"></i><span>Téléphones interdits pendant la cérémonie</span></div>
-            <div class="rule-item rule-info"><i class="bi bi-clock-fill"></i><span>Arrivez 15 minutes avant</span></div>
+            <div class="rule-item rule-warn"><i class="bi bi-phone-fill"></i><span>Téléphones en mode silencieux pendant la cérémonie</span></div>
+            <div class="rule-item rule-info"><i class="bi bi-clock-fill"></i><span>Arrivez 15 minutes avant le début</span></div>
             <div class="rule-item rule-info"><i class="bi bi-car-front-fill"></i><span>Covoiturage encouragé</span></div>
-            <div class="rule-item rule-info"><i class="bi bi-house-heart-fill"></i><span>Hébergement recommandé à proximité</span></div>
+            <div class="rule-item rule-info"><i class="bi bi-house-heart-fill"></i><span>Pensez à réserver votre hébergement</span></div>
         </div>
     </div>
 </section>
@@ -276,7 +293,7 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
     <div class="container">
         <div class="section-head" data-anim="fade-up">
             <span class="section-label">Hébergement</span>
-            <h2 class="section-title">Où dormir</h2>
+            <h2 class="section-title">Où poser vos valises</h2>
         </div>
         <div class="hotels" data-anim="fade-up">
             <div class="hotel-card">
@@ -338,7 +355,7 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
     <div class="footer-date"><?= date('d F Y', strtotime($weddingDate)) ?></div>
     <div class="footer-orn"><span class="f-line"></span><i class="bi bi-heart-fill"></i><span class="f-line"></span></div>
     <p class="footer-quote">« <?= sanitize($s('quote', '')) ?> »</p>
-    <p class="footer-credit">Créé avec amour</p>
+    <p class="footer-credit">Fait avec amour</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>

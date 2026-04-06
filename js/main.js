@@ -1,11 +1,45 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    /* ─── LOADER ─────────────────────────────────────────── */
-    const loader = document.getElementById('loader');
-    setTimeout(() => {
-        loader.classList.add('hidden');
-        animateHero();
-    }, 1800);
+    /* ─── ENVELOPE INTRO ───────────────────────────────── */
+    const envOverlay = document.getElementById('envelopeOverlay');
+    const envBtn     = document.getElementById('envBtn');
+    const envSeal    = document.getElementById('envSeal');
+    const envFlap    = document.getElementById('envFlap');
+    const envCard    = document.getElementById('envCard');
+    const envScene   = document.getElementById('envScene');
+
+    if (envOverlay && typeof gsap !== 'undefined') {
+        gsap.set(envScene.children, { opacity: 0, y: 20 });
+        gsap.to(envScene.children, {
+            opacity: 1, y: 0, duration: 1, stagger: .15,
+            ease: 'power3.out', delay: .3
+        });
+    }
+
+    function openEnvelope() {
+        if (!envOverlay || envOverlay._opened) return;
+        envOverlay._opened = true;
+
+        const tl = gsap.timeline({
+            onComplete: () => {
+                envOverlay.classList.add('hidden');
+                document.body.classList.remove('env-locked');
+                setTimeout(() => { envOverlay.style.display = 'none'; }, 700);
+                animateHero();
+            }
+        });
+
+        tl.to(envBtn, { opacity: 0, y: 10, duration: .3, ease: 'power2.in' })
+          .to('.env-subtitle', { opacity: 0, y: -10, duration: .3, ease: 'power2.in' }, '<')
+          .to(envSeal, { scale: 0, opacity: 0, rotation: 30, duration: .5, ease: 'back.in(2)' })
+          .to(envFlap, { rotateX: -180, duration: .9, ease: 'power2.inOut' }, '-=.2')
+          .to(envCard, { y: -(envCard.offsetHeight * 0.55), duration: .8, ease: 'power3.out' }, '-=.3')
+          .to('.env-wrap', { scale: .9, opacity: .8, duration: .3 }, '-=.4')
+          .to(envOverlay, { opacity: 0, duration: .6, ease: 'power2.in' }, '+=.3');
+    }
+
+    if (envBtn) envBtn.addEventListener('click', openEnvelope);
+    if (envSeal) envSeal.addEventListener('click', openEnvelope);
 
     /* ─── PARTICLES ──────────────────────────────────────── */
     const pc = document.getElementById('heroParticles');
@@ -35,6 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: 1, y: 0, duration: 1.2,
             stagger: 0.15, ease: 'power3.out', delay: 0.2
         });
+
+        const sd = document.getElementById('scrollDown');
+        if (sd) {
+            gsap.set(sd, { opacity: 0 });
+            gsap.to(sd, { opacity: 1, duration: .8, delay: 1.5, ease: 'power2.out' });
+        }
     }
 
     /* ─── PARALLAX ───────────────────────────────────────── */

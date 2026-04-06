@@ -90,6 +90,7 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
             <a href="#" data-page="programme"><i class="bi bi-clock-history"></i><span>Programme</span></a>
             <a href="#" data-page="lieux"><i class="bi bi-geo-alt"></i><span>Lieux</span></a>
             <a href="#" data-page="guests"><i class="bi bi-people"></i><span>Invités</span></a>
+            <a href="#" data-page="theme"><i class="bi bi-palette"></i><span>Thème</span></a>
             <a href="#" data-page="settings"><i class="bi bi-gear"></i><span>Paramètres</span></a>
         </nav>
         <div class="sidebar-bottom">
@@ -183,6 +184,49 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
                     <thead><tr><th>Code</th><th>Nom</th><th>Statut</th><th>Accomp.</th><th>Régime</th><th>Message</th><th>Répondu</th><th></th></tr></thead>
                     <tbody id="guestsTable"></tbody>
                 </table></div>
+            </div>
+        </div>
+
+        <!-- THÈME -->
+        <div class="page" id="page-theme">
+            <h2>Thème &amp; Couleurs</h2>
+            <div class="card">
+                <h3><i class="bi bi-palette2"></i> Couleurs du site</h3>
+                <p style="font-size:13px;color:#888;margin-bottom:20px">Modifiez les couleurs principales. Les changements sont visibles sur le site public après sauvegarde.</p>
+                <form id="themeForm">
+                    <div style="display:flex;gap:24px;flex-wrap:wrap">
+                        <div class="form-row">
+                            <label>Couleur principale</label>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <input type="color" name="theme_primary" id="set_theme_primary" value="#A8C8E0" style="width:48px;height:36px;padding:2px;border:1px solid #ddd;border-radius:6px;cursor:pointer">
+                                <input type="text" id="set_theme_primary_hex" value="#A8C8E0" style="width:90px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label>Couleur accent</label>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <input type="color" name="theme_accent" id="set_theme_accent" value="#7B9EC4" style="width:48px;height:36px;padding:2px;border:1px solid #ddd;border-radius:6px;cursor:pointer">
+                                <input type="text" id="set_theme_accent_hex" value="#7B9EC4" style="width:90px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label>Couleur foncée</label>
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <input type="color" name="theme_dark" id="set_theme_dark" value="#2C3E50" style="width:48px;height:36px;padding:2px;border:1px solid #ddd;border-radius:6px;cursor:pointer">
+                                <input type="text" id="set_theme_dark_hex" value="#2C3E50" style="width:90px;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:monospace">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top:24px;padding:20px;border-radius:8px;border:1px solid #eee">
+                        <p style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:12px">Aperçu</p>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap">
+                            <div id="swatch-primary" style="width:90px;height:55px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:500;letter-spacing:1px;background:#A8C8E0">Principal</div>
+                            <div id="swatch-accent" style="width:90px;height:55px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:500;letter-spacing:1px;background:#7B9EC4">Accent</div>
+                            <div id="swatch-dark" style="width:90px;height:55px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:500;letter-spacing:1px;background:#2C3E50">Foncé</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-blue" style="margin-top:20px"><i class="bi bi-check-lg"></i> Sauvegarder le thème</button>
+                </form>
             </div>
         </div>
 
@@ -426,6 +470,32 @@ async function delGuest(id) {
     loadGuests();
 }
 
+/* ─── THEME ──────────────────────────────────────── */
+const themeFields = ['theme_primary', 'theme_accent', 'theme_dark'];
+const swatchMap = { theme_primary: 'swatch-primary', theme_accent: 'swatch-accent', theme_dark: 'swatch-dark' };
+
+function syncThemeInputs() {
+    themeFields.forEach(f => {
+        const color = document.getElementById('set_' + f);
+        const hex = document.getElementById('set_' + f + '_hex');
+        const swatch = document.getElementById(swatchMap[f]);
+        if (color && hex) {
+            color.addEventListener('input', () => { hex.value = color.value; if (swatch) swatch.style.background = color.value; });
+            hex.addEventListener('input', () => { if (/^#[0-9A-Fa-f]{6}$/.test(hex.value)) { color.value = hex.value; if (swatch) swatch.style.background = hex.value; } });
+        }
+    });
+}
+syncThemeInputs();
+
+document.getElementById('themeForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('action', 'settings_save');
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+});
+
 /* ─── SETTINGS ───────────────────────────────────── */
 async function loadSettings() {
     const res = await fetch(API + '?action=settings_get');
@@ -433,7 +503,15 @@ async function loadSettings() {
     if (json.data) {
         Object.entries(json.data).forEach(([k, v]) => {
             const el = document.getElementById('set_' + k);
-            if (el) el.value = v;
+            if (el) {
+                el.value = v;
+                const hex = document.getElementById('set_' + k + '_hex');
+                if (hex) hex.value = v;
+                if (swatchMap[k]) {
+                    const sw = document.getElementById(swatchMap[k]);
+                    if (sw) sw.style.background = v;
+                }
+            }
         });
     }
 }

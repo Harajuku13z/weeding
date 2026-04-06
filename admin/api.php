@@ -202,7 +202,7 @@ switch ($action) {
         break;
 
     case 'settings_save':
-        $fields = ['bride_name', 'groom_name', 'wedding_date', 'hero_subtitle', 'quote', 'story_text'];
+        $fields = ['bride_name', 'groom_name', 'wedding_date', 'hero_subtitle', 'quote', 'story_text', 'theme_primary', 'theme_accent', 'theme_dark'];
         $stmt = $pdo->prepare("INSERT INTO settings (skey, svalue) VALUES (:k, :v) ON DUPLICATE KEY UPDATE svalue = :v2");
         foreach ($fields as $f) {
             if (isset($_POST[$f])) {
