@@ -37,8 +37,47 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@200;300;400;500;600&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    <style>:root{--sky:<?= sanitize($themePrimary) ?>;--sky-d:<?= sanitize($themeAccent) ?>;--dark:<?= sanitize($themeDark) ?>}</style>
+    <?php $cssMtime = @filemtime(__DIR__ . '/css/style.css') ?: 0; ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars(app_url('css/style.css')) ?>?v=<?= (int) $cssMtime ?>">
+    <style>
+    :root{
+        --sky:<?= sanitize($themePrimary) ?>;
+        --sky-d:<?= sanitize($themeAccent) ?>;
+        --dark:<?= sanitize($themeDark) ?>;
+    }
+    /* Intro plein écran : priorité absolue si style.css ne charge pas (mauvais chemin, cache, hébergeur) */
+    body.intro-locked { overflow: hidden !important; }
+    #introOverlay.intro-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+        z-index: 2147483000 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 24px !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        background: var(--dark) !important;
+    }
+    #introOverlay .intro-bg {
+        position: absolute !important;
+        inset: 0 !important;
+        z-index: 0 !important;
+    }
+    #introOverlay .intro-grain {
+        position: absolute !important;
+        inset: 0 !important;
+        z-index: 1 !important;
+        pointer-events: none !important;
+    }
+    #introOverlay .intro-content {
+        position: relative !important;
+        z-index: 2 !important;
+    }
+    </style>
 </head>
 <body class="intro-locked">
 
