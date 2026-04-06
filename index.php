@@ -40,25 +40,21 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
     <link rel="stylesheet" href="css/style.css">
     <style>:root{--sky:<?= sanitize($themePrimary) ?>;--sky-d:<?= sanitize($themeAccent) ?>;--dark:<?= sanitize($themeDark) ?>}</style>
 </head>
-<body class="env-locked">
+<body class="intro-locked">
 
-<!-- ENVELOPE INTRO -->
-<div id="envelopeOverlay" class="env-overlay">
-    <div class="env-scene" id="envScene">
-        <p class="env-subtitle">Vous êtes cordialement invité<?= mb_strtolower(mb_substr($bride, -1)) === 'a' ? 'e' : '(e)' ?>s</p>
-        <div class="env-wrap">
-            <div class="env-card" id="envCard">
-                <div class="env-card-orn"></div>
-                <span class="env-card-names"><?= sanitize($bride) ?> &amp; <?= sanitize($groom) ?></span>
-                <span class="env-card-date"><?= date('d F Y', strtotime($weddingDate)) ?></span>
-                <div class="env-card-orn"></div>
-            </div>
-            <div class="env-body"></div>
-            <div class="env-front"></div>
-            <div class="env-flap" id="envFlap"></div>
-            <div class="env-seal" id="envSeal"><span><?= sanitize($brideInitial) ?>&amp;<?= sanitize($groomInitial) ?></span></div>
-        </div>
-        <button class="env-btn" id="envBtn"><i class="bi bi-envelope-open"></i> Ouvrir l'invitation</button>
+<!-- INTRO MODERNE -->
+<div id="introOverlay" class="intro-overlay" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <div class="intro-bg" aria-hidden="true"></div>
+    <div class="intro-grain" aria-hidden="true"></div>
+    <div class="intro-content" id="introContent">
+        <p class="intro-kicker">Vous êtes cordialement invité<?= mb_strtolower(mb_substr($bride, -1)) === 'a' ? 'e' : '(e)' ?>s</p>
+        <div class="intro-monogram" aria-hidden="true"><?= sanitize($brideInitial) ?><span class="intro-monogram-amp">&</span><?= sanitize($groomInitial) ?></div>
+        <h1 class="intro-title" id="introTitle"><?= sanitize($bride) ?> <span class="intro-title-amp">&</span> <?= sanitize($groom) ?></h1>
+        <p class="intro-date"><i class="bi bi-calendar-heart"></i> <?= date('d F Y', strtotime($weddingDate)) ?></p>
+        <button type="button" class="intro-cta" id="introBtn">
+            <span>Entrer sur le site</span>
+            <i class="bi bi-arrow-down-circle"></i>
+        </button>
     </div>
 </div>
 

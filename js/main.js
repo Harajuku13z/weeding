@@ -1,45 +1,49 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    /* ─── ENVELOPE INTRO ───────────────────────────────── */
-    const envOverlay = document.getElementById('envelopeOverlay');
-    const envBtn     = document.getElementById('envBtn');
-    const envSeal    = document.getElementById('envSeal');
-    const envFlap    = document.getElementById('envFlap');
-    const envCard    = document.getElementById('envCard');
-    const envScene   = document.getElementById('envScene');
+    /* ─── INTRO MODERNE (plein écran) ───────────────────── */
+    const introOverlay = document.getElementById('introOverlay');
+    const introBtn     = document.getElementById('introBtn');
+    const introContent = document.getElementById('introContent');
 
-    if (envOverlay && typeof gsap !== 'undefined') {
-        gsap.set(envScene.children, { opacity: 0, y: 20 });
-        gsap.to(envScene.children, {
-            opacity: 1, y: 0, duration: 1, stagger: .15,
-            ease: 'power3.out', delay: .3
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (introOverlay && introContent && typeof gsap !== 'undefined') {
+        gsap.set(introContent.children, { opacity: 0, y: 24 });
+        gsap.to(introContent.children, {
+            opacity: 1, y: 0, duration: prefersReduced ? 0.35 : 0.85,
+            stagger: prefersReduced ? 0 : 0.12, ease: 'power3.out', delay: 0.15
         });
     }
 
-    function openEnvelope() {
-        if (!envOverlay || envOverlay._opened) return;
-        envOverlay._opened = true;
+    function closeIntro() {
+        if (!introOverlay || introOverlay._opened) return;
+        introOverlay._opened = true;
+        introOverlay.classList.add('is-closing');
 
-        const tl = gsap.timeline({
-            onComplete: () => {
-                envOverlay.classList.add('hidden');
-                document.body.classList.remove('env-locked');
-                setTimeout(() => { envOverlay.style.display = 'none'; }, 700);
-                animateHero();
-            }
-        });
+        const done = () => {
+            introOverlay.style.display = 'none';
+            document.body.classList.remove('intro-locked');
+            animateHero();
+        };
 
-        tl.to(envBtn, { opacity: 0, y: 10, duration: .3, ease: 'power2.in' })
-          .to('.env-subtitle', { opacity: 0, y: -10, duration: .3, ease: 'power2.in' }, '<')
-          .to(envSeal, { scale: 0, opacity: 0, rotation: 30, duration: .5, ease: 'back.in(2)' })
-          .to(envFlap, { rotateX: -180, duration: .9, ease: 'power2.inOut' }, '-=.2')
-          .to(envCard, { y: -(envCard.offsetHeight * 0.55), duration: .8, ease: 'power3.out' }, '-=.3')
-          .to('.env-wrap', { scale: .9, opacity: .8, duration: .3 }, '-=.4')
-          .to(envOverlay, { opacity: 0, duration: .6, ease: 'power2.in' }, '+=.3');
+        if (typeof gsap === 'undefined' || prefersReduced) {
+            introOverlay.style.opacity = '0';
+            done();
+            return;
+        }
+
+        const tl = gsap.timeline({ onComplete: done });
+        tl.to(introContent, {
+            opacity: 0, y: -28, scale: 0.97, duration: 0.45, ease: 'power2.in'
+        })
+        .to(introOverlay.querySelector('.intro-bg'),
+            { scale: 1.05, opacity: 0.4, duration: 0.5, ease: 'power2.in' },
+            '-=0.25'
+        )
+        .to(introOverlay, { opacity: 0, duration: 0.55, ease: 'power3.inOut' }, '-=0.35');
     }
 
-    if (envBtn) envBtn.addEventListener('click', openEnvelope);
-    if (envSeal) envSeal.addEventListener('click', openEnvelope);
+    if (introBtn) introBtn.addEventListener('click', closeIntro);
 
     /* ─── PARTICLES ──────────────────────────────────────── */
     const pc = document.getElementById('heroParticles');
