@@ -187,10 +187,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('api/rsvp.php', { method: 'POST', body: data });
                 const json = await res.json();
                 if (json.success) {
-                    showAlert(json.message, 'ok');
-                    form.reset();
-                    document.querySelectorAll('.status-btn').forEach(b => b.className = 'status-btn');
-                    statusInput.value = '';
+                    const params = new URLSearchParams({
+                        status: statusInput.value,
+                        name: data.get('code') || '',
+                        gid: json.guest_id || 0
+                    });
+                    window.location.href = 'succes.php?' + params.toString();
                 } else {
                     showAlert(json.message, 'err');
                 }

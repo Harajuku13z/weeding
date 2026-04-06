@@ -46,6 +46,7 @@ $update->execute([
 
 $labels = ['accepted' => 'acceptée', 'maybe' => 'en attente', 'declined' => 'déclinée'];
 jsonResponse([
-    'success' => true,
-    'message' => 'Merci ! Votre réponse (' . ($labels[$status] ?? $status) . ') a bien été enregistrée.'
+    'success'  => true,
+    'guest_id' => $guest['id'],
+    'message'  => 'Merci ! Votre réponse (' . ($labels[$status] ?? $status) . ') a bien été enregistrée.'
 ]);

@@ -89,6 +89,17 @@ run($pdo, "CREATE TABLE IF NOT EXISTS hebergements (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table hebergements', $log);
 
+run($pdo, "CREATE TABLE IF NOT EXISTS reminders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    guest_id INT NOT NULL,
+    delay_days INT NOT NULL DEFAULT 14,
+    remind_at DATE NOT NULL,
+    sent TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_guest (guest_id),
+    INDEX idx_remind (remind_at, sent)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table reminders', $log);
+
 run($pdo, "CREATE TABLE IF NOT EXISTS settings (
     skey VARCHAR(50) PRIMARY KEY,
     svalue TEXT
@@ -158,6 +169,8 @@ $log[] = ['ok', 'Codes d\'invitation'];
 $dirs = [
     __DIR__ . '/uploads/gallery/',
     __DIR__ . '/uploads/lieux/',
+    __DIR__ . '/uploads/hebergements/',
+    __DIR__ . '/uploads/ambiance/',
 ];
 foreach ($dirs as $dir) {
     if (!is_dir($dir)) {
