@@ -54,3 +54,21 @@ function jsonResponse(array $data, int $code = 200): void {
 function sanitize(string $str): string {
     return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8');
 }
+
+/** Normalise une couleur hex (#RRGGBB), accepte #888888, 888888, #888. */
+function normalize_hex_color(string $raw): ?string {
+    $h = strtoupper(trim($raw));
+    if ($h === '') {
+        return null;
+    }
+    if ($h[0] === '#') {
+        $h = substr($h, 1);
+    }
+    if (preg_match('/^[0-9A-F]{3}$/', $h)) {
+        return '#' . $h[0] . $h[0] . $h[1] . $h[1] . $h[2] . $h[2];
+    }
+    if (preg_match('/^[0-9A-F]{6}$/', $h)) {
+        return '#' . $h;
+    }
+    return null;
+}

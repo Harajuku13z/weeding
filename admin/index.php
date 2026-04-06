@@ -163,11 +163,14 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
 
             <div class="card">
                 <h3><i class="bi bi-palette-fill"></i> Palette de couleurs</h3>
-                <p style="font-size:13px;color:#888;margin-bottom:16px">Définissez les couleurs de votre mariage. Elles seront affichées sous forme de ronds sur le site.</p>
+                <p style="font-size:13px;color:#888;margin-bottom:16px">Définissez les couleurs de votre mariage. Saisissez le code hex avec le <strong>#</strong> (ex. <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px">#888888</code>) ou choisissez dans la palette. Forme courte acceptée : <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px">#ABC</code>.</p>
                 <form id="addColorForm" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:20px">
                     <div class="form-row">
                         <label>Couleur</label>
-                        <input type="color" name="color_hex" value="#A8C8E0" style="width:48px;height:36px;padding:2px;border:1px solid #ddd;border-radius:6px;cursor:pointer">
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <input type="color" id="addAmbianceColorPicker" value="#A8C8E0" style="width:48px;height:36px;padding:2px;border:1px solid #ddd;border-radius:6px;cursor:pointer;flex-shrink:0">
+                            <input type="text" name="color_hex" id="addAmbianceColorHex" value="#A8C8E0" placeholder="#888888" maxlength="7" autocomplete="off" title="Ex: #888888" style="width:6.5rem;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:ui-monospace,monospace;text-transform:uppercase">
+                        </div>
                     </div>
                     <div class="form-row" style="flex:1;min-width:120px">
                         <label>Nom</label>
@@ -460,22 +463,67 @@ async function delAmbiancePhoto(id) {
     loadAmbiancePhotos();
 }
 
+function normHexInput(v) {
+    if (v == null || typeof v !== 'string') return null;
+    let s = v.trim().replace(/\s+/g, '');
+    if (!s) return null;
+    if (s[0] !== '#') s = '#' + s.replace(/^#+/, '');
+    s = s.toUpperCase();
+    const x = s.slice(1);
+    if (/^[0-9A-F]{3}$/.test(x)) return '#' + x[0] + x[0] + x[1] + x[1] + x[2] + x[2];
+    if (/^[0-9A-F]{6}$/.test(x)) return '#' + x;
+    return null;
+}
+
+function bindAmbianceColorRows() {
+    document.querySelectorAll('#colorsList .color-row').forEach(row => {
+        const pick = row.querySelector('[data-sync="picker"]');
+        const txt = row.querySelector('[data-sync="hex"]');
+        if (!pick || !txt) return;
+        const onPicker = () => { txt.value = pick.value.toUpperCase(); };
+        const onText = () => {
+            const n = normHexInput(txt.value);
+            if (n) { txt.value = n; pick.value = n; }
+        };
+        pick.addEventListener('input', onPicker);
+        txt.addEventListener('input', onText);
+        txt.addEventListener('blur', onText);
+    });
+}
+
 /* ─── AMBIANCE COLORS ────────────────────────────── */
 async function loadAmbianceColors() {
     const res = await fetch(API + '?action=ambiance_colors_list');
     const json = await res.json();
     const box = document.getElementById('colorsList');
     if (!json.data.length) { box.innerHTML = '<p style="color:#888;font-size:13px">Aucune couleur. Ajoutez-en via le formulaire.</p>'; return; }
+    const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    const hexVal = (h) => esc((h || '#FFFFFF').trim());
     box.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:12px">' + json.data.map(c => `
-        <div style="border:1px solid #eee;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;min-width:240px">
-            <input type="color" value="${c.color_hex}" data-cf="color_hex" data-cid="${c.id}" style="width:40px;height:32px;padding:1px;border:1px solid #ddd;border-radius:6px;cursor:pointer">
-            <input type="text" value="${c.color_name||''}" data-cf="color_name" data-cid="${c.id}" placeholder="Nom" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;min-width:80px">
+        <div class="color-row" style="border:1px solid #eee;border-radius:10px;padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:260px">
+            <input type="color" value="${hexVal(c.color_hex)}" data-sync="picker" data-cid="${c.id}" style="width:40px;height:32px;padding:1px;border:1px solid #ddd;border-radius:6px;cursor:pointer;flex-shrink:0">
+            <input type="text" value="${hexVal(c.color_hex)}" data-cf="color_hex" data-sync="hex" data-cid="${c.id}" placeholder="#888888" maxlength="7" title="Ex: #888888" style="width:6.5rem;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:ui-monospace,monospace;text-transform:uppercase">
+            <input type="text" value="${esc(c.color_name)}" data-cf="color_name" data-cid="${c.id}" placeholder="Nom" style="flex:1;min-width:80px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px">
             <input type="number" value="${c.sort_order}" data-cf="sort_order" data-cid="${c.id}" style="width:45px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px">
             <button class="btn btn-blue btn-sm" onclick="saveColor(${c.id})" style="padding:6px 10px"><i class="bi bi-check-lg"></i></button>
             <button class="btn btn-red btn-sm" onclick="delColor(${c.id})" style="padding:6px 10px"><i class="bi bi-trash"></i></button>
         </div>
     `).join('') + '</div>';
+    bindAmbianceColorRows();
 }
+
+(function bindAddAmbianceColorSync() {
+    const pick = document.getElementById('addAmbianceColorPicker');
+    const hex = document.getElementById('addAmbianceColorHex');
+    if (!pick || !hex) return;
+    pick.addEventListener('input', () => { hex.value = pick.value.toUpperCase(); });
+    const sync = () => {
+        const n = normHexInput(hex.value);
+        if (n) { hex.value = n; pick.value = n; }
+    };
+    hex.addEventListener('input', sync);
+    hex.addEventListener('blur', sync);
+})();
 
 document.getElementById('addColorForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -492,11 +540,12 @@ async function saveColor(id) {
     fd.append('action', 'ambiance_color_update');
     fd.append('id', id);
     document.querySelectorAll('[data-cid="' + id + '"]').forEach(inp => {
-        fd.append(inp.dataset.cf, inp.value);
+        if (inp.dataset.cf) fd.append(inp.dataset.cf, inp.value);
     });
     const res = await fetch(API, { method: 'POST', body: fd });
     const json = await res.json();
     toast(json.message);
+    if (json.success) loadAmbianceColors();
 }
 
 async function delColor(id) {

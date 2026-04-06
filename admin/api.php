@@ -321,21 +321,30 @@ switch ($action) {
         break;
 
     case 'ambiance_color_add':
-        $hex  = trim($_POST['color_hex'] ?? '#FFFFFF');
-        $name = sanitize($_POST['color_name'] ?? '');
-        $order = (int) ($_POST['sort_order'] ?? 0);
-        if (!preg_match('/^#[0-9A-Fa-f]{6}$/', $hex)) jsonResponse(['success' => false, 'message' => 'Couleur invalide.']);
+        $hexRaw = $_POST['color_hex'] ?? '#FFFFFF';
+        $hex    = normalize_hex_color($hexRaw);
+        $name   = sanitize($_POST['color_name'] ?? '');
+        $order  = (int) ($_POST['sort_order'] ?? 0);
+        if ($hex === null) {
+            jsonResponse(['success' => false, 'message' => 'Code couleur invalide. Utilisez le format #888888 ou #RGB (ex. #ABC).']);
+        }
         $stmt = $pdo->prepare("INSERT INTO ambiance_colors (color_hex, color_name, sort_order) VALUES (:h, :n, :s)");
         $stmt->execute(['h' => $hex, 'n' => $name, 's' => $order]);
         jsonResponse(['success' => true, 'message' => 'Couleur ajoutée.']);
         break;
 
     case 'ambiance_color_update':
-        $id   = (int) ($_POST['id'] ?? 0);
-        $hex  = trim($_POST['color_hex'] ?? '#FFFFFF');
-        $name = sanitize($_POST['color_name'] ?? '');
-        $order = (int) ($_POST['sort_order'] ?? 0);
-        if (!$id) jsonResponse(['success' => false, 'message' => 'ID manquant.']);
+        $id     = (int) ($_POST['id'] ?? 0);
+        $hexRaw = $_POST['color_hex'] ?? '#FFFFFF';
+        $hex    = normalize_hex_color($hexRaw);
+        $name   = sanitize($_POST['color_name'] ?? '');
+        $order  = (int) ($_POST['sort_order'] ?? 0);
+        if (!$id) {
+            jsonResponse(['success' => false, 'message' => 'ID manquant.']);
+        }
+        if ($hex === null) {
+            jsonResponse(['success' => false, 'message' => 'Code couleur invalide. Utilisez le format #888888.']);
+        }
         $stmt = $pdo->prepare("UPDATE ambiance_colors SET color_hex = :h, color_name = :n, sort_order = :s WHERE id = :id");
         $stmt->execute(['h' => $hex, 'n' => $name, 's' => $order, 'id' => $id]);
         jsonResponse(['success' => true, 'message' => 'Couleur mise à jour.']);
