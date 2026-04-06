@@ -448,6 +448,7 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;</script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-<script src="<?= htmlspecialchars(app_url('js/main.js')) ?>"></script>
+<?php $mainJsMtime = @filemtime(__DIR__ . '/js/main.js') ?: 0; ?>
+<script src="<?= htmlspecialchars(app_url('js/main.js')) ?>?v=<?= (int) $mainJsMtime ?>"></script>
 </body>
 </html>

@@ -199,20 +199,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
             try {
                 const res = await fetch(rsvpUrl, { method: 'POST', body: data });
-                const json = await res.json();
-                if (json.success) {
+                let json = null;
+                try {
+                    json = await res.json();
+                } catch (_) {
+                    json = null;
+                }
+
+                const msg = json && json.message ? String(json.message) : '';
+                const ok =
+                    res.ok &&
+                    json &&
+                    (
+                        json.success === true ||
+                        json.success === 1 ||
+                        json.success === 'true' ||
+                        (Number(json.guest_id) > 0 && /a bien été enregistrée/i.test(msg))
+                    );
+
+                if (ok) {
                     const params = new URLSearchParams({
                         status: statusInput.value,
-                        code: data.get('code') || '',
-                        gid: String(json.guest_id || 0)
+                        code: (data.get('code') || '').toString().trim(),
+                        gid: String(json.guest_id != null ? json.guest_id : 0),
                     });
-                    window.location.href = succesUrl + '?' + params.toString();
-                } else {
-                    showAlert(json.message, 'err');
+                    const dest = new URL(succesUrl, window.location.origin);
+                    dest.search = params.toString();
+                    window.location.replace(dest.href);
+                    return;
                 }
+
+                if (submitBtn) submitBtn.disabled = false;
+                showAlert(json && json.message ? json.message : 'Réponse impossible. Réessayez.', 'err');
             } catch {
+                if (submitBtn) submitBtn.disabled = false;
                 showAlert('Erreur de connexion. Réessayez.', 'err');
             }
         });
