@@ -42,16 +42,17 @@
 
     <style>
     :root {
-        --cream:      var(--color-background, #faf7f2);
-        --ivory:      var(--color-secondary, #f3efe8);
-        --dark:       var(--color-text, #1c1917);
-        --gold:       var(--color-primary, #c5a47e);
-        --gold-light: var(--color-accent, #dcc9a8);
-        --wt:         var(--color-text, #2d2926);
+        --cream:      #faf7f2;
+        --ivory:      #f3efe8;
+        --dark:       #1c1917;
+        --gold:       #c5a47e;
+        --gold-light: #dcc9a8;
+        --gold-dark:  #a8895f;
+        --wt:         #2d2926;
         --wm:         #8a827a;
-        --ft:         var(--font-title, 'Cormorant Garamond', Georgia, serif);
-        --fb:         var(--font-body, 'Jost', sans-serif);
-        --radius:     var(--border-radius, 12px);
+        --ft:         'Cormorant Garamond', Georgia, serif;
+        --fb:         'Jost', sans-serif;
+        --radius:     12px;
         --ease:       cubic-bezier(.4,0,.2,1);
     }
 
