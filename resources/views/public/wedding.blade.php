@@ -14,12 +14,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="{{ asset('css/wedding.css') }}">
 
@@ -41,26 +42,29 @@
 
     <style>
     :root {
-        --cream:      var(--color-background, #f8f4ef);
-        --ivory:      var(--color-secondary, #fdf9f5);
-        --dark:       var(--color-text, #1a1612);
-        --gold:       var(--color-primary, #b8975a);
-        --gold-light: var(--color-accent, #d4b47a);
-        --wt:         var(--color-text, #3d342c);
-        --wm:         var(--color-accent, #8c7d70);
+        --cream:      var(--color-background, #faf7f2);
+        --ivory:      var(--color-secondary, #f3efe8);
+        --dark:       var(--color-text, #1c1917);
+        --gold:       var(--color-primary, #c5a47e);
+        --gold-light: var(--color-accent, #dcc9a8);
+        --wt:         var(--color-text, #2d2926);
+        --wm:         #8a827a;
         --ft:         var(--font-title, 'Cormorant Garamond', Georgia, serif);
         --fb:         var(--font-body, 'Jost', sans-serif);
-        --radius:     var(--border-radius, 8px);
+        --radius:     var(--border-radius, 12px);
+        --ease:       cubic-bezier(.4,0,.2,1);
     }
 
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
         margin: 0;
         background: var(--cream);
         color: var(--wt);
         font-family: var(--fb);
+        font-weight: 300;
         overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -71,34 +75,31 @@
         display: flex; align-items: center; justify-content: center;
         overflow: hidden;
     }
-
     .inv-panel {
         position: absolute; top: 0; width: 50%; height: 100%;
         will-change: transform;
     }
     .inv-panel--left {
         left: 0;
-        background: linear-gradient(135deg, #0f0b14 0%, #1a1422 40%, #0d0a10 100%);
+        background: linear-gradient(135deg, #0c0a10 0%, #16121e 50%, #0a080d 100%);
     }
     .inv-panel--right {
         right: 0;
-        background: linear-gradient(225deg, #0f0b14 0%, #1a1422 40%, #0d0a10 100%);
+        background: linear-gradient(225deg, #0c0a10 0%, #16121e 50%, #0a080d 100%);
     }
-
     .inv-split-line {
-        position: absolute; top: 5%; bottom: 5%; left: 50%;
+        position: absolute; top: 8%; bottom: 8%; left: 50%;
         width: 1px; z-index: 2;
-        background: linear-gradient(to bottom, transparent 0%, var(--gold) 20%, var(--gold) 80%, transparent 100%);
-        opacity: .25;
+        background: linear-gradient(to bottom, transparent, var(--gold) 25%, var(--gold) 75%, transparent);
+        opacity: .2;
         transform: translateX(-50%);
     }
     .inv-split-glow {
         position: absolute; top: 30%; bottom: 30%; left: 50%;
-        width: 80px; z-index: 1;
-        background: radial-gradient(ellipse at center, rgba(184,151,90,.06) 0%, transparent 70%);
+        width: 100px; z-index: 1;
+        background: radial-gradient(ellipse at center, rgba(197,164,126,.05), transparent 70%);
         transform: translateX(-50%);
     }
-
     .inv-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 3; }
     .inv-particle {
         position: absolute; border-radius: 50%;
@@ -107,52 +108,48 @@
     }
     @keyframes invFloat {
         0%   { transform: translateY(0) scale(1); opacity: 0; }
-        12%  { opacity: var(--op,.15); }
-        88%  { opacity: var(--op,.15); }
+        12%  { opacity: var(--op,.12); }
+        88%  { opacity: var(--op,.12); }
         100% { transform: translateY(-100vh) scale(.3); opacity: 0; }
     }
-
     .inv-content {
         position: relative; z-index: 4;
         text-align: center;
         padding: 40px 24px;
-        max-width: 640px;
+        max-width: 680px;
     }
-
     .inv-label {
         font-family: var(--fb);
         font-size: 10px;
-        letter-spacing: 6px;
+        letter-spacing: 7px;
         text-transform: uppercase;
-        color: rgba(255,255,255,.3);
-        margin-bottom: 28px;
+        color: rgba(255,255,255,.25);
+        margin-bottom: 32px;
         font-weight: 300;
     }
-
     .inv-ornament {
         display: flex; align-items: center; justify-content: center;
-        gap: 16px; margin-bottom: 32px;
+        gap: 18px; margin-bottom: 36px;
     }
     .inv-orn-line {
-        width: 60px; height: 1px;
-        background: linear-gradient(90deg, transparent, var(--gold));
+        width: 70px; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(197,164,126,.5));
     }
     .inv-orn-line:last-child {
-        background: linear-gradient(270deg, transparent, var(--gold));
+        background: linear-gradient(270deg, transparent, rgba(197,164,126,.5));
     }
     .inv-orn-diamond {
-        width: 6px; height: 6px;
+        width: 5px; height: 5px;
         background: var(--gold);
         transform: rotate(45deg);
-        box-shadow: 0 0 14px rgba(184,151,90,.4);
+        box-shadow: 0 0 16px rgba(197,164,126,.35);
     }
-
     .inv-names {
         font-family: var(--ft);
-        font-size: clamp(44px, 10vw, 82px);
+        font-size: clamp(48px, 11vw, 90px);
         font-weight: 400;
         color: #fff;
-        line-height: 1.1;
+        line-height: 1.05;
         margin: 0 0 8px;
         letter-spacing: -.02em;
     }
@@ -161,73 +158,62 @@
         display: block;
         font-style: italic;
         color: var(--gold);
-        font-size: .38em;
-        line-height: 2;
+        font-size: .35em;
+        line-height: 2.2;
         font-weight: 300;
     }
-
     .inv-date {
-        display: inline-flex; align-items: center; gap: 16px;
+        display: inline-flex; align-items: center; gap: 18px;
         font-family: var(--fb);
         font-size: 11px;
-        letter-spacing: 5px;
+        letter-spacing: 6px;
         text-transform: uppercase;
-        color: rgba(255,255,255,.45);
-        margin-bottom: 48px;
-        font-weight: 400;
+        color: rgba(255,255,255,.38);
+        margin-bottom: 52px;
+        font-weight: 300;
     }
     .inv-date-line {
-        width: 24px; height: 1px;
-        background: rgba(255,255,255,.12);
+        width: 28px; height: 1px;
+        background: rgba(255,255,255,.1);
     }
-
     .inv-open-btn {
         display: inline-flex; align-items: center; gap: 14px;
         background: transparent;
-        border: 1px solid rgba(184,151,90,.35);
+        border: 1px solid rgba(197,164,126,.3);
         color: var(--gold);
-        padding: 16px 38px;
+        padding: 17px 42px;
         border-radius: 999px;
         font-family: var(--fb);
         font-size: 10px;
-        letter-spacing: 4px;
+        letter-spacing: 5px;
         text-transform: uppercase;
         cursor: pointer;
-        transition: all .4s cubic-bezier(.4,0,.2,1);
-        position: relative;
-        overflow: hidden;
-        margin-bottom: 36px;
-    }
-    .inv-open-btn::before {
-        content: '';
-        position: absolute; inset: 0;
-        background: linear-gradient(135deg, rgba(184,151,90,.12), transparent);
-        opacity: 0;
-        transition: opacity .4s ease;
+        transition: all .5s var(--ease);
+        margin-bottom: 40px;
+        font-weight: 400;
     }
     .inv-open-btn:hover {
         border-color: var(--gold);
+        background: rgba(197,164,126,.08);
         transform: translateY(-2px);
-        box-shadow: 0 8px 32px rgba(184,151,90,.2);
+        box-shadow: 0 12px 40px rgba(197,164,126,.15);
     }
-    .inv-open-btn:hover::before { opacity: 1; }
     .inv-btn-icon {
         display: flex; align-items: center;
-        transition: transform .3s ease;
+        transition: transform .4s var(--ease);
     }
-    .inv-open-btn:hover .inv-btn-icon { transform: translateX(4px); }
-
+    .inv-open-btn:hover .inv-btn-icon { transform: translateX(5px); }
     .inv-hint {
         font-family: var(--fb);
         font-size: 9px;
         letter-spacing: 3px;
         text-transform: uppercase;
-        color: rgba(255,255,255,.15);
-        animation: invPulse 2.5s ease-in-out infinite;
+        color: rgba(255,255,255,.12);
+        animation: invPulse 3s ease-in-out infinite;
     }
     @keyframes invPulse {
-        0%, 100% { opacity: .15; }
-        50% { opacity: .35; }
+        0%, 100% { opacity: .12; }
+        50% { opacity: .3; }
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -235,438 +221,354 @@
     ═══════════════════════════════════════════════════════ */
     .wedding-nav {
         position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-        padding: 0 48px; height: 72px;
+        padding: 0 56px; height: 80px;
         display: flex; align-items: center; justify-content: space-between;
-        transition: background .35s ease, backdrop-filter .35s ease, box-shadow .35s ease;
+        transition: all .5s var(--ease);
     }
     .wedding-nav.scrolled {
-        background: rgba(248,244,239,.88);
-        backdrop-filter: blur(18px);
-        box-shadow: 0 10px 30px rgba(20,18,16,.06);
-        border-bottom: 1px solid rgba(184,151,90,.10);
+        height: 68px;
+        background: rgba(250,247,242,.92);
+        backdrop-filter: blur(24px) saturate(1.2);
+        box-shadow: 0 1px 0 rgba(197,164,126,.1);
     }
     .nav-couple {
         font-family: var(--ft);
-        font-size: 22px;
+        font-size: 24px;
         font-weight: 500;
         color: white;
-        transition: color .35s ease;
-        letter-spacing: .01em;
+        transition: color .5s var(--ease);
+        letter-spacing: .02em;
     }
     .wedding-nav.scrolled .nav-couple { color: var(--dark); }
-    .nav-links { display: flex; gap: 34px; }
+    .nav-links { display: flex; gap: 40px; }
     .nav-links a {
         font-family: var(--fb);
         font-size: 10px;
         letter-spacing: 3px;
         text-transform: uppercase;
-        font-weight: 500;
-        color: rgba(255,255,255,.56);
+        font-weight: 400;
+        color: rgba(255,255,255,.45);
         text-decoration: none;
-        transition: color .25s ease;
+        transition: color .3s var(--ease);
+        position: relative;
     }
+    .nav-links a::after {
+        content: '';
+        position: absolute; bottom: -4px; left: 0; right: 0;
+        height: 1px; background: var(--gold);
+        transform: scaleX(0); transform-origin: center;
+        transition: transform .4s var(--ease);
+    }
+    .nav-links a:hover::after { transform: scaleX(1); }
     .wedding-nav.scrolled .nav-links a { color: var(--wm); }
     .nav-links a:hover { color: var(--gold) !important; }
 
     /* ═══════════════════════════════════════════════════════
-       HERO
+       HERO — Cinematic Luxury
     ═══════════════════════════════════════════════════════ */
     .hero-section {
         position: relative;
         height: 100vh;
-        min-height: 760px;
+        height: 100dvh;
+        min-height: 700px;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
         isolation: isolate;
     }
-
     .hero-bg {
         position: absolute;
-        inset: -30px;
+        inset: -40px;
         background-size: cover;
         background-position: center;
-        transform: scale(1.06);
+        transform: scale(1.08);
         will-change: transform;
-        filter: brightness(0.85) saturate(1.1);
     }
-
     .hero-overlay {
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        background:
-            radial-gradient(circle at 50% 30%, rgba(184,151,90,.12), transparent 40%),
-            linear-gradient(to bottom, rgba(0,0,0,.18) 0%, rgba(0,0,0,.42) 50%, rgba(0,0,0,.72) 100%);
-    }
-
-    .hero-grid {
         position: absolute; inset: 0; z-index: 1;
-        background-image:
-            linear-gradient(rgba(184,151,90,.18) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(184,151,90,.18) 1px, transparent 1px);
-        background-size: 80px 80px;
-        opacity: .045;
+        background:
+            linear-gradient(to bottom, rgba(0,0,0,.15) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.65) 100%);
     }
-
+    .hero-vignette {
+        position: absolute; inset: 0; z-index: 1;
+        background: radial-gradient(ellipse 70% 60% at 50% 45%, transparent 0%, rgba(0,0,0,.3) 100%);
+    }
     .hero-light {
         position: absolute;
         border-radius: 50%;
-        filter: blur(90px);
+        filter: blur(100px);
         pointer-events: none;
         z-index: 1;
-        mix-blend-mode: screen;
+        mix-blend-mode: soft-light;
     }
     .hero-light-1 {
-        width: 340px;
-        height: 340px;
-        background: rgba(184,151,90,.18);
-        top: 10%;
-        left: 8%;
-        animation: floatLight 10s ease-in-out infinite;
+        width: 400px; height: 400px;
+        background: rgba(197,164,126,.2);
+        top: 15%; left: 5%;
+        animation: floatLight 12s ease-in-out infinite;
     }
     .hero-light-2 {
-        width: 280px;
-        height: 280px;
-        background: rgba(255,255,255,.08);
-        bottom: 10%;
-        right: 8%;
-        animation: floatLight 12s ease-in-out infinite reverse;
+        width: 300px; height: 300px;
+        background: rgba(255,255,255,.06);
+        bottom: 15%; right: 8%;
+        animation: floatLight 15s ease-in-out infinite reverse;
     }
     @keyframes floatLight {
-        0%,100% { transform: translate3d(0,0,0); }
-        50% { transform: translate3d(0,-18px,0); }
+        0%, 100% { transform: translate3d(0,0,0); }
+        50% { transform: translate3d(0,-20px,0); }
     }
-
     .hero-particles {
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        pointer-events: none;
-        overflow: hidden;
+        position: absolute; inset: 0; z-index: 1;
+        pointer-events: none; overflow: hidden;
     }
     .hero-particle {
-        position: absolute;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(255,255,255,.85), rgba(184,151,90,.18));
+        position: absolute; border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,.9), rgba(197,164,126,.15));
         opacity: 0;
-        animation: heroParticleFloat var(--dur, 10s) linear infinite;
+        animation: heroFloat var(--dur, 12s) linear infinite;
     }
-    @keyframes heroParticleFloat {
-        0% {
-            transform: translateY(30px) scale(.6);
-            opacity: 0;
-        }
-        15% { opacity: var(--op, .18); }
-        85% { opacity: var(--op, .18); }
-        100% {
-            transform: translateY(-120vh) scale(1.15);
-            opacity: 0;
-        }
+    @keyframes heroFloat {
+        0%   { transform: translateY(20px) scale(.5); opacity: 0; }
+        10%  { opacity: var(--op, .12); }
+        90%  { opacity: var(--op, .12); }
+        100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
     }
-
-    .hero-circle {
+    .hero-ring {
         position: absolute;
         border-radius: 50%;
-        border: 1px solid rgba(184,151,90,.24);
+        border: 1px solid rgba(197,164,126,.1);
         top: 50%; left: 50%;
         transform: translate(-50%, -50%);
-        opacity: .10;
         z-index: 1;
-        animation: pulseCircle 10s ease-in-out infinite;
+        animation: ringPulse 12s ease-in-out infinite;
     }
-    .hero-circle-1 { width: 560px; height: 560px; animation-delay: 0s; }
-    .hero-circle-2 { width: 860px; height: 860px; animation-delay: 1.5s; }
-    .hero-circle-3 { width: 1160px; height: 1160px; animation-delay: 3s; }
-
-    @keyframes pulseCircle {
-        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .08; }
-        50% { transform: translate(-50%, -50%) scale(1.04); opacity: .14; }
+    .hero-ring-1 { width: 500px; height: 500px; }
+    .hero-ring-2 { width: 800px; height: 800px; animation-delay: 2s; opacity: .6; }
+    @keyframes ringPulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .06; }
+        50% { transform: translate(-50%, -50%) scale(1.06); opacity: .12; }
     }
 
     .hero-content {
-        position: relative;
-        z-index: 2;
+        position: relative; z-index: 2;
         text-align: center;
         padding: 0 24px;
-        max-width: 1020px;
+        max-width: 1000px;
     }
-
-    .hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        margin-bottom: 26px;
-        background: rgba(255,255,255,.08);
-        border: 1px solid rgba(255,255,255,.12);
-        backdrop-filter: blur(12px);
-        border-radius: 999px;
-        color: rgba(255,255,255,.88);
-        font-size: 10px;
-        letter-spacing: .28em;
-        text-transform: uppercase;
-        font-weight: 500;
-    }
-
-    .hero-ornament {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 20px;
-        margin-bottom: 22px;
-    }
-    .ornament-line {
-        width: 72px;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, var(--gold));
-        opacity: .95;
-    }
-    .ornament-line.right {
-        background: linear-gradient(270deg, transparent, var(--gold));
-    }
-    .ornament-diamond {
-        width: 8px;
-        height: 8px;
-        background: var(--gold);
-        transform: rotate(45deg);
-        box-shadow: 0 0 20px rgba(184,151,90,.25);
-    }
-
     .hero-tagline {
         font-family: var(--fb);
-        font-size: 11px;
-        letter-spacing: .42em;
+        font-size: 10px;
+        letter-spacing: .6em;
         text-transform: uppercase;
         color: var(--gold);
-        font-weight: 500;
+        font-weight: 400;
         display: block;
-        margin-bottom: 22px;
-        text-shadow: 0 1px 8px rgba(0,0,0,.4);
+        margin-bottom: 28px;
     }
-
+    .hero-ornament {
+        display: flex; align-items: center; justify-content: center;
+        gap: 20px; margin-bottom: 28px;
+    }
+    .ornament-line {
+        width: 80px; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(197,164,126,.6));
+    }
+    .ornament-line.right {
+        background: linear-gradient(270deg, transparent, rgba(197,164,126,.6));
+    }
+    .ornament-diamond {
+        width: 6px; height: 6px;
+        background: var(--gold);
+        transform: rotate(45deg);
+        box-shadow: 0 0 20px rgba(197,164,126,.3);
+    }
     .hero-names {
         font-family: var(--ft);
-        font-size: clamp(52px,10vw,108px);
-        font-weight: 500;
+        font-size: clamp(56px, 12vw, 120px);
+        font-weight: 400;
         color: #fff;
-        line-height: 1.02;
+        line-height: .95;
         letter-spacing: -.03em;
-        margin-bottom: 26px;
-        text-shadow: 0 2px 16px rgba(0,0,0,.38), 0 8px 40px rgba(0,0,0,.28);
+        margin-bottom: 32px;
     }
-    .hero-name {
-        display: inline-block;
-    }
-
+    .hero-name { display: inline-block; }
     .ampersand {
         display: block;
         font-style: italic;
         color: var(--gold);
-        font-size: .48em;
-        line-height: 1.25;
-        font-weight: 400;
-        text-shadow: 0 1px 8px rgba(0,0,0,.3);
+        font-size: .4em;
+        line-height: 1.6;
+        font-weight: 300;
     }
-
     .hero-date {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
+        display: inline-flex; align-items: center; gap: 14px;
         font-family: var(--fb);
-        font-size: 12px;
-        letter-spacing: .28em;
+        font-size: 11px;
+        letter-spacing: .35em;
         text-transform: uppercase;
-        color: rgba(255,255,255,.94);
-        font-weight: 500;
-        margin-bottom: 38px;
-        text-shadow: 0 1px 10px rgba(0,0,0,.4);
-        padding: 12px 18px;
-        border-radius: 999px;
-        background: rgba(255,255,255,.06);
-        border: 1px solid rgba(255,255,255,.10);
-        backdrop-filter: blur(10px);
+        color: rgba(255,255,255,.8);
+        font-weight: 300;
+        margin-bottom: 44px;
     }
-    .hero-date i { color: var(--gold); }
+    .hero-date i { color: var(--gold); font-size: 14px; }
+    .hero-date-sep {
+        width: 4px; height: 4px; border-radius: 50%;
+        background: rgba(197,164,126,.4);
+    }
 
     .countdown-timer {
-        display: flex;
-        gap: 14px;
-        justify-content: center;
-        margin-bottom: 38px;
-        flex-wrap: wrap;
+        display: flex; gap: 12px; justify-content: center;
+        margin-bottom: 48px;
     }
     .countdown-item {
         display: flex; flex-direction: column; align-items: center;
-        background: rgba(255,255,255,.08);
-        border: 1px solid rgba(255,255,255,.14);
-        backdrop-filter: blur(14px);
-        border-radius: calc(var(--radius) + 6px);
-        padding: 18px 22px;
-        min-width: 86px;
-        box-shadow: 0 12px 40px rgba(0,0,0,.18);
+        min-width: 80px; padding: 20px 16px;
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.08);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
     }
     .countdown-number {
         font-family: var(--ft);
-        font-size: 40px;
+        font-size: 44px;
         font-weight: 500;
         color: #fff;
         line-height: 1;
-        text-shadow: 0 2px 12px rgba(0,0,0,.3);
     }
     .countdown-label {
         font-family: var(--fb);
-        font-size: 9px;
-        letter-spacing: .28em;
+        font-size: 8px;
+        letter-spacing: .35em;
         text-transform: uppercase;
         color: var(--gold);
         margin-top: 8px;
-        font-weight: 500;
+        font-weight: 400;
     }
 
     .hero-actions {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 14px;
-        flex-wrap: wrap;
+        display: flex; align-items: center; justify-content: center;
+        gap: 16px; flex-wrap: wrap;
     }
-
     .hero-cta {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
+        display: inline-flex; align-items: center; justify-content: center; gap: 10px;
         font-family: var(--fb);
-        font-size: 11px;
-        letter-spacing: .28em;
+        font-size: 10px;
+        letter-spacing: .35em;
         text-transform: uppercase;
-        font-weight: 600;
+        font-weight: 500;
         color: var(--dark);
-        background: linear-gradient(135deg, var(--gold), var(--gold-light));
-        padding: 18px 38px;
+        background: var(--gold);
+        padding: 18px 40px;
         text-decoration: none;
         border-radius: 999px;
-        transition: transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s ease, filter .35s ease;
-        box-shadow: 0 12px 30px rgba(184,151,90,.25), 0 4px 12px rgba(0,0,0,.15);
-        position: relative;
-        overflow: hidden;
-    }
-    .hero-cta::before {
-        content: '';
-        position: absolute; inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,.2), transparent 50%);
-        pointer-events: none;
+        transition: all .5s var(--ease);
+        box-shadow: 0 8px 32px rgba(197,164,126,.25);
     }
     .hero-cta:hover {
-        transform: translateY(-4px) scale(1.02);
+        transform: translateY(-3px);
         color: var(--dark);
-        box-shadow: 0 20px 44px rgba(184,151,90,.35), 0 6px 16px rgba(0,0,0,.2);
-        filter: brightness(1.05);
+        box-shadow: 0 16px 48px rgba(197,164,126,.35);
+        filter: brightness(1.08);
     }
-
     .hero-cta-secondary {
-        background: rgba(255,255,255,.08);
+        background: transparent;
         color: #fff;
-        border: 1px solid rgba(255,255,255,.14);
-        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,.15);
+        box-shadow: none;
     }
     .hero-cta-secondary:hover {
         color: #fff;
-        background: rgba(255,255,255,.12);
+        background: rgba(255,255,255,.08);
+        border-color: rgba(255,255,255,.25);
+        box-shadow: 0 8px 32px rgba(0,0,0,.15);
     }
-
     .hero-scroll-indicator {
-        position: absolute;
-        left: 50%;
-        bottom: 24px;
-        transform: translateX(-50%);
-        z-index: 2;
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
+        position: absolute; left: 50%; bottom: 32px;
+        transform: translateX(-50%); z-index: 2;
+        display: inline-flex; flex-direction: column;
+        align-items: center; gap: 8px;
         text-decoration: none;
-        color: rgba(255,255,255,.72);
-        font-size: 10px;
-        letter-spacing: .28em;
+        color: rgba(255,255,255,.5);
+        font-size: 9px;
+        letter-spacing: .35em;
         text-transform: uppercase;
-        animation: scrollIndicator 2.4s ease-in-out infinite;
+        animation: scrollFloat 3s ease-in-out infinite;
     }
-    .hero-scroll-indicator i {
-        font-size: 18px;
-        color: var(--gold);
-    }
-    @keyframes scrollIndicator {
-        0%,100% { transform: translateX(-50%) translateY(0); opacity: .7; }
-        50% { transform: translateX(-50%) translateY(8px); opacity: 1; }
+    .hero-scroll-indicator i { font-size: 16px; color: var(--gold); }
+    @keyframes scrollFloat {
+        0%, 100% { transform: translateX(-50%) translateY(0); opacity: .5; }
+        50% { transform: translateX(-50%) translateY(8px); opacity: .9; }
     }
 
     /* ═══════════════════════════════════════════════════════
-       SECTIONS
+       SECTIONS — Luxe Spacing & Typography
     ═══════════════════════════════════════════════════════ */
-    .wedding-section { padding: 130px 0; position: relative; overflow: hidden; }
+    .wedding-section { padding: 160px 0; position: relative; overflow: hidden; }
     .section-inner { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
     .alt-bg { background: var(--ivory); }
-    .dark-bg { background: linear-gradient(160deg, var(--dark) 0%, #0f0c09 100%); color: var(--cream); }
+    .dark-bg { background: linear-gradient(170deg, #141210 0%, #0c0a08 100%); color: var(--cream); }
 
-    .section-header { text-align: center; margin-bottom: 72px; }
+    .section-header { text-align: center; margin-bottom: 80px; }
     .section-ornament {
         display: flex; align-items: center; justify-content: center;
-        gap: 16px; margin-bottom: 16px;
+        gap: 16px; margin-bottom: 20px;
     }
     .section-ornament-line {
-        width: 40px; height: 1px;
-        background: linear-gradient(90deg, transparent, var(--gold));
+        width: 48px; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(197,164,126,.5));
     }
     .section-ornament-line:last-child {
-        background: linear-gradient(270deg, transparent, var(--gold));
+        background: linear-gradient(270deg, transparent, rgba(197,164,126,.5));
     }
-    .section-ornament-icon { color: var(--gold); font-size: 12px; }
+    .section-ornament-icon { color: var(--gold); font-size: 10px; }
     .section-label {
         font-family: var(--fb);
         font-size: 9px;
-        letter-spacing: 5px;
+        letter-spacing: 6px;
         text-transform: uppercase;
         color: var(--gold);
         font-weight: 400;
         display: block;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
     }
     .section-title {
         font-family: var(--ft);
-        font-size: clamp(32px,5vw,56px);
+        font-size: clamp(36px, 5.5vw, 62px);
         font-weight: 400;
         color: var(--wt);
-        line-height: 1.1;
+        line-height: 1.05;
         margin-bottom: 20px;
+        letter-spacing: -.02em;
     }
     .section-subtitle {
         font-size: 15px;
         font-weight: 300;
         color: var(--wm);
-        line-height: 1.8;
-        max-width: 560px;
+        line-height: 1.85;
+        max-width: 520px;
         margin-inline: auto;
     }
 
-    /* HISTOIRE */
+    /* STORY */
     .story-content {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 80px;
+        gap: 100px;
         align-items: center;
     }
     .story-image { position: relative; }
-    .story-image-frame { position: relative; }
+    .story-image-frame {
+        position: relative;
+        border-radius: 4px;
+        overflow: hidden;
+    }
     .story-image-frame::before {
         content: '';
         position: absolute;
         inset: -16px -16px 16px 16px;
-        border: 1px solid rgba(184,151,90,.18);
-        border-radius: 2px;
+        border: 1px solid rgba(197,164,126,.15);
+        border-radius: 4px;
         pointer-events: none;
     }
     .story-image-frame img {
@@ -674,93 +576,99 @@
         aspect-ratio: 3/4;
         object-fit: cover;
         display: block;
-        border-radius: 2px;
-        box-shadow: 0 20px 60px rgba(20,18,16,.08);
     }
     .story-quote {
         font-family: var(--ft);
-        font-size: 22px;
+        font-size: 24px;
         font-style: italic;
         font-weight: 300;
-        line-height: 1.6;
+        line-height: 1.55;
         color: var(--dark);
-        margin-bottom: 24px;
-        padding-left: 24px;
+        margin-bottom: 28px;
+        padding-left: 28px;
         border-left: 2px solid var(--gold);
     }
     .story-body {
         font-size: 15px;
         font-weight: 300;
-        line-height: 1.9;
+        line-height: 2;
         color: var(--wm);
     }
 
-    /* GALERIE */
+    /* GALLERY */
     .gallery-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
-        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 8px;
     }
     .gallery-item {
         position: relative;
         overflow: hidden;
         aspect-ratio: 1;
-        border-radius: calc(var(--radius) + 2px);
+        border-radius: 4px;
     }
     .gallery-item img {
         width: 100%; height: 100%;
-        object-fit: cover;
-        display: block;
-        transition: transform .6s ease;
+        object-fit: cover; display: block;
+        transition: transform .8s var(--ease);
     }
     .gallery-item:hover img { transform: scale(1.06); }
     .gallery-overlay {
         position: absolute; inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,.58), rgba(0,0,0,.08));
+        background: linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 40%);
         display: flex; align-items: flex-end;
-        padding: 20px;
+        padding: 24px;
         opacity: 0;
-        transition: opacity .3s;
+        transition: opacity .4s var(--ease);
     }
     .gallery-item:hover .gallery-overlay { opacity: 1; }
     .gallery-caption {
         font-family: var(--ft);
-        font-size: 15px;
+        font-size: 16px;
         color: white;
         font-style: italic;
     }
 
-    /* DÉTAILS */
+    /* DETAILS */
     .details-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
-        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
     }
     .detail-card {
-        background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.85));
-        border: 1px solid rgba(184,151,90,.12);
-        padding: 42px 28px;
+        background: white;
+        border: 1px solid rgba(197,164,126,.08);
+        padding: 48px 28px;
         text-align: center;
-        border-radius: calc(var(--radius) + 6px);
-        box-shadow: 0 18px 50px rgba(20,18,16,.04);
-        transition: transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s ease, border-color .35s ease;
-        backdrop-filter: blur(8px);
+        border-radius: 4px;
+        transition: all .5s var(--ease);
+        position: relative;
     }
-    .detail-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 28px 70px rgba(20,18,16,.10);
-        border-color: rgba(184,151,90,.22);
+    .detail-card::after {
+        content: '';
+        position: absolute; bottom: 0; left: 20%; right: 20%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        opacity: 0;
+        transition: opacity .5s var(--ease);
     }
-    .detail-icon { font-size: 22px; color: var(--gold); margin-bottom: 20px; }
+    .detail-card:hover { transform: translateY(-4px); }
+    .detail-card:hover::after { opacity: 1; }
+    .detail-icon {
+        font-size: 20px;
+        color: var(--gold);
+        margin-bottom: 24px;
+        display: block;
+    }
     .detail-label {
         font-family: var(--fb);
         font-size: 9px;
-        letter-spacing: 3px;
+        letter-spacing: 4px;
         text-transform: uppercase;
         color: var(--wm);
         font-weight: 400;
         display: block;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
     .detail-value {
         font-family: var(--ft);
@@ -769,9 +677,9 @@
         color: var(--wt);
     }
     .detail-desc {
-        font-size: 12px;
+        font-size: 13px;
         color: var(--wm);
-        margin-top: 4px;
+        margin-top: 6px;
         font-weight: 300;
     }
 
@@ -780,528 +688,415 @@
         position: relative;
         max-width: 760px;
         margin: 0 auto;
-        padding: 0 0 24px;
     }
     .program-timeline::before {
         content: '';
         position: absolute;
-        left: 50%;
-        top: 12px;
-        bottom: 12px;
-        width: 2px;
-        background: linear-gradient(to bottom, transparent, var(--gold) 5%, var(--gold) 95%, transparent);
+        left: 50%; top: 0; bottom: 0;
+        width: 1px;
+        background: linear-gradient(to bottom, transparent, var(--gold) 8%, var(--gold) 92%, transparent);
         transform: translateX(-50%);
-        opacity: .5;
+        opacity: .3;
     }
     .program-item {
         display: grid;
         grid-template-columns: 1fr 52px 1fr;
-        margin-bottom: 48px;
+        margin-bottom: 56px;
         align-items: start;
-        gap: 0;
     }
     .program-item:last-child { margin-bottom: 0; }
-
-    .program-item:nth-child(odd) .program-content {
-        text-align: right;
-        padding-right: 32px;
-    }
-    .program-item:nth-child(even) .program-content {
-        text-align: left;
-        padding-left: 32px;
-        grid-column: 3;
-    }
-    .program-item:nth-child(even) .program-dot {
-        grid-column: 2; grid-row: 1;
-    }
-
+    .program-item:nth-child(odd) .program-content { text-align: right; padding-right: 36px; }
+    .program-item:nth-child(even) .program-content { text-align: left; padding-left: 36px; grid-column: 3; }
+    .program-item:nth-child(even) .program-dot { grid-column: 2; grid-row: 1; }
     .program-dot {
-        width: 14px; height: 14px; border-radius: 50%;
+        width: 12px; height: 12px; border-radius: 50%;
         background: var(--gold);
         border: 3px solid var(--cream);
-        box-shadow: 0 0 0 1px var(--gold), 0 0 20px rgba(184,151,90,.18);
-        flex-shrink: 0;
-        margin-top: 5px;
+        box-shadow: 0 0 0 1px var(--gold);
+        margin-top: 6px;
         justify-self: center;
     }
+    .alt-bg .program-dot { border-color: var(--ivory); }
     .program-icon { display: none; }
     .program-time {
         font-family: var(--fb);
         font-size: 10px;
-        letter-spacing: .22em;
+        letter-spacing: .25em;
         text-transform: uppercase;
         color: var(--gold);
-        margin-bottom: 6px;
-        font-weight: 500;
+        margin-bottom: 8px;
+        font-weight: 400;
     }
     .program-title {
         font-family: var(--ft);
-        font-size: 22px;
+        font-size: 24px;
         font-weight: 500;
         color: var(--wt);
         margin-bottom: 8px;
-        line-height: 1.25;
+        line-height: 1.2;
     }
     .program-desc {
         font-size: 14px;
         font-weight: 300;
         color: var(--wm);
-        line-height: 1.65;
+        line-height: 1.7;
     }
     .program-venue {
         font-size: 11px;
-        letter-spacing: .12em;
+        letter-spacing: .1em;
         color: var(--gold);
-        margin-top: 8px;
+        margin-top: 10px;
         font-weight: 400;
     }
 
-    /* LIEUX — cartes compactes */
+    /* VENUES */
     .venues-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
     }
     .venue-card {
         position: relative;
         overflow: hidden;
         aspect-ratio: 3/4;
-        border-radius: calc(var(--radius) + 4px);
-        box-shadow: 0 12px 36px rgba(20,18,16,.08);
-        transition: transform .4s cubic-bezier(.4,0,.2,1), box-shadow .4s ease;
+        border-radius: 4px;
+        transition: transform .6s var(--ease);
     }
-    .venue-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 50px rgba(20,18,16,.14);
-    }
+    .venue-card:hover { transform: translateY(-4px); }
     .venue-card img {
-        width: 100%;
-        height: 100%;
+        width: 100%; height: 100%;
         object-fit: cover;
-        transition: transform .8s cubic-bezier(.4,0,.2,1);
+        transition: transform 1s var(--ease);
     }
-    .venue-card:hover img { transform: scale(1.08); }
+    .venue-card:hover img { transform: scale(1.06); }
     .venue-photo { width: 100%; height: 100%; }
     .venue-photo-placeholder {
         width: 100%; height: 100%;
         background: linear-gradient(155deg, #2a2319, #1a1612);
         display: flex; align-items: center; justify-content: center;
-        font-size: 36px; color: rgba(184,151,90,.18);
+        font-size: 36px; color: rgba(197,164,126,.15);
     }
     .venue-info {
         position: absolute; inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.24) 50%, transparent 100%);
+        background: linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.15) 55%, transparent 100%);
         display: flex; flex-direction: column; justify-content: flex-end;
-        padding: 18px;
+        padding: 24px;
     }
     .venue-name {
         font-family: var(--ft);
-        font-size: 18px;
-        font-weight: 500;
-        color: white;
-        margin-bottom: 4px;
+        font-size: 20px; font-weight: 500;
+        color: white; margin-bottom: 4px;
     }
     .venue-address {
-        font-size: 11px;
-        color: rgba(255,255,255,.56);
-        font-weight: 300;
-        margin-bottom: 10px;
+        font-size: 12px; color: rgba(255,255,255,.5);
+        font-weight: 300; margin-bottom: 12px;
     }
-    .venue-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .venue-actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .btn-venue {
         display: inline-flex; align-items: center; gap: 5px;
-        font-family: var(--fb); font-size: 8px; letter-spacing: 1.5px;
+        font-family: var(--fb); font-size: 8px; letter-spacing: 2px;
         text-transform: uppercase; font-weight: 500;
         color: var(--dark); background: var(--gold);
-        padding: 6px 12px; text-decoration: none;
-        border-radius: 999px; transition: background .2s, transform .2s ease;
+        padding: 7px 14px; text-decoration: none;
+        border-radius: 999px; transition: all .3s var(--ease);
     }
-    .btn-venue:hover {
-        background: var(--gold-light);
-        transform: translateY(-1px);
-    }
+    .btn-venue:hover { filter: brightness(1.1); transform: translateY(-1px); }
     .btn-venue-maps { background: var(--gold); }
     .btn-venue-waze { background: var(--gold-light); }
 
-    /* DRESS CODE : palette en haut, 4 cartes en dessous */
-    .dresscode-palette-wrap {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-    .dresscode-palette-wrap .palette-swatches {
-        justify-content: center;
-        margin-top: 12px;
-    }
+    /* DRESS CODE */
+    .dresscode-palette-wrap { text-align: center; margin-bottom: 48px; }
+    .dresscode-palette-wrap .palette-swatches { justify-content: center; margin-top: 16px; }
     .dresscode-cards-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 20px;
     }
     .dresscode-card {
-        background: rgba(255,255,255,.05);
-        border: 1px solid rgba(184,151,90,.15);
-        padding: 28px 24px;
-        border-radius: calc(var(--radius) + 6px);
-        transition: border-color .3s, transform .25s ease;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(197,164,126,.12);
+        padding: 32px 24px;
+        border-radius: 4px;
+        transition: all .4s var(--ease);
         min-height: 140px;
     }
     .dresscode-card:hover {
-        border-color: rgba(184,151,90,.35);
+        border-color: rgba(197,164,126,.3);
         transform: translateY(-2px);
     }
     .dresscode-label {
         font-family: var(--fb);
-        font-size: 9px;
-        letter-spacing: 3px;
+        font-size: 9px; letter-spacing: 3px;
         text-transform: uppercase;
-        color: var(--gold);
-        font-weight: 500;
-        margin-bottom: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        color: var(--gold); font-weight: 500;
+        margin-bottom: 16px;
+        display: flex; align-items: center; gap: 8px;
     }
-    .palette-swatches { display: flex; gap: 14px; flex-wrap: wrap; }
+    .palette-swatches { display: flex; gap: 16px; flex-wrap: wrap; }
     .palette-swatch { display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .swatch-color {
-        width: 48px; height: 48px; border-radius: 50%;
-        box-shadow: 0 4px 20px rgba(0,0,0,.35);
+        width: 52px; height: 52px; border-radius: 50%;
+        box-shadow: 0 4px 24px rgba(0,0,0,.3);
     }
-    .swatch-name { font-size: 11px; color: rgba(255,255,255,.5); letter-spacing: 1px; }
-    @media (max-width: 900px) {
-        .dresscode-cards-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 500px) {
-        .dresscode-cards-grid { grid-template-columns: 1fr; }
-    }
-
-    .univers-intro { text-align: center; max-width: 560px; margin: 0 auto 40px; }
-    .univers-intro .section-subtitle { color: rgba(255,255,255,.75); }
+    .swatch-name { font-size: 11px; color: rgba(255,255,255,.45); letter-spacing: 1px; }
+    .univers-intro { text-align: center; max-width: 520px; margin: 0 auto 48px; }
+    .univers-intro .section-subtitle { color: rgba(255,255,255,.6); }
     .univers-inspiration-title {
         font-family: var(--ft);
-        font-size: 22px;
-        font-weight: 500;
-        color: #fff;
-        margin-bottom: 28px;
+        font-size: 24px; font-weight: 500;
+        color: #fff; margin-bottom: 28px;
         text-align: center;
-        letter-spacing: .02em;
     }
     .univers-inspiration-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 20px;
-        margin-top: 32px;
+        gap: 16px; margin-top: 32px;
     }
     .univers-inspiration-item {
-        position: relative;
-        overflow: hidden;
-        border-radius: calc(var(--radius) + 4px);
-        aspect-ratio: 3/4;
-        background: rgba(255,255,255,.06);
-        border: 1px solid rgba(255,255,255,.08);
-        box-shadow: 0 8px 32px rgba(0,0,0,.2);
+        position: relative; overflow: hidden;
+        border-radius: 4px; aspect-ratio: 3/4;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(255,255,255,.06);
     }
     .univers-inspiration-item img {
         width: 100%; height: 100%;
         object-fit: cover; display: block;
-        transition: transform .4s ease;
+        transition: transform .6s var(--ease);
     }
-    .univers-inspiration-item:hover img { transform: scale(1.05); }
+    .univers-inspiration-item:hover img { transform: scale(1.06); }
     .univers-inspiration-item .overlay {
         position: absolute; inset: 0;
         background: linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 50%);
         display: flex; align-items: flex-end; padding: 16px;
-        opacity: 0; transition: opacity .3s;
+        opacity: 0; transition: opacity .4s var(--ease);
     }
     .univers-inspiration-item:hover .overlay { opacity: 1; }
     .univers-inspiration-item .overlay span {
         font-family: var(--fb); font-size: 12px; color: #fff; letter-spacing: .05em;
     }
 
-    /* CADEAUX */
+    /* GIFTS */
     .gifts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
-        gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
     }
     .gift-card {
         background: white;
-        border: 1px solid rgba(184,151,90,.1);
+        border: 1px solid rgba(197,164,126,.08);
         overflow: hidden;
-        border-radius: calc(var(--radius) + 6px);
-        transition: transform .3s, box-shadow .3s;
-        box-shadow: 0 14px 40px rgba(20,18,16,.04);
+        border-radius: 4px;
+        transition: all .5s var(--ease);
     }
-    .gift-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 60px rgba(0,0,0,.08);
-    }
+    .gift-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,.06); }
     .gift-image { aspect-ratio: 1; overflow: hidden; background: var(--cream); }
     .gift-image img {
         width: 100%; height: 100%;
         object-fit: cover;
-        transition: transform .5s;
+        transition: transform .6s var(--ease);
     }
     .gift-card:hover .gift-image img { transform: scale(1.05); }
     .gift-image-placeholder {
         width: 100%; height: 100%;
         display: flex; align-items: center; justify-content: center;
-        font-size: 40px; color: var(--gold); opacity: .3;
+        font-size: 40px; color: var(--gold); opacity: .2;
     }
-    .gift-info { padding: 24px; }
+    .gift-info { padding: 28px; }
     .gift-name {
         font-family: var(--ft);
-        font-size: 18px;
-        font-weight: 500;
-        color: var(--dark);
-        margin-bottom: 8px;
+        font-size: 20px; font-weight: 500;
+        color: var(--dark); margin-bottom: 8px;
     }
     .gift-price {
         font-family: var(--fb);
-        font-size: 11px;
-        letter-spacing: 2px;
-        color: var(--gold);
-        font-weight: 500;
+        font-size: 11px; letter-spacing: 2px;
+        color: var(--gold); font-weight: 500;
         margin-bottom: 8px;
     }
-    .gift-desc {
-        font-size: 12px;
-        color: var(--wm);
-        line-height: 1.7;
-        font-weight: 300;
-    }
+    .gift-desc { font-size: 13px; color: var(--wm); line-height: 1.7; font-weight: 300; }
     .gift-reserved {
         display: inline-flex; align-items: center; gap: 6px;
         font-size: 10px; letter-spacing: 2px; font-weight: 500;
         text-transform: uppercase; color: #10b981; margin-top: 12px;
     }
 
-    /* RÈGLES */
-    .rules-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+    /* RULES */
+    .rules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
     .rules-column {
         background: rgba(255,255,255,.03);
-        border: 1px solid rgba(184,151,90,.1);
+        border: 1px solid rgba(197,164,126,.08);
         padding: 40px 32px;
-        border-radius: calc(var(--radius) + 4px);
+        border-radius: 4px;
     }
     .rules-column-title {
         font-family: var(--fb);
-        font-size: 9px;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        font-weight: 500;
-        margin-bottom: 24px;
+        font-size: 9px; letter-spacing: 3px;
+        text-transform: uppercase; font-weight: 500;
+        margin-bottom: 28px;
         display: flex; align-items: center; gap: 8px;
     }
     .rules-column.allowed .rules-column-title { color: #10b981; }
     .rules-column.forbidden .rules-column-title { color: #ef4444; }
     .rules-column.recommendation .rules-column-title { color: var(--gold); }
-    .rule-item { display: flex; gap: 12px; margin-bottom: 16px; }
+    .rule-item { display: flex; gap: 12px; margin-bottom: 18px; }
     .rule-icon { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
     .rules-column.allowed .rule-icon { color: #10b981; }
     .rules-column.forbidden .rule-icon { color: #ef4444; }
     .rules-column.recommendation .rule-icon { color: var(--gold); }
-    .rule-title { font-size: 14px; color: white; font-weight: 400; margin-bottom: 2px; }
-    .rule-desc { font-size: 12px; color: rgba(255,255,255,.42); line-height: 1.6; }
+    .rule-title { font-size: 14px; color: white; font-weight: 400; margin-bottom: 3px; }
+    .rule-desc { font-size: 12px; color: rgba(255,255,255,.38); line-height: 1.6; }
 
     /* RSVP */
     .rsvp-section {
-        background: linear-gradient(160deg, var(--dark) 0%, #0f0c09 100%);
-        position: relative;
-        overflow: hidden;
+        background: linear-gradient(170deg, #141210 0%, #0c0a08 100%);
+        position: relative; overflow: hidden;
     }
     .rsvp-section::before {
         content: '';
         position: absolute; inset: 0;
-        background:
-            radial-gradient(ellipse 700px 500px at 50% 0%, rgba(184,151,90,.08), transparent),
-            radial-gradient(ellipse 400px 400px at 20% 80%, rgba(184,151,90,.04), transparent);
+        background: radial-gradient(ellipse 600px 400px at 50% 0%, rgba(197,164,126,.06), transparent);
     }
     .rsvp-form-card {
-        max-width: 620px; margin: 0 auto;
-        background: rgba(255,255,255,.04);
-        border: 1px solid rgba(184,151,90,.18);
-        padding: 56px;
+        max-width: 600px; margin: 0 auto;
+        background: rgba(255,255,255,.03);
+        border: 1px solid rgba(197,164,126,.12);
+        padding: 60px;
         position: relative;
-        border-radius: calc(var(--radius) + 8px);
-        backdrop-filter: blur(16px);
-        box-shadow: 0 32px 80px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
+        border-radius: 4px;
+        backdrop-filter: blur(20px);
     }
     .rsvp-form-card::before {
         content: '';
-        position: absolute; inset: 6px;
-        border: 1px solid rgba(184,151,90,.08);
+        position: absolute; inset: 8px;
+        border: 1px solid rgba(197,164,126,.05);
         pointer-events: none;
-        border-radius: calc(var(--radius) + 4px);
+        border-radius: 2px;
     }
     .rsvp-form-title {
         font-family: var(--ft);
-        font-size: 32px;
-        font-weight: 400;
-        color: white;
-        margin-bottom: 6px;
+        font-size: 34px; font-weight: 400;
+        color: white; margin-bottom: 8px;
     }
     .rsvp-form-subtitle {
         font-size: 13px;
-        color: rgba(255,255,255,.42);
-        margin-bottom: 36px;
+        color: rgba(255,255,255,.38);
+        margin-bottom: 40px;
         font-weight: 300;
     }
-
     .rsvp-input {
         width: 100%;
-        padding: 14px 18px;
-        background: rgba(255,255,255,.05);
-        border: 1px solid rgba(184,151,90,.2);
+        padding: 15px 20px;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(197,164,126,.15);
         color: white;
         font-family: var(--fb);
         font-size: 14px;
         font-weight: 300;
         outline: none;
-        border-radius: 10px;
-        transition: border-color .3s, background .3s, box-shadow .3s;
+        border-radius: 4px;
+        transition: all .4s var(--ease);
     }
     .rsvp-input:focus {
         border-color: var(--gold);
-        background: rgba(255,255,255,.08);
-        box-shadow: 0 0 0 4px rgba(184,151,90,.08);
+        background: rgba(255,255,255,.06);
+        box-shadow: 0 0 0 3px rgba(197,164,126,.06);
     }
-    .rsvp-input::placeholder { color: rgba(255,255,255,.24); }
+    .rsvp-input::placeholder { color: rgba(255,255,255,.2); }
     textarea.rsvp-input { resize: vertical; }
-
     .rsvp-status-group { display: flex; gap: 10px; }
     .rsvp-status-btn {
-        flex: 1;
-        padding: 14px;
+        flex: 1; padding: 16px;
         cursor: pointer;
-        background: rgba(255,255,255,.04);
-        border: 1px solid rgba(184,151,90,.15);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        transition: all .2s;
+        background: rgba(255,255,255,.03);
+        border: 1px solid rgba(197,164,126,.1);
+        display: flex; flex-direction: column;
+        align-items: center; gap: 8px;
+        transition: all .3s var(--ease);
         font-family: var(--fb);
-        border-radius: 12px;
+        border-radius: 4px;
     }
     .rsvp-status-btn span:last-child {
-        font-size: 10px;
-        letter-spacing: 2px;
+        font-size: 10px; letter-spacing: 2px;
         text-transform: uppercase;
-        color: rgba(255,255,255,.35);
+        color: rgba(255,255,255,.3);
         font-weight: 400;
     }
     .rsvp-status-btn:hover {
-        border-color: rgba(184,151,90,.4);
-        background: rgba(184,151,90,.05);
+        border-color: rgba(197,164,126,.3);
+        background: rgba(197,164,126,.04);
         transform: translateY(-2px);
     }
-    .rsvp-status-btn.active-accepted {
-        border-color: #10b981;
-        background: rgba(16,185,129,.1);
-    }
+    .rsvp-status-btn.active-accepted { border-color: #10b981; background: rgba(16,185,129,.08); }
     .rsvp-status-btn.active-accepted span:last-child { color: #10b981; }
-    .rsvp-status-btn.active-maybe {
-        border-color: #f59e0b;
-        background: rgba(245,158,11,.1);
-    }
+    .rsvp-status-btn.active-maybe { border-color: #f59e0b; background: rgba(245,158,11,.08); }
     .rsvp-status-btn.active-maybe span:last-child { color: #f59e0b; }
-    .rsvp-status-btn.active-declined {
-        border-color: #ef4444;
-        background: rgba(239,68,68,.1);
-    }
+    .rsvp-status-btn.active-declined { border-color: #ef4444; background: rgba(239,68,68,.08); }
     .rsvp-status-btn.active-declined span:last-child { color: #ef4444; }
-
     .rsvp-btn {
-        width: 100%;
-        padding: 18px;
-        background: linear-gradient(135deg, var(--gold), var(--gold-light));
-        border: none;
-        cursor: pointer;
+        width: 100%; padding: 18px;
+        background: var(--gold);
+        border: none; cursor: pointer;
         font-family: var(--fb);
-        font-size: 10px;
-        letter-spacing: 4px;
+        font-size: 10px; letter-spacing: 5px;
         text-transform: uppercase;
-        font-weight: 600;
-        color: var(--dark);
-        margin-top: 32px;
+        font-weight: 500; color: var(--dark);
+        margin-top: 36px;
         border-radius: 999px;
-        transition: transform .2s ease, box-shadow .2s ease;
-        box-shadow: 0 12px 30px rgba(0,0,0,.18);
+        transition: all .4s var(--ease);
     }
     .rsvp-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 18px 40px rgba(0,0,0,.24);
+        box-shadow: 0 12px 40px rgba(197,164,126,.25);
+        filter: brightness(1.08);
     }
-
     .alert {
-        padding: 14px 18px;
-        border-radius: 10px;
-        margin-bottom: 24px;
-        font-size: 13px;
-        font-weight: 300;
+        padding: 14px 18px; border-radius: 4px;
+        margin-bottom: 24px; font-size: 13px; font-weight: 300;
     }
-    .alert-success {
-        background: rgba(16,185,129,.1);
-        border: 1px solid rgba(16,185,129,.3);
-        color: #10b981;
-    }
-    .alert-danger {
-        background: rgba(239,68,68,.1);
-        border: 1px solid rgba(239,68,68,.3);
-        color: #ef4444;
-    }
+    .alert-success { background: rgba(16,185,129,.08); border: 1px solid rgba(16,185,129,.2); color: #10b981; }
+    .alert-danger { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); color: #ef4444; }
 
     /* FOOTER */
     .wedding-footer {
-        background: linear-gradient(180deg, #0e0b08 0%, #080604 100%);
+        background: #0a0908;
         text-align: center;
-        padding: 80px 40px;
+        padding: 100px 40px 60px;
         position: relative;
     }
     .wedding-footer::before {
         content: '';
-        position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(184,151,90,.2), transparent);
+        position: absolute; top: 0; left: 25%; right: 25%; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(197,164,126,.15), transparent);
     }
     .footer-couple {
         font-family: var(--ft);
-        font-size: 38px;
-        font-weight: 400;
+        font-size: 42px; font-weight: 400;
         color: white;
         margin-bottom: 12px;
         letter-spacing: .02em;
     }
     .footer-date {
         font-family: var(--fb);
-        font-size: 9px;
-        letter-spacing: 4px;
+        font-size: 9px; letter-spacing: 5px;
         text-transform: uppercase;
         color: var(--gold);
-        font-weight: 400;
-        margin-bottom: 32px;
+        font-weight: 300;
+        margin-bottom: 36px;
     }
     .footer-ornament {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        margin-bottom: 24px;
+        display: flex; align-items: center; justify-content: center;
+        gap: 18px; margin-bottom: 28px;
     }
-    .footer-line { width: 80px; height: 1px; background: rgba(184,151,90,.2); }
-    .footer-icon { color: var(--gold); font-size: 12px; }
-
+    .footer-line { width: 60px; height: 1px; background: rgba(197,164,126,.15); }
+    .footer-icon { color: var(--gold); font-size: 10px; }
     .floral-corner {
         position: absolute;
-        width: 180px;
-        height: 180px;
-        pointer-events: none;
-        opacity: .10;
-        z-index: 0;
+        width: 180px; height: 180px;
+        pointer-events: none; opacity: .08; z-index: 0;
         background:
-            radial-gradient(circle at 30% 30%, rgba(184,151,90,.55) 0 6%, transparent 7%),
-            radial-gradient(circle at 55% 45%, rgba(184,151,90,.28) 0 7%, transparent 8%),
-            radial-gradient(circle at 70% 70%, rgba(184,151,90,.18) 0 8%, transparent 9%);
+            radial-gradient(circle at 30% 30%, rgba(197,164,126,.5) 0 6%, transparent 7%),
+            radial-gradient(circle at 55% 45%, rgba(197,164,126,.25) 0 7%, transparent 8%),
+            radial-gradient(circle at 70% 70%, rgba(197,164,126,.15) 0 8%, transparent 9%);
         filter: blur(1px);
     }
     .floral-corner-tl { top: 0; left: 0; }
@@ -1309,58 +1104,40 @@
     .floral-corner-br { bottom: 0; right: 0; transform: rotate(180deg); }
 
     /* RESPONSIVE */
-    @media (max-width: 900px) {
-        .story-content { grid-template-columns: 1fr; gap: 48px; }
-        .story-image-frame::before { display: none; }
+    @media (max-width: 1024px) {
         .dresscode-cards-grid { grid-template-columns: repeat(2, 1fr); }
-        .univers-inspiration-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    }
+    @media (max-width: 900px) {
+        .story-content { grid-template-columns: 1fr; gap: 56px; }
+        .story-image-frame::before { display: none; }
+        .univers-inspiration-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
         .rules-grid { grid-template-columns: 1fr; }
-
-        .program-timeline { max-width: 100%; padding-left: 0; padding-right: 0; }
-        .program-timeline::before {
-            left: 13px;
-            top: 10px;
-            bottom: 10px;
-            width: 2px;
-            opacity: .55;
-        }
+        .program-timeline { max-width: 100%; }
+        .program-timeline::before { left: 14px; }
         .program-item {
             display: grid;
-            grid-template-columns: 28px 1fr;
-            gap: 0 18px;
-            margin-bottom: 32px;
-            align-items: start;
+            grid-template-columns: 30px 1fr;
+            gap: 0 20px;
+            margin-bottom: 40px;
         }
-        .program-item:last-child { margin-bottom: 0; }
         .program-item .program-dot {
-            grid-column: 1;
-            grid-row: 1;
-            width: 14px;
-            height: 14px;
-            margin-left: 6px;
-            margin-top: 4px;
+            grid-column: 1; grid-row: 1;
+            width: 12px; height: 12px;
+            margin-left: 8px; margin-top: 5px;
             justify-self: start;
         }
         .program-item .program-content {
-            grid-column: 2;
-            grid-row: 1;
+            grid-column: 2; grid-row: 1;
             text-align: left !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
-            min-width: 0;
         }
         .program-item:nth-child(even) .program-dot { grid-column: 1; }
         .program-item:nth-child(even) .program-content { grid-column: 2; }
-
-        .program-title { font-size: 17px; line-height: 1.3; }
-        .program-desc { font-size: 13px; margin-top: 4px; }
-        .program-time { font-size: 9px; letter-spacing: .18em; }
-        .program-venue { font-size: 10px; margin-top: 6px; }
-
-        .rsvp-form-card { padding: 32px 24px; }
+        .program-title { font-size: 18px; }
+        .rsvp-form-card { padding: 36px 24px; }
     }
 
-    /* ═══════ MOBILE NAV TOGGLE ═══════ */
     .mobile-nav-toggle {
         display: none;
         flex-direction: column; gap: 5px;
@@ -1369,8 +1146,8 @@
     }
     .mobile-nav-toggle span {
         display: block; width: 22px; height: 1.5px;
-        background: rgba(255,255,255,.7);
-        transition: transform .3s ease, opacity .3s ease, background .3s ease;
+        background: rgba(255,255,255,.6);
+        transition: all .3s var(--ease);
     }
     .wedding-nav.scrolled .mobile-nav-toggle span { background: var(--dark); }
     .mobile-nav-toggle.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
@@ -1383,108 +1160,42 @@
         .nav-links {
             display: none;
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(10,8,6,.96); backdrop-filter: blur(20px);
+            background: rgba(10,9,8,.97); backdrop-filter: blur(24px);
             flex-direction: column;
             align-items: center; justify-content: center;
-            gap: 28px; z-index: 100;
+            gap: 32px; z-index: 100;
         }
-        .nav-links.is-open {
-            display: flex;
-        }
+        .nav-links.is-open { display: flex; }
         .nav-links a {
-            font-size: 13px !important;
-            letter-spacing: 4px !important;
-            color: rgba(255,255,255,.7) !important;
+            font-size: 12px !important;
+            letter-spacing: 5px !important;
+            color: rgba(255,255,255,.6) !important;
         }
         .nav-links a:hover { color: var(--gold) !important; }
-
         .inv-names { font-size: clamp(36px, 12vw, 52px); }
         .inv-label { font-size: 8px; letter-spacing: 4px; }
         .inv-open-btn { padding: 14px 28px; font-size: 9px; letter-spacing: 3px; }
-
-        .wedding-section { padding: 80px 0; }
+        .wedding-section { padding: 100px 0; }
         .section-inner { padding: 0 20px; }
+        .section-header { margin-bottom: 56px; }
+        .hero-section { min-height: 100dvh; padding: 0 16px; }
+        .hero-names { font-size: clamp(42px, 14vw, 62px); margin-bottom: 24px; }
+        .hero-tagline { font-size: 9px; }
+        .hero-date { font-size: 10px; letter-spacing: .2em; margin-bottom: 32px; }
+        .countdown-timer { gap: 8px; margin-bottom: 36px; }
+        .countdown-item { padding: 14px 12px; min-width: 68px; }
+        .countdown-number { font-size: 32px; }
+        .countdown-label { font-size: 7px; }
+        .hero-actions { flex-direction: column; gap: 10px; }
+        .hero-cta, .hero-cta-secondary { width: 100%; max-width: 300px; padding: 16px 28px; }
+        .hero-scroll-indicator { bottom: 20px; font-size: 8px; }
+        .details-grid, .venues-grid, .gifts-grid { gap: 12px; }
+        .rsvp-status-group { flex-direction: column; }
+        .dresscode-cards-grid { grid-template-columns: 1fr; }
+    }
 
-        .hero-section {
-            min-height: 100vh;
-            min-height: 100dvh;
-            padding: 90px 16px 40px;
-        }
-        .hero-content { padding: 0 10px; }
-        .hero-badge {
-            font-size: 9px;
-            letter-spacing: .18em;
-            padding: 9px 14px;
-            margin-bottom: 20px;
-        }
-        .hero-names {
-            font-size: clamp(40px, 12vw, 58px);
-            margin-bottom: 18px;
-            font-weight: 600;
-        }
-        .hero-tagline {
-            font-size: 10px;
-            letter-spacing: .28em;
-            margin-bottom: 18px;
-        }
-        .hero-date {
-            font-size: 10px;
-            letter-spacing: .18em;
-            margin-bottom: 24px;
-            padding: 10px 14px;
-        }
-        .countdown-timer { gap: 8px; margin-bottom: 26px; }
-        .countdown-item { padding: 12px 14px; min-width: 72px; }
-        .countdown-number { font-size: 30px; }
-        .countdown-label { font-size: 8px; }
-
-        .hero-actions {
-            flex-direction: column;
-            gap: 10px;
-        }
-        .hero-cta,
-        .hero-cta-secondary {
-            width: 100%;
-            max-width: 320px;
-            padding: 15px 22px;
-            font-size: 10px;
-        }
-
-        .hero-scroll-indicator {
-            bottom: 18px;
-            font-size: 9px;
-        }
-
-        .hero-light-1,
-        .hero-light-2 {
-            filter: blur(70px);
-            opacity: .8;
-        }
-
-        .hero-content::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 100%;
-            max-width: 360px;
-            height: 120%;
-            min-height: 420px;
-            background: radial-gradient(ellipse at center, rgba(0,0,0,.30) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .details-grid,
-        .venues-grid,
-        .gifts-grid {
-            gap: 14px;
-        }
-
-        .rsvp-status-group {
-            flex-direction: column;
-        }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
     </style>
 </head>
@@ -1500,19 +1211,16 @@
 
     <div class="inv-content" id="invContent">
         <div class="inv-label">Vous êtes invité(e) au mariage de</div>
-
         <div class="inv-ornament">
             <span class="inv-orn-line"></span>
             <span class="inv-orn-diamond"></span>
             <span class="inv-orn-line"></span>
         </div>
-
         <h2 class="inv-names">
             <span class="inv-name">{{ $wedding->bride_name }}</span>
             <span class="inv-amp">&amp;</span>
             <span class="inv-name">{{ $wedding->groom_name }}</span>
         </h2>
-
         @if($wedding->wedding_date)
         <div class="inv-date">
             <span class="inv-date-line"></span>
@@ -1520,12 +1228,10 @@
             <span class="inv-date-line"></span>
         </div>
         @endif
-
         <button class="inv-open-btn" id="invOpenBtn" type="button">
             <span>Ouvrir l'invitation</span>
             <span class="inv-btn-icon"><i class="bi bi-arrow-right"></i></span>
         </button>
-
         <div class="inv-hint">Appuyez pour découvrir</div>
     </div>
 </div>
@@ -1549,34 +1255,30 @@
     @if($wedding->hero_image)
     <div class="hero-bg" id="heroBg" style="background-image: url('{{ Storage::url($wedding->hero_image) }}')"></div>
     @else
-    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-bg" id="heroBg" style="background: linear-gradient(160deg, #1c1917 0%, #0a0908 100%)"></div>
     @endif
 
     <div class="hero-overlay"></div>
+    <div class="hero-vignette"></div>
     <div class="hero-light hero-light-1"></div>
     <div class="hero-light hero-light-2"></div>
     <div class="hero-particles" id="heroParticles"></div>
-
-    <div class="hero-grid"></div>
-    <div class="hero-circle hero-circle-1"></div>
-    <div class="hero-circle hero-circle-2"></div>
-    <div class="hero-circle hero-circle-3"></div>
+    <div class="hero-ring hero-ring-1"></div>
+    <div class="hero-ring hero-ring-2"></div>
 
     @if($wedding->floral_decor)
     <div class="floral-corner floral-corner-tl"></div>
     <div class="floral-corner floral-corner-tr"></div>
     @endif
 
-    <div class="hero-content">
-        <div class="hero-badge">Une journée inoubliable</div>
+    <div class="hero-content" id="heroContent">
+        <span class="hero-tagline">Invitation au mariage</span>
 
         <div class="hero-ornament">
             <span class="ornament-line"></span>
             <span class="ornament-diamond"></span>
             <span class="ornament-line right"></span>
         </div>
-
-        <span class="hero-tagline">Invitation au mariage</span>
 
         <h1 class="hero-names">
             <span class="hero-name">{{ $wedding->bride_name }}</span>
@@ -1619,7 +1321,6 @@
                 <i class="bi bi-envelope-heart"></i>
                 Confirmer ma présence
             </a>
-
             @if($sectionKeys['program'] ?? true)
             <a href="#programme" class="hero-cta hero-cta-secondary">
                 <i class="bi bi-stars"></i>
@@ -1630,7 +1331,7 @@
     </div>
 
     @if($sectionKeys['story'] ?? true)
-    <a href="#story" class="hero-scroll-indicator" aria-label="Descendre vers la suite">
+    <a href="#story" class="hero-scroll-indicator" aria-label="Descendre">
         <span>Découvrir</span>
         <i class="bi bi-chevron-down"></i>
     </a>
@@ -1643,7 +1344,7 @@
     <div class="floral-corner floral-corner-br"></div>
     @endif
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <div class="section-ornament">
                 <span class="section-ornament-line"></span>
                 <i class="bi bi-heart-fill section-ornament-icon"></i>
@@ -1658,14 +1359,13 @@
 
         <div class="story-content">
             @if($wedding->couple_photo)
-            <div class="story-image" data-aos="fade-right">
+            <div class="story-image" data-aos="fade-right" data-aos-duration="1200">
                 <div class="story-image-frame">
                     <img src="{{ Storage::url($wedding->couple_photo) }}" alt="{{ $wedding->getCoupleName() }}">
                 </div>
             </div>
             @endif
-
-            <div class="story-text-block" data-aos="fade-left">
+            <div class="story-text-block" data-aos="fade-left" data-aos-duration="1200">
                 @if($wedding->quote)
                 <p class="story-quote">« {{ $wedding->quote }} »</p>
                 @endif
@@ -1683,14 +1383,13 @@
 @if($sectionKeys['gallery'] ?? true)
 <section class="wedding-section alt-bg" id="galerie">
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <span class="section-label">Galerie</span>
             <h2 class="section-title">Nos plus beaux instants</h2>
         </div>
-
         <div class="gallery-grid">
             @foreach($wedding->galleryItems as $item)
-            <div class="gallery-item" data-aos="zoom-in" data-aos-delay="{{ $loop->index * 50 }}">
+            <div class="gallery-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 80 }}" data-aos-duration="900">
                 <a href="{{ Storage::url($item->image) }}" data-gallery="wedding-gallery" data-type="image">
                     <img src="{{ Storage::url($item->image) }}" alt="{{ $item->caption ?? 'Photo ' . $loop->iteration }}" loading="lazy">
                     @if($item->caption)
@@ -1709,31 +1408,28 @@
 @if(($sectionKeys['details'] ?? true))
 <section class="wedding-section" id="details">
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <span class="section-label">Informations</span>
             <h2 class="section-title">Les détails de notre fête</h2>
         </div>
-
         <div class="details-grid">
             @if($wedding->wedding_date)
-            <div class="detail-card" data-aos="fade-up">
+            <div class="detail-card" data-aos="fade-up" data-aos-duration="900">
                 <div class="detail-icon"><i class="bi bi-calendar-heart-fill"></i></div>
                 <span class="detail-label">Date</span>
                 <div class="detail-value">{{ $wedding->wedding_date->translatedFormat('d F Y') }}</div>
             </div>
             @endif
-
             @foreach($wedding->venues->take(3) as $venue)
-            <div class="detail-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+            <div class="detail-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 120 }}" data-aos-duration="900">
                 <div class="detail-icon"><i class="bi bi-geo-alt-fill"></i></div>
                 <span class="detail-label">{{ ucfirst($venue->type) }}</span>
                 <div class="detail-value">{{ $venue->name }}</div>
                 @if($venue->city) <div class="detail-desc">{{ $venue->city }}</div> @endif
             </div>
             @endforeach
-
             @if($wedding->rsvp_deadline)
-            <div class="detail-card" data-aos="fade-up">
+            <div class="detail-card" data-aos="fade-up" data-aos-duration="900">
                 <div class="detail-icon"><i class="bi bi-clock-fill"></i></div>
                 <span class="detail-label">Répondez avant le</span>
                 <div class="detail-value">{{ $wedding->rsvp_deadline->translatedFormat('d F Y') }}</div>
@@ -1747,19 +1443,16 @@
 @if($sectionKeys['program'] ?? true)
 <section class="wedding-section alt-bg" id="programme">
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <span class="section-label">Programme</span>
             <h2 class="section-title">Le fil de notre journée</h2>
         </div>
-
         <div class="program-timeline">
             @foreach($wedding->programItems as $item)
-            <div class="program-item">
+            <div class="program-item" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}" data-aos-duration="900">
                 <div class="program-dot"></div>
                 <div class="program-content">
-                    <div class="program-icon">
-                        <i class="bi {{ $item->icon ?? 'bi-star-fill' }}"></i>
-                    </div>
+                    <div class="program-icon"><i class="bi {{ $item->icon ?? 'bi-star-fill' }}"></i></div>
                     <div class="program-time">{{ $item->getDateTimeFormatted() }}</div>
                     <h3 class="program-title">{{ $item->title }}</h3>
                     @if($item->description)
@@ -1783,14 +1476,13 @@
 @if($sectionKeys['venues'] ?? true)
 <section class="wedding-section" id="lieux">
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <span class="section-label">Lieux</span>
             <h2 class="section-title">Où nous vous accueillons</h2>
         </div>
-
         <div class="venues-grid">
             @foreach($wedding->venues as $venue)
-            <div class="venue-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+            <div class="venue-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 120 }}" data-aos-duration="900">
                 <div class="venue-photo">
                     @if($venue->photo)
                     <img src="{{ Storage::url($venue->photo) }}" alt="{{ $venue->name }}">
@@ -1833,18 +1525,18 @@
 @if($showUniversSection)
 <section class="wedding-section dark-bg" id="dresscode">
     @if($wedding->floral_decor)
-    <div class="floral-corner floral-corner-tl" style="opacity:.08"></div>
-    <div class="floral-corner floral-corner-br" style="opacity:.08"></div>
+    <div class="floral-corner floral-corner-tl" style="opacity:.06"></div>
+    <div class="floral-corner floral-corner-br" style="opacity:.06"></div>
     @endif
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <div class="section-ornament">
                 <span class="section-ornament-line"></span>
                 <i class="bi bi-stars section-ornament-icon"></i>
                 <span class="section-ornament-line"></span>
             </div>
             <span class="section-label">Ambiance &amp; tenues</span>
-            <h2 class="section-title" style="color:#fff;font-size:clamp(28px,4vw,42px)">L'univers de notre mariage</h2>
+            <h2 class="section-title" style="color:#fff">L'univers de notre mariage</h2>
             @if($theme?->mood_description)
             <p class="section-subtitle univers-intro">{{ $theme->mood_description }}</p>
             @else
@@ -1852,95 +1544,82 @@
             @endif
         </div>
 
-        {{-- 1. Palette en haut --}}
         @if($wedding->colorPalette->count())
-        <div class="dresscode-palette-wrap" data-aos="fade-up">
-            <h4 style="font-family:var(--ft);color:#fff;margin:0;font-size:20px">Notre palette</h4>
+        <div class="dresscode-palette-wrap" data-aos="fade-up" data-aos-duration="900">
+            <h4 style="font-family:var(--ft);color:#fff;margin:0;font-size:22px;font-weight:400">Notre palette</h4>
             <div class="palette-swatches">
                 @foreach($wedding->colorPalette as $color)
                 <div class="palette-swatch">
                     <div class="swatch-color" style="background: {{ $color->hex_color }}"></div>
-                    <div class="swatch-name" style="color:rgba(255,255,255,.6)">{{ $color->name }}</div>
+                    <div class="swatch-name" style="color:rgba(255,255,255,.5)">{{ $color->name }}</div>
                 </div>
                 @endforeach
             </div>
         </div>
         @endif
 
-        {{-- 2. Quatre cartes en dessous --}}
         @if($hasUniversContent)
         <div class="dresscode-cards-grid">
-            {{-- Carte 1 : Tenue demandée --}}
-            <div class="dresscode-card" data-aos="fade-up" data-aos-delay="0">
+            <div class="dresscode-card" data-aos="fade-up" data-aos-delay="0" data-aos-duration="900">
                 <div class="dresscode-label"><i class="bi bi-star-fill"></i> Tenue demandée</div>
                 @if($theme->dress_code_style)
                 <p style="color:#fff;margin:0;font-size:17px;font-family:var(--ft)">{{ $theme->dress_code_style }}</p>
                 @endif
                 @if($theme->dress_code_formality)
-                <p style="color:rgba(255,255,255,.7);margin:8px 0 0;font-size:14px;line-height:1.5">{{ $theme->dress_code_formality }}</p>
+                <p style="color:rgba(255,255,255,.65);margin:8px 0 0;font-size:14px;line-height:1.6">{{ $theme->dress_code_formality }}</p>
                 @endif
                 @if(!$theme->dress_code_style && !$theme->dress_code_formality)
-                <p style="color:rgba(255,255,255,.45);margin:0;font-size:14px">—</p>
+                <p style="color:rgba(255,255,255,.3);margin:0;font-size:14px">—</p>
                 @endif
             </div>
-
-            {{-- Carte 2 : Description / Ambiance --}}
-            <div class="dresscode-card" data-aos="fade-up" data-aos-delay="50">
+            <div class="dresscode-card" data-aos="fade-up" data-aos-delay="80" data-aos-duration="900">
                 <div class="dresscode-label"><i class="bi bi-info-circle-fill"></i> Description</div>
                 @if($theme->dress_code_description)
-                <p style="color:rgba(255,255,255,.88);margin:0;line-height:1.65;font-size:14px">{{ $theme->dress_code_description }}</p>
+                <p style="color:rgba(255,255,255,.8);margin:0;line-height:1.7;font-size:14px">{{ $theme->dress_code_description }}</p>
                 @else
-                <p style="color:rgba(255,255,255,.45);margin:0;font-size:14px">—</p>
+                <p style="color:rgba(255,255,255,.3);margin:0;font-size:14px">—</p>
                 @endif
             </div>
-
-            {{-- Carte 3 : Pour lui & pour elle --}}
-            <div class="dresscode-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="dresscode-card" data-aos="fade-up" data-aos-delay="160" data-aos-duration="900">
                 <div class="dresscode-label"><i class="bi bi-people-fill"></i> Pour lui & pour elle</div>
                 @if($theme->dress_code_men)
-                <p style="color:rgba(255,255,255,.88);margin:0;font-size:13px;line-height:1.5"><strong style="color:rgba(255,255,255,.6)">Hommes :</strong> {{ $theme->dress_code_men }}</p>
+                <p style="color:rgba(255,255,255,.8);margin:0;font-size:13px;line-height:1.6"><strong style="color:rgba(255,255,255,.5)">Hommes :</strong> {{ $theme->dress_code_men }}</p>
                 @endif
                 @if($theme->dress_code_men && $theme->dress_code_women)
-                <p style="margin:10px 0 0;color:rgba(255,255,255,.88);font-size:13px;line-height:1.5"><strong style="color:rgba(255,255,255,.6)">Femmes :</strong> {{ $theme->dress_code_women }}</p>
+                <p style="margin:10px 0 0;color:rgba(255,255,255,.8);font-size:13px;line-height:1.6"><strong style="color:rgba(255,255,255,.5)">Femmes :</strong> {{ $theme->dress_code_women }}</p>
                 @elseif($theme->dress_code_women)
-                <p style="color:rgba(255,255,255,.88);margin:0;font-size:13px;line-height:1.5">{{ $theme->dress_code_women }}</p>
+                <p style="color:rgba(255,255,255,.8);margin:0;font-size:13px;line-height:1.6">{{ $theme->dress_code_women }}</p>
                 @endif
                 @if(!$theme->dress_code_men && !$theme->dress_code_women)
-                <p style="color:rgba(255,255,255,.45);margin:0;font-size:14px">—</p>
+                <p style="color:rgba(255,255,255,.3);margin:0;font-size:14px">—</p>
                 @endif
             </div>
-
-            {{-- Carte 4 : À éviter & accessoires --}}
-            <div class="dresscode-card" data-aos="fade-up" data-aos-delay="150" style="@if($theme->forbidden_colors) border-color:rgba(239,68,68,.3); @endif">
+            <div class="dresscode-card" data-aos="fade-up" data-aos-delay="240" data-aos-duration="900" style="@if($theme->forbidden_colors) border-color:rgba(239,68,68,.25); @endif">
                 <div class="dresscode-label" @if($theme->forbidden_colors) style="color:#f87171" @endif><i class="bi bi-x-circle-fill"></i> À éviter & accessoires</div>
                 @if($theme->forbidden_colors)
-                <p style="color:rgba(255,255,255,.8);margin:0;font-size:13px;line-height:1.5">{{ $theme->forbidden_colors }}</p>
+                <p style="color:rgba(255,255,255,.75);margin:0;font-size:13px;line-height:1.6">{{ $theme->forbidden_colors }}</p>
                 @endif
                 @if($theme->dress_code_accessories)
-                <p style="margin:{{ $theme->forbidden_colors ? '10px' : '0' }} 0 0;color:rgba(255,255,255,.8);font-size:13px;line-height:1.5">{{ $theme->dress_code_accessories }}</p>
+                <p style="margin:{{ $theme->forbidden_colors ? '10px' : '0' }} 0 0;color:rgba(255,255,255,.75);font-size:13px;line-height:1.6">{{ $theme->dress_code_accessories }}</p>
                 @endif
                 @if(!$theme->forbidden_colors && !$theme->dress_code_accessories)
-                <p style="color:rgba(255,255,255,.45);margin:0;font-size:14px">—</p>
+                <p style="color:rgba(255,255,255,.3);margin:0;font-size:14px">—</p>
                 @endif
             </div>
         </div>
         @endif
 
         @if($wedding->inspirationItems->count())
-        <div class="univers-inspiration-wrap" data-aos="fade-up">
+        <div class="univers-inspiration-wrap" data-aos="fade-up" data-aos-duration="1000">
             <h3 class="univers-inspiration-title">Inspirations tenues</h3>
-            <p style="text-align:center;color:rgba(255,255,255,.5);font-size:13px;margin:-16px 0 0;font-weight:300">Quelques idées pour vous inspirer</p>
+            <p style="text-align:center;color:rgba(255,255,255,.4);font-size:13px;margin:-16px 0 0;font-weight:300">Quelques idées pour vous inspirer</p>
             <div class="univers-inspiration-grid">
                 @foreach($wedding->inspirationItems as $insp)
                 <div class="univers-inspiration-item">
                     <a href="{{ Storage::url($insp->image) }}" data-gallery="inspiration-gallery" data-type="image">
                         <img src="{{ Storage::url($insp->image) }}" alt="{{ $insp->caption ?? 'Inspiration tenue' }}" loading="lazy">
                         <div class="overlay">
-                            @if($insp->caption)
-                            <span>{{ $insp->caption }}</span>
-                            @else
-                            <span>Inspiration</span>
-                            @endif
+                            <span>{{ $insp->caption ?? 'Inspiration' }}</span>
                         </div>
                     </a>
                 </div>
@@ -1955,16 +1634,15 @@
 @if($sectionKeys['gifts'] ?? true)
 <section class="wedding-section alt-bg" id="cadeaux">
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <span class="section-label">Liste de souhaits</span>
             <h2 class="section-title">Notre liste de mariage</h2>
             <p class="section-subtitle">Votre présence est le plus beau cadeau. Mais si vous souhaitez nous gâter, voici quelques idées.</p>
         </div>
-
         @foreach($wedding->giftCategories as $category)
         @if($category->items->count())
-        <div class="mb-5" data-aos="fade-up">
-            <h3 style="font-family:var(--ft);font-size:20px;margin-bottom:20px;color:var(--wt)">{{ $category->name }}</h3>
+        <div class="mb-5" data-aos="fade-up" data-aos-duration="900">
+            <h3 style="font-family:var(--ft);font-size:22px;margin-bottom:24px;color:var(--wt);font-weight:400">{{ $category->name }}</h3>
             <div class="gifts-grid">
                 @foreach($category->items as $gift)
                 <div class="gift-card">
@@ -2006,16 +1684,15 @@
 @if($sectionKeys['rules'] ?? true)
 <section class="wedding-section dark-bg" id="regles">
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <span class="section-label">Consignes</span>
             <h2 class="section-title" style="color:white">Pour que ce jour soit parfait</h2>
         </div>
-
         <div class="rules-grid">
             @foreach(['allowed' => ['icon' => 'bi-check-circle-fill', 'label' => 'Bienvenus'], 'forbidden' => ['icon' => 'bi-x-circle-fill', 'label' => 'À éviter'], 'recommendation' => ['icon' => 'bi-star-fill', 'label' => 'Recommandations']] as $type => $config)
             @php $typeRules = $wedding->rules->where('type', $type)->where('is_active', true); @endphp
             @if($typeRules->count())
-            <div class="rules-column {{ $type }}" data-aos="fade-up">
+            <div class="rules-column {{ $type }}" data-aos="fade-up" data-aos-duration="900">
                 <div class="rules-column-title">
                     <i class="bi {{ $config['icon'] }}"></i>
                     {{ $config['label'] }}
@@ -2042,11 +1719,11 @@
 @if(($sectionKeys['accommodation'] ?? true) && $wedding->accommodation_details)
 <section class="wedding-section" id="hebergement">
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
             <span class="section-label">Hébergement</span>
             <h2 class="section-title">{{ $wedding->accommodation_info ?? 'Infos pratiques' }}</h2>
         </div>
-        <div class="story-body" style="max-width:700px;margin:0 auto;font-size:16px;line-height:1.9;text-align:center" data-aos="fade-up">
+        <div class="story-body" style="max-width:700px;margin:0 auto;font-size:16px;line-height:2;text-align:center" data-aos="fade-up" data-aos-duration="900">
             {!! nl2br(e($wedding->accommodation_details)) !!}
         </div>
     </div>
@@ -2056,82 +1733,66 @@
 @if($sectionKeys['rsvp'] ?? true)
 <section class="wedding-section rsvp-section" id="rsvp">
     <div class="section-inner">
-        <div class="section-header" data-aos="fade-up">
-            <span class="section-label" style="color:rgba(255,255,255,.6)">Votre réponse</span>
+        <div class="section-header" data-aos="fade-up" data-aos-duration="1000">
+            <span class="section-label" style="color:rgba(255,255,255,.5)">Votre réponse</span>
             <h2 class="section-title" style="color:white">Serez-vous des nôtres ?</h2>
             @if($wedding->rsvp_deadline)
-            <p style="color:rgba(255,255,255,.6)">
+            <p style="color:rgba(255,255,255,.4);font-size:14px;font-weight:300">
                 <i class="bi bi-clock me-1"></i>Merci de répondre avant le {{ $wedding->rsvp_deadline->translatedFormat('d F Y') }}
             </p>
             @endif
         </div>
-
-        <div class="rsvp-form-card" data-aos="zoom-in">
+        <div class="rsvp-form-card" data-aos="fade-up" data-aos-duration="1000">
             <h3 class="rsvp-form-title">Confirmer ma présence</h3>
             <p class="rsvp-form-subtitle">Entrez votre code d'invitation personnel</p>
-
             @if(session('success'))
             <div class="alert alert-success mb-4">{{ session('success') }}</div>
             @endif
             @if(session('error'))
             <div class="alert alert-danger mb-4">{{ session('error') }}</div>
             @endif
-
             <form method="POST" action="{{ route('rsvp.submit', $wedding->slug) }}" id="rsvpForm">
                 @csrf
-
                 <div class="mb-4">
-                    <label style="font-weight:600;font-size:13px;margin-bottom:6px;display:block;color:white">Code d'invitation</label>
-                    <input type="text" name="invitation_code" class="rsvp-input"
-                           placeholder="Votre code (ex: ABCD1234)" required
-                           style="text-transform:uppercase;letter-spacing:2px;font-size:16px">
-                    <div style="font-size:12px;color:#9e8e82;margin-top:4px">
-                        Vous trouverez votre code sur votre invitation papier ou dans l'email reçu.
-                    </div>
+                    <label style="font-weight:500;font-size:12px;margin-bottom:8px;display:block;color:white;letter-spacing:1px">Code d'invitation</label>
+                    <input type="text" name="invitation_code" class="rsvp-input" placeholder="Votre code (ex: ABCD1234)" required style="text-transform:uppercase;letter-spacing:3px;font-size:16px">
+                    <div style="font-size:12px;color:rgba(255,255,255,.25);margin-top:6px;font-weight:300">Vous trouverez votre code sur votre invitation papier ou dans l'email reçu.</div>
                 </div>
-
                 <div class="mb-4">
-                    <label style="font-weight:600;font-size:13px;margin-bottom:10px;display:block;color:white">Votre réponse</label>
+                    <label style="font-weight:500;font-size:12px;margin-bottom:10px;display:block;color:white;letter-spacing:1px">Votre réponse</label>
                     <div class="rsvp-status-group">
                         <button type="button" class="rsvp-status-btn" data-status="accepted">
-                            <i class="bi bi-check-circle-fill" style="color:#10b981"></i>
+                            <i class="bi bi-check-circle-fill" style="color:#10b981;font-size:20px"></i>
                             <span>J'accepte</span>
                         </button>
                         <button type="button" class="rsvp-status-btn" data-status="maybe">
-                            <i class="bi bi-question-circle-fill" style="color:#f59e0b"></i>
+                            <i class="bi bi-question-circle-fill" style="color:#f59e0b;font-size:20px"></i>
                             <span>À confirmer</span>
                         </button>
                         <button type="button" class="rsvp-status-btn" data-status="declined">
-                            <i class="bi bi-x-circle-fill" style="color:#ef4444"></i>
+                            <i class="bi bi-x-circle-fill" style="color:#ef4444;font-size:20px"></i>
                             <span>Je décline</span>
                         </button>
                     </div>
                     <input type="hidden" name="rsvp_status" id="rsvpStatusInput" value="" required>
                 </div>
-
                 <div id="companionsField" style="display:none" class="mb-4">
-                    <label style="font-weight:600;font-size:13px;margin-bottom:6px;display:block;color:white">Accompagnants</label>
-                    <input type="number" name="companions_count" class="rsvp-input mb-2"
-                           placeholder="Nombre d'accompagnants" min="0" max="10">
+                    <label style="font-weight:500;font-size:12px;margin-bottom:8px;display:block;color:white;letter-spacing:1px">Accompagnants</label>
+                    <input type="number" name="companions_count" class="rsvp-input mb-2" placeholder="Nombre d'accompagnants" min="0" max="10">
                     <div id="companionsContainer"></div>
                     <button type="button" id="addCompanion" class="btn-venue btn-venue-maps mt-2">
                         <i class="bi bi-person-plus"></i> Ajouter un accompagnant
                     </button>
                     <input type="hidden" id="maxCompanions" value="5">
                 </div>
-
                 <div class="mb-4">
-                    <label style="font-weight:600;font-size:13px;margin-bottom:6px;display:block;color:white">Restrictions alimentaires</label>
-                    <input type="text" name="dietary_restrictions" class="rsvp-input"
-                           placeholder="Végétarien, allergies, sans gluten...">
+                    <label style="font-weight:500;font-size:12px;margin-bottom:8px;display:block;color:white;letter-spacing:1px">Restrictions alimentaires</label>
+                    <input type="text" name="dietary_restrictions" class="rsvp-input" placeholder="Végétarien, allergies, sans gluten...">
                 </div>
-
                 <div class="mb-4">
-                    <label style="font-weight:600;font-size:13px;margin-bottom:6px;display:block;color:white">Un mot pour nous</label>
-                    <textarea name="message" class="rsvp-input" rows="3"
-                              placeholder="Votre message aux mariés..."></textarea>
+                    <label style="font-weight:500;font-size:12px;margin-bottom:8px;display:block;color:white;letter-spacing:1px">Un mot pour nous</label>
+                    <textarea name="message" class="rsvp-input" rows="3" placeholder="Votre message aux mariés..."></textarea>
                 </div>
-
                 <button type="submit" class="rsvp-btn">
                     <i class="bi bi-send me-2"></i>Envoyer ma réponse
                 </button>
@@ -2150,11 +1811,11 @@
         <span class="footer-line"></span>
     </div>
     @if($wedding->quote)
-    <p class="fst-italic" style="font-family:var(--ft);color:rgba(255,255,255,.4);font-size:15px;margin-bottom:20px">
+    <p style="font-family:var(--ft);color:rgba(255,255,255,.3);font-size:16px;font-style:italic;margin-bottom:24px;font-weight:300">
         « {{ $wedding->quote }} »
     </p>
     @endif
-    <div style="font-size:12px;color:rgba(255,255,255,.25)">Invitation créée avec amour par Osmose</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.15);letter-spacing:2px">Invitation créée avec amour</div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
@@ -2162,7 +1823,7 @@
 <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
 <script src="{{ asset('js/wedding.js') }}"></script>
 <script>
-AOS.init({ once: true, duration: 800, easing: 'ease-out' });
+AOS.init({ once: true, duration: 900, easing: 'ease-out-cubic', offset: 80 });
 GLightbox({ selector: '[data-gallery]' });
 
 @if($wedding->envelope_animation)
@@ -2172,75 +1833,42 @@ GLightbox({ selector: '[data-gallery]' });
         const p = document.createElement('div');
         p.className = 'inv-particle';
         const size = Math.random() * 3 + 1;
-        p.style.cssText = `
-            width:${size}px; height:${size}px;
-            left:${Math.random() * 100}%;
-            top:${Math.random() * 100}%;
-            --dur:${Math.random() * 8 + 6}s;
-            --delay:${Math.random() * 6}s;
-            --op:${Math.random() * 0.2 + 0.04};
-        `;
+        p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${Math.random()*8+6}s;--delay:${Math.random()*6}s;--op:${Math.random()*.18+.03}`;
         container.appendChild(p);
     }
 
-    const overlay  = document.getElementById('invOverlay');
-    const content  = document.getElementById('invContent');
-    const panelL   = document.getElementById('invPanelLeft');
-    const panelR   = document.getElementById('invPanelRight');
+    const overlay = document.getElementById('invOverlay');
+    const content = document.getElementById('invContent');
+    const panelL = document.getElementById('invPanelLeft');
+    const panelR = document.getElementById('invPanelRight');
     const splitLine = document.getElementById('invSplitLine');
-    const btn      = document.getElementById('invOpenBtn');
+    const btn = document.getElementById('invOpenBtn');
     let opened = false;
 
     const contentEls = content.children;
     gsap.set(contentEls, { opacity: 0, y: 30 });
-    gsap.to(contentEls, {
-        opacity: 1, y: 0, duration: 0.9,
-        stagger: 0.1, ease: 'power3.out', delay: 0.3
-    });
+    gsap.to(contentEls, { opacity: 1, y: 0, duration: 1, stagger: 0.12, ease: 'power3.out', delay: 0.4 });
 
     function fireGoldenConfetti() {
-        const gold = ['#b8975a', '#d4b47a', '#c9a96e', '#e8d5b5', '#f5e6d3', '#fff8ee'];
+        const gold = ['#c5a47e', '#dcc9a8', '#b8975a', '#e8d5b5', '#f5e6d3', '#fff8ee'];
         const count = window.innerWidth < 600 ? 60 : 120;
-        confetti({ particleCount: count, spread: 100, startVelocity: 55,
-            origin: { x: 0.5, y: 0.45 }, colors: gold, ticks: 250,
-            gravity: 0.7, scalar: 1.3, shapes: ['circle'], disableForReducedMotion: true });
+        confetti({ particleCount: count, spread: 100, startVelocity: 55, origin: { x: 0.5, y: 0.45 }, colors: gold, ticks: 250, gravity: 0.7, scalar: 1.3, shapes: ['circle'], disableForReducedMotion: true });
         setTimeout(() => {
-            confetti({ particleCount: Math.floor(count * 0.6), spread: 140, startVelocity: 35,
-                origin: { x: 0.5, y: 0.5 }, colors: gold, ticks: 200,
-                gravity: 0.5, scalar: 0.9, shapes: ['circle'], disableForReducedMotion: true });
-        }, 200);
+            confetti({ particleCount: Math.floor(count * 0.5), spread: 140, startVelocity: 30, origin: { x: 0.5, y: 0.5 }, colors: gold, ticks: 200, gravity: 0.5, scalar: 0.8, shapes: ['circle'], disableForReducedMotion: true });
+        }, 250);
     }
 
     function openInvitation() {
         if (opened) return;
         opened = true;
-
         const tl = gsap.timeline();
-
-        tl.to(content, {
-            opacity: 0, y: -40, scale: 0.95, duration: 0.5, ease: 'power3.in'
-        });
-
-        tl.to(splitLine, {
-            opacity: 1, boxShadow: '0 0 40px 8px rgba(184,151,90,.5)',
-            duration: 0.3, ease: 'power2.out'
-        }, '-=0.1');
-
+        tl.to(content, { opacity: 0, y: -50, scale: 0.96, duration: 0.6, ease: 'power3.in' });
+        tl.to(splitLine, { opacity: 1, boxShadow: '0 0 50px 10px rgba(197,164,126,.4)', duration: 0.35, ease: 'power2.out' }, '-=0.1');
         tl.call(fireGoldenConfetti);
-
-        tl.to(panelL, {
-            xPercent: -105, duration: 1, ease: 'power4.inOut'
-        }, '-=0.1');
-        tl.to(panelR, {
-            xPercent: 105, duration: 1, ease: 'power4.inOut'
-        }, '<');
-        tl.to(splitLine, {
-            opacity: 0, duration: 0.4, ease: 'power2.in'
-        }, '-=0.6');
-
-        tl.set(overlay, {
-            visibility: 'hidden', pointerEvents: 'none'
-        });
+        tl.to(panelL, { xPercent: -105, duration: 1.1, ease: 'power4.inOut' }, '-=0.1');
+        tl.to(panelR, { xPercent: 105, duration: 1.1, ease: 'power4.inOut' }, '<');
+        tl.to(splitLine, { opacity: 0, duration: 0.4, ease: 'power2.in' }, '-=0.6');
+        tl.set(overlay, { visibility: 'hidden', pointerEvents: 'none' });
     }
 
     overlay.addEventListener('click', openInvitation);
@@ -2253,59 +1881,51 @@ GLightbox({ selector: '[data-gallery]' });
     const heroBg = document.getElementById('heroBg');
 
     if (heroParticles) {
-        for (let i = 0; i < 28; i++) {
+        for (let i = 0; i < 22; i++) {
             const p = document.createElement('span');
             p.className = 'hero-particle';
-            const size = Math.random() * 4 + 2;
+            const size = Math.random() * 3 + 2;
             p.style.width = `${size}px`;
             p.style.height = `${size}px`;
             p.style.left = `${Math.random() * 100}%`;
             p.style.bottom = `${Math.random() * 20 - 10}%`;
-            p.style.setProperty('--dur', `${Math.random() * 8 + 8}s`);
-            p.style.setProperty('--op', `${Math.random() * 0.18 + 0.05}`);
-            p.style.animationDelay = `${Math.random() * 8}s`;
+            p.style.setProperty('--dur', `${Math.random() * 10 + 10}s`);
+            p.style.setProperty('--op', `${Math.random() * 0.12 + 0.03}`);
+            p.style.animationDelay = `${Math.random() * 10}s`;
             heroParticles.appendChild(p);
         }
     }
 
-    const heroContent = document.querySelector('.hero-content');
+    const heroContent = document.getElementById('heroContent');
     if (heroContent && typeof gsap !== 'undefined') {
-        const heroElements = heroContent.children;
-        gsap.set(heroElements, { opacity: 0, y: 40 });
+        const els = heroContent.children;
+        gsap.set(els, { opacity: 0, y: 50 });
 
         function animateHero() {
-            gsap.to(heroElements, {
-                opacity: 1, y: 0, duration: 1,
-                stagger: 0.12, ease: 'power3.out', delay: 0.2
-            });
+            gsap.to(els, { opacity: 1, y: 0, duration: 1.2, stagger: 0.15, ease: 'power3.out', delay: 0.3 });
         }
 
         const overlay = document.getElementById('invOverlay');
         if (overlay) {
-            const observer = new MutationObserver(() => {
-                if (overlay.style.visibility === 'hidden') {
-                    animateHero();
-                    observer.disconnect();
-                }
+            const obs = new MutationObserver(() => {
+                if (overlay.style.visibility === 'hidden') { animateHero(); obs.disconnect(); }
             });
-            observer.observe(overlay, { attributes: true, attributeFilter: ['style'] });
+            obs.observe(overlay, { attributes: true, attributeFilter: ['style'] });
         } else {
             animateHero();
         }
     }
 
     let ticking = false;
-    function updateHeroParallax() {
-        const scrolled = window.scrollY;
-        if (heroBg && scrolled < window.innerHeight) {
-            heroBg.style.transform = `scale(1.06) translateY(${scrolled * 0.15}px)`;
-        }
-        ticking = false;
-    }
-
     window.addEventListener('scroll', function () {
         if (!ticking) {
-            window.requestAnimationFrame(updateHeroParallax);
+            window.requestAnimationFrame(() => {
+                const s = window.scrollY;
+                if (heroBg && s < window.innerHeight) {
+                    heroBg.style.transform = `scale(1.08) translateY(${s * 0.18}px)`;
+                }
+                ticking = false;
+            });
             ticking = true;
         }
     }, { passive: true });
@@ -2315,25 +1935,18 @@ GLightbox({ selector: '[data-gallery]' });
 (function () {
     const target = new Date('{{ $wedding->wedding_date->toISOString() }}');
     const pad = n => String(n).padStart(2, '0');
-
     function tick() {
         const diff = target - Date.now();
-        if (diff <= 0) {
-            document.getElementById('countdownTimer')?.remove();
-            return;
-        }
+        if (diff <= 0) { document.getElementById('countdownTimer')?.remove(); return; }
         document.getElementById('cd-days').textContent  = pad(Math.floor(diff / 86400000));
         document.getElementById('cd-hours').textContent = pad(Math.floor((diff % 86400000) / 3600000));
         document.getElementById('cd-mins').textContent  = pad(Math.floor((diff % 3600000) / 60000));
         document.getElementById('cd-secs').textContent  = pad(Math.floor((diff % 60000) / 1000));
     }
-
     tick();
     setInterval(tick, 1000);
 })();
 @endif
-
-/* Nav scroll & RSVP buttons handled by wedding.js */
 </script>
 </body>
 </html>
