@@ -2,8 +2,26 @@
 require_once __DIR__ . '/config.php';
 
 $pdo = db();
+$log = [];
 
-$pdo->exec("CREATE TABLE IF NOT EXISTS guests (
+function run($pdo, string $sql, string $label, array &$log): void {
+    try {
+        $pdo->exec($sql);
+        $log[] = ['ok', $label];
+    } catch (PDOException $e) {
+        if (str_contains($e->getMessage(), 'Duplicate column name') || str_contains($e->getMessage(), 'already exists')) {
+            $log[] = ['skip', $label . ' (déjà fait)'];
+        } else {
+            $log[] = ['err', $label . ' — ' . $e->getMessage()];
+        }
+    }
+}
+
+/* ================================================================
+   1. CRÉATION DES TABLES (si elles n'existent pas)
+   ================================================================ */
+
+run($pdo, "CREATE TABLE IF NOT EXISTS guests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(20) NOT NULL UNIQUE,
     name VARCHAR(100) DEFAULT '',
@@ -14,26 +32,26 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS guests (
     message TEXT,
     responded_at DATETIME DEFAULT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table guests', $log);
 
-$pdo->exec("CREATE TABLE IF NOT EXISTS gallery (
+run($pdo, "CREATE TABLE IF NOT EXISTS gallery (
     id INT AUTO_INCREMENT PRIMARY KEY,
     filename VARCHAR(255) NOT NULL,
     caption VARCHAR(255) DEFAULT '',
     sort_order INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table gallery', $log);
 
-$pdo->exec("CREATE TABLE IF NOT EXISTS programme (
+run($pdo, "CREATE TABLE IF NOT EXISTS programme (
     id INT AUTO_INCREMENT PRIMARY KEY,
     time_label VARCHAR(10) NOT NULL DEFAULT '',
     title VARCHAR(150) NOT NULL DEFAULT '',
     description TEXT,
     sort_order INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table programme', $log);
 
-$pdo->exec("CREATE TABLE IF NOT EXISTS lieux (
+run($pdo, "CREATE TABLE IF NOT EXISTS lieux (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL DEFAULT '',
     address VARCHAR(255) DEFAULT '',
@@ -43,49 +61,102 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS lieux (
     icon VARCHAR(50) DEFAULT 'bi-geo-alt-fill',
     sort_order INT DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table lieux', $log);
 
-$stmtL = $pdo->prepare("INSERT IGNORE INTO lieux (id, name, address, maps_url, maps_embed, icon, sort_order) VALUES (:id, :n, :a, :mu, :me, :ic, :s)");
-$stmtL->execute(['id' => 1, 'n' => 'Mairie de Chevigny', 'a' => 'Place du Général de Gaulle, 21800 Chevigny-Saint-Sauveur', 'mu' => 'https://maps.google.com/?q=Mairie+Chevigny-Saint-Sauveur', 'me' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2710.5!2d5.1312!3d47.2972!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f29e3e3b2c0001%3A0x1!2sPlace+du+G%C3%A9n%C3%A9ral+de+Gaulle%2C+21800+Chevigny-Saint-Sauveur!5e0!3m2!1sfr!2sfr', 'ic' => 'bi-building', 's' => 1]);
-$stmtL->execute(['id' => 2, 'n' => 'Le Lieu Dit', 'a' => '5 Rue Parmentier, 21000 Dijon', 'mu' => 'https://maps.google.com/?q=5+Rue+Parmentier+21000+Dijon', 'me' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2710.5!2d5.0415!3d47.3220!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f29e3e3b2c0001%3A0x1!2s5+Rue+Parmentier%2C+21000+Dijon!5e0!3m2!1sfr!2sfr', 'ic' => 'bi-geo-alt-fill', 's' => 2]);
-
-$pdo->exec("CREATE TABLE IF NOT EXISTS settings (
+run($pdo, "CREATE TABLE IF NOT EXISTS settings (
     skey VARCHAR(50) PRIMARY KEY,
     svalue TEXT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table settings', $log);
+
+/* ================================================================
+   2. MODIFICATIONS DE TABLES (ALTER TABLE)
+   Chaque ALTER est indépendant — si la colonne existe déjà, on skip.
+   ================================================================ */
+
+run($pdo, "ALTER TABLE lieux ADD COLUMN photo VARCHAR(255) DEFAULT '' AFTER address",
+    'Lieux → ajout colonne photo', $log);
+
+/* ================================================================
+   3. DONNÉES PAR DÉFAUT (INSERT IGNORE = pas de doublon)
+   ================================================================ */
+
+$stmtL = $pdo->prepare("INSERT IGNORE INTO lieux (id, name, address, maps_url, maps_embed, icon, sort_order) VALUES (:id, :n, :a, :mu, :me, :ic, :s)");
+$stmtL->execute(['id' => 1, 'n' => 'Mairie de Chevigny', 'a' => 'Place du Général de Gaulle, 21800 Chevigny-Saint-Sauveur', 'mu' => 'https://maps.google.com/?q=Mairie+Chevigny-Saint-Sauveur', 'me' => '', 'ic' => 'bi-building', 's' => 1]);
+$stmtL->execute(['id' => 2, 'n' => 'Le Lieu Dit', 'a' => '5 Rue Parmentier, 21000 Dijon', 'mu' => 'https://maps.google.com/?q=5+Rue+Parmentier+21000+Dijon', 'me' => '', 'ic' => 'bi-geo-alt-fill', 's' => 2]);
+$log[] = ['ok', 'Données par défaut → lieux'];
 
 $stmtP = $pdo->prepare("INSERT IGNORE INTO programme (id, time_label, title, description, sort_order) VALUES (:id, :t, :ti, :d, :s)");
 $stmtP->execute(['id' => 1, 't' => '20:00', 'ti' => 'Dîner de gala', 'd' => 'Un repas raffiné pour célébrer notre union entourés de nos proches.', 's' => 1]);
 $stmtP->execute(['id' => 2, 't' => '22:30', 'ti' => 'Soirée dansante', 'd' => 'Musique, danse et moments de joie jusqu\'au bout de la nuit.', 's' => 2]);
 $stmtP->execute(['id' => 3, 't' => '11:00', 'ti' => 'Brunch du lendemain', 'd' => 'Pour prolonger le bonheur autour d\'un brunch convivial.', 's' => 3]);
+$log[] = ['ok', 'Données par défaut → programme'];
 
 $defaults = [
-    'bride_name' => 'Lisa',
-    'groom_name' => 'Christ',
-    'wedding_date' => '2026-06-06',
-    'wedding_time' => '15:00',
-    'story_text' => 'Notre histoire a commencé un soir d\'automne à Paris, lors d\'une soirée entre amis. Un regard, un sourire, et le monde s\'est mis à tourner différemment. Après trois années d\'une belle aventure partagée, il était temps de dire oui pour la vie.',
-    'quote' => 'L\'amour est notre seul vrai trésor',
+    'bride_name'    => 'Lisa',
+    'groom_name'    => 'Christ',
+    'wedding_date'  => '2026-06-06',
+    'wedding_time'  => '15:00',
+    'story_text'    => 'Notre histoire a commencé un soir d\'automne à Paris, lors d\'une soirée entre amis. Un regard, un sourire, et le monde s\'est mis à tourner différemment. Après trois années d\'une belle aventure partagée, il était temps de dire oui pour la vie.',
+    'quote'         => 'L\'amour est notre seul vrai trésor',
     'hero_subtitle' => 'Invitation au mariage',
 ];
-
 $stmt = $pdo->prepare("INSERT IGNORE INTO settings (skey, svalue) VALUES (:k, :v)");
 foreach ($defaults as $k => $v) {
     $stmt->execute(['k' => $k, 'v' => $v]);
 }
+$log[] = ['ok', 'Données par défaut → settings'];
 
 $codes = ['LISA2026', 'CHRIST26', 'AMOUR026', 'INVITE01', 'INVITE02', 'INVITE03', 'INVITE04', 'INVITE05'];
 $stmtG = $pdo->prepare("INSERT IGNORE INTO guests (code, name) VALUES (:c, :n)");
 foreach ($codes as $c) {
     $stmtG->execute(['c' => $c, 'n' => '']);
 }
+$log[] = ['ok', 'Codes d\'invitation'];
 
-echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Installation</title>
-<style>body{font-family:sans-serif;max-width:600px;margin:60px auto;padding:20px;background:#fafaf7;color:#2d3436}
-h1{color:#7B9EC4}.ok{color:#27ae60;font-weight:600}code{background:#eee;padding:2px 8px;border-radius:4px}</style></head>
-<body><h1>Installation terminée</h1>
-<p class="ok">Les tables ont été créées avec succès.</p>
-<p>Codes d\'invitation créés : <code>' . implode('</code>, <code>', $codes) . '</code></p>
-<p><strong>Supprimez ce fichier</strong> après l\'installation pour des raisons de sécurité.</p>
-<p><a href="/">Voir le site</a> | <a href="/admin/">Accéder à l\'admin</a></p>
-</body></html>';
+/* ================================================================
+   4. DOSSIERS UPLOADS
+   ================================================================ */
+
+$dirs = [
+    __DIR__ . '/uploads/gallery/',
+    __DIR__ . '/uploads/lieux/',
+];
+foreach ($dirs as $dir) {
+    if (!is_dir($dir)) {
+        mkdir($dir, 0775, true);
+        $log[] = ['ok', 'Dossier créé : ' . basename(dirname($dir)) . '/' . basename($dir)];
+    }
+}
+
+/* ================================================================
+   RENDU HTML
+   ================================================================ */
+
+$icons = ['ok' => '✅', 'skip' => '⏭️', 'err' => '❌'];
+$colors = ['ok' => '#27ae60', 'skip' => '#e67e22', 'err' => '#e74c3c'];
+
+echo '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Installation / Mise à jour</title>
+<style>
+body{font-family:"Jost",sans-serif;max-width:650px;margin:50px auto;padding:20px;background:#fafaf7;color:#2d3436}
+h1{color:#7B9EC4;margin-bottom:6px}
+.sub{color:#888;font-size:14px;margin-bottom:30px}
+.line{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;margin-bottom:6px;font-size:14px;background:#fff;border:1px solid #eee}
+.line span:first-child{font-size:18px}
+.warn{margin-top:24px;padding:16px;background:#fff3cd;border:1px solid #ffc107;border-radius:8px;font-size:13px;color:#856404}
+.links{margin-top:20px;display:flex;gap:12px}
+.links a{background:#7B9EC4;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-size:14px}
+.links a:hover{background:#5f86ad}
+</style></head><body>
+<h1>Installation / Mise à jour</h1>
+<p class="sub">Toutes les opérations ont été exécutées.</p>';
+
+foreach ($log as $entry) {
+    $type = $entry[0];
+    $msg = htmlspecialchars($entry[1], ENT_QUOTES, 'UTF-8');
+    echo '<div class="line"><span>' . $icons[$type] . '</span><span style="color:' . $colors[$type] . '">' . $msg . '</span></div>';
+}
+
+echo '<div class="warn">⚠️ <strong>Supprimez ou renommez ce fichier</strong> après l\'installation pour des raisons de sécurité.</div>';
+echo '<div class="links"><a href="/">Voir le site</a><a href="/admin/">Admin</a></div>';
+echo '</body></html>';
