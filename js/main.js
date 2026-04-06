@@ -11,12 +11,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (introOverlay && introContent && typeof gsap !== 'undefined') {
-        gsap.set(introContent.children, { opacity: 0, y: 24 });
-        gsap.to(introContent.children, {
-            opacity: 1, y: 0, duration: prefersReduced ? 0.35 : 0.85,
-            stagger: prefersReduced ? 0 : 0.12, ease: 'power3.out', delay: 0.15
-        });
+    if (introOverlay && introContent) {
+        if (typeof gsap !== 'undefined') {
+            /* from() : jamais bloqué en opacity:0 si l’anim ne part pas (contrairement à set + to) */
+            gsap.from(introContent.children, {
+                opacity: 0,
+                y: 24,
+                duration: prefersReduced ? 0.35 : 0.85,
+                stagger: prefersReduced ? 0 : 0.12,
+                ease: 'power3.out',
+                delay: 0.15,
+            });
+        } else {
+            introOverlay.classList.add('intro-fallback');
+        }
     }
 
     function closeIntro() {

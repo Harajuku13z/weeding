@@ -37,15 +37,17 @@ body.intro-locked { overflow: hidden; }
     position: fixed; inset: 0; z-index: 100000;
     display: flex; align-items: center; justify-content: center;
     padding: 24px;
+    background: var(--dark);
 }
 .intro-overlay.is-closing { pointer-events: none; }
 
 .intro-bg {
     position: absolute; inset: 0;
+    /* Pas de color-mix : sur certains navigateurs toute la déclaration est ignorée → écran vide */
     background:
-        radial-gradient(ellipse 100% 80% at 50% 0%, color-mix(in srgb, var(--sky) 22%, transparent), transparent 55%),
-        radial-gradient(ellipse 80% 60% at 100% 100%, color-mix(in srgb, var(--sky-d) 18%, transparent), transparent 50%),
-        radial-gradient(ellipse 70% 50% at 0% 80%, rgba(255,255,255,.04), transparent 45%),
+        radial-gradient(ellipse 100% 80% at 50% 0%, rgba(168,200,224,0.22), transparent 55%),
+        radial-gradient(ellipse 80% 60% at 100% 100%, rgba(123,158,196,0.16), transparent 50%),
+        radial-gradient(ellipse 70% 50% at 0% 80%, rgba(255,255,255,.06), transparent 45%),
         linear-gradient(165deg, var(--dark) 0%, #1a222c 45%, #121820 100%);
     animation: introBgShift 14s ease-in-out infinite alternate;
 }
@@ -63,8 +65,8 @@ body.intro-locked { overflow: hidden; }
     position: relative; z-index: 2;
     text-align: center; max-width: 520px;
     padding: clamp(32px, 6vw, 48px) clamp(28px, 5vw, 44px);
-    background: rgba(255,255,255,.035);
-    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.09);
+    border: 1px solid rgba(255,255,255,.12);
     border-radius: 24px;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -114,21 +116,35 @@ body.intro-locked { overflow: hidden; }
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
     font-family: var(--fb); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
     font-weight: 500; color: var(--dark);
-    background: linear-gradient(135deg, var(--sky), color-mix(in srgb, var(--sky-d) 75%, var(--sky)));
+    background: linear-gradient(135deg, var(--sky), var(--sky-d));
     border: none; border-radius: 999px;
     padding: 16px 32px; cursor: pointer;
-    box-shadow: 0 12px 40px color-mix(in srgb, var(--sky) 35%, transparent);
+    box-shadow: 0 12px 40px rgba(123,158,196,.35);
     transition: transform .35s var(--ease), box-shadow .35s var(--ease), filter .35s;
 }
 .intro-cta:hover {
     transform: translateY(-2px);
     filter: brightness(1.05);
-    box-shadow: 0 16px 48px color-mix(in srgb, var(--sky) 45%, transparent);
+    box-shadow: 0 16px 48px rgba(123,158,196,.4);
 }
 .intro-cta i { font-size: 18px; opacity: .9; }
 
 @media (prefers-reduced-motion: reduce) {
     .intro-bg { animation: none; }
+}
+
+/* Si GSAP ne charge pas : apparition tout de même */
+.intro-overlay.intro-fallback .intro-content > * {
+    animation: introFallbackIn 0.75s ease-out backwards;
+}
+.intro-overlay.intro-fallback .intro-content > *:nth-child(1) { animation-delay: 0.05s; }
+.intro-overlay.intro-fallback .intro-content > *:nth-child(2) { animation-delay: 0.14s; }
+.intro-overlay.intro-fallback .intro-content > *:nth-child(3) { animation-delay: 0.23s; }
+.intro-overlay.intro-fallback .intro-content > *:nth-child(4) { animation-delay: 0.32s; }
+.intro-overlay.intro-fallback .intro-content > *:nth-child(5) { animation-delay: 0.41s; }
+@keyframes introFallbackIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ═══════════════════════════════════════════════════
