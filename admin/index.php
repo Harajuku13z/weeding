@@ -87,6 +87,7 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
         <div class="sidebar-brand"><i class="bi bi-heart-fill"></i> Admin</div>
         <nav class="sidebar-nav">
             <a href="#" class="active" data-page="gallery"><i class="bi bi-images"></i><span>Galerie</span></a>
+            <a href="#" data-page="programme"><i class="bi bi-clock-history"></i><span>Programme</span></a>
             <a href="#" data-page="guests"><i class="bi bi-people"></i><span>Invités</span></a>
             <a href="#" data-page="settings"><i class="bi bi-gear"></i><span>Paramètres</span></a>
         </nav>
@@ -114,6 +115,28 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
             <div class="card">
                 <h3><i class="bi bi-images"></i> Images actuelles</h3>
                 <div class="gallery-grid" id="adminGallery"></div>
+            </div>
+        </div>
+
+        <!-- PROGRAMME -->
+        <div class="page" id="page-programme">
+            <h2>Programme de la journée</h2>
+            <div class="card">
+                <h3><i class="bi bi-plus-circle"></i> Ajouter un moment</h3>
+                <form id="addProgForm" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+                    <div class="form-row" style="width:80px"><label>Heure</label><input type="text" name="time_label" placeholder="20:00" required></div>
+                    <div class="form-row" style="flex:1;min-width:160px"><label>Titre</label><input type="text" name="title" placeholder="Dîner de gala" required></div>
+                    <div class="form-row" style="flex:2;min-width:200px"><label>Description</label><input type="text" name="description" placeholder="Un repas raffiné..."></div>
+                    <div class="form-row" style="width:70px"><label>Ordre</label><input type="number" name="sort_order" value="0" min="0"></div>
+                    <button type="submit" class="btn btn-blue btn-sm"><i class="bi bi-plus"></i> Ajouter</button>
+                </form>
+            </div>
+            <div class="card">
+                <h3><i class="bi bi-list-ol"></i> Programme actuel</h3>
+                <div style="overflow-x:auto"><table>
+                    <thead><tr><th>Ordre</th><th>Heure</th><th>Titre</th><th>Description</th><th></th><th></th></tr></thead>
+                    <tbody id="progTable"></tbody>
+                </table></div>
             </div>
         </div>
 
@@ -211,6 +234,59 @@ async function delImage(id) {
     loadGallery();
 }
 
+/* ─── PROGRAMME ──────────────────────────────────── */
+async function loadProgramme() {
+    const res = await fetch(API + '?action=programme_list');
+    const json = await res.json();
+    const tb = document.getElementById('progTable');
+    if (!json.data.length) { tb.innerHTML = '<tr><td colspan="6" style="color:#888">Aucun élément. Ajoutez-en via le formulaire.</td></tr>'; return; }
+    tb.innerHTML = json.data.map(p => `
+        <tr id="prog-row-${p.id}">
+            <td><input type="number" value="${p.sort_order}" style="width:50px;padding:4px 8px;border:1px solid #ddd;border-radius:4px" data-field="sort_order" data-id="${p.id}"></td>
+            <td><input type="text" value="${p.time_label}" style="width:60px;padding:4px 8px;border:1px solid #ddd;border-radius:4px" data-field="time_label" data-id="${p.id}"></td>
+            <td><input type="text" value="${p.title}" style="width:160px;padding:4px 8px;border:1px solid #ddd;border-radius:4px" data-field="title" data-id="${p.id}"></td>
+            <td><input type="text" value="${p.description || ''}" style="width:100%;padding:4px 8px;border:1px solid #ddd;border-radius:4px" data-field="description" data-id="${p.id}"></td>
+            <td><button class="btn btn-blue btn-sm" onclick="saveProg(${p.id})"><i class="bi bi-check-lg"></i></button></td>
+            <td><button class="btn btn-red btn-sm" onclick="delProg(${p.id})"><i class="bi bi-trash"></i></button></td>
+        </tr>
+    `).join('');
+}
+
+document.getElementById('addProgForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('action', 'programme_add');
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    if (json.success) { e.target.reset(); loadProgramme(); }
+});
+
+async function saveProg(id) {
+    const row = document.getElementById('prog-row-' + id);
+    const fd = new FormData();
+    fd.append('action', 'programme_update');
+    fd.append('id', id);
+    row.querySelectorAll('input[data-id="' + id + '"]').forEach(inp => {
+        fd.append(inp.dataset.field, inp.value);
+    });
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    if (json.success) loadProgramme();
+}
+
+async function delProg(id) {
+    if (!confirm('Supprimer cet élément du programme ?')) return;
+    const fd = new FormData();
+    fd.append('action', 'programme_delete');
+    fd.append('id', id);
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    loadProgramme();
+}
+
 /* ─── GUESTS ─────────────────────────────────────── */
 async function loadGuests() {
     const res = await fetch(API + '?action=guests_list');
@@ -277,6 +353,7 @@ document.getElementById('settingsForm').addEventListener('submit', async e => {
 
 /* INIT */
 loadGallery();
+loadProgramme();
 loadGuests();
 loadSettings();
 </script>

@@ -77,6 +77,41 @@ switch ($action) {
         jsonResponse(['success' => true, 'message' => 'Invité supprimé.']);
         break;
 
+    /* ─── PROGRAMME ────────────────────────────────────── */
+    case 'programme_list':
+        $rows = $pdo->query("SELECT * FROM programme ORDER BY sort_order ASC, id ASC")->fetchAll();
+        jsonResponse(['success' => true, 'data' => $rows]);
+        break;
+
+    case 'programme_add':
+        $time  = sanitize($_POST['time_label'] ?? '');
+        $title = sanitize($_POST['title'] ?? '');
+        $desc  = sanitize($_POST['description'] ?? '');
+        $order = (int) ($_POST['sort_order'] ?? 0);
+        if (empty($time) || empty($title)) jsonResponse(['success' => false, 'message' => 'Heure et titre requis.']);
+        $stmt = $pdo->prepare("INSERT INTO programme (time_label, title, description, sort_order) VALUES (:t, :ti, :d, :s)");
+        $stmt->execute(['t' => $time, 'ti' => $title, 'd' => $desc, 's' => $order]);
+        jsonResponse(['success' => true, 'message' => 'Élément ajouté au programme.']);
+        break;
+
+    case 'programme_update':
+        $id    = (int) ($_POST['id'] ?? 0);
+        $time  = sanitize($_POST['time_label'] ?? '');
+        $title = sanitize($_POST['title'] ?? '');
+        $desc  = sanitize($_POST['description'] ?? '');
+        $order = (int) ($_POST['sort_order'] ?? 0);
+        if (!$id || empty($time) || empty($title)) jsonResponse(['success' => false, 'message' => 'Données manquantes.']);
+        $stmt = $pdo->prepare("UPDATE programme SET time_label = :t, title = :ti, description = :d, sort_order = :s WHERE id = :id");
+        $stmt->execute(['t' => $time, 'ti' => $title, 'd' => $desc, 's' => $order, 'id' => $id]);
+        jsonResponse(['success' => true, 'message' => 'Programme mis à jour.']);
+        break;
+
+    case 'programme_delete':
+        $id = (int) ($_POST['id'] ?? 0);
+        $pdo->prepare("DELETE FROM programme WHERE id = :id")->execute(['id' => $id]);
+        jsonResponse(['success' => true, 'message' => 'Élément supprimé.']);
+        break;
+
     /* ─── SETTINGS ─────────────────────────────────────── */
     case 'settings_get':
         $rows = $pdo->query("SELECT skey, svalue FROM settings")->fetchAll();

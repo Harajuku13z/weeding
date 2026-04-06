@@ -24,10 +24,24 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS gallery (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+$pdo->exec("CREATE TABLE IF NOT EXISTS programme (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    time_label VARCHAR(10) NOT NULL DEFAULT '',
+    title VARCHAR(150) NOT NULL DEFAULT '',
+    description TEXT,
+    sort_order INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
 $pdo->exec("CREATE TABLE IF NOT EXISTS settings (
     skey VARCHAR(50) PRIMARY KEY,
     svalue TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$stmtP = $pdo->prepare("INSERT IGNORE INTO programme (id, time_label, title, description, sort_order) VALUES (:id, :t, :ti, :d, :s)");
+$stmtP->execute(['id' => 1, 't' => '20:00', 'ti' => 'Dîner de gala', 'd' => 'Un repas raffiné pour célébrer notre union entourés de nos proches.', 's' => 1]);
+$stmtP->execute(['id' => 2, 't' => '22:30', 'ti' => 'Soirée dansante', 'd' => 'Musique, danse et moments de joie jusqu\'au bout de la nuit.', 's' => 2]);
+$stmtP->execute(['id' => 3, 't' => '11:00', 'ti' => 'Brunch du lendemain', 'd' => 'Pour prolonger le bonheur autour d\'un brunch convivial.', 's' => 3]);
 
 $defaults = [
     'bride_name' => 'Lisa',

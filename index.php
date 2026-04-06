@@ -13,6 +13,8 @@ $gallery = $pdo->query("SELECT * FROM gallery ORDER BY sort_order ASC, id DESC")
 $weddingDate = $s('wedding_date', '2026-06-06');
 $bride = $s('bride_name', 'Lisa');
 $groom = $s('groom_name', 'Christ');
+
+$programme = $pdo->query("SELECT * FROM programme ORDER BY sort_order ASC, id ASC")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -163,30 +165,22 @@ $groom = $s('groom_name', 'Christ');
             <h2 class="section-title">Le fil de notre journée</h2>
         </div>
         <div class="timeline" data-anim="fade-up">
-            <div class="tl-item">
-                <div class="tl-dot"></div>
-                <div class="tl-content">
-                    <span class="tl-time">20:00</span>
-                    <h3>Dîner de gala</h3>
-                    <p>Un repas raffiné pour célébrer notre union entourés de nos proches.</p>
+            <?php if (empty($programme)): ?>
+            <p style="text-align:center;color:var(--muted)">Programme à venir.</p>
+            <?php else: ?>
+                <?php foreach ($programme as $item): ?>
+                <div class="tl-item">
+                    <div class="tl-dot"></div>
+                    <div class="tl-content">
+                        <span class="tl-time"><?= sanitize($item['time_label']) ?></span>
+                        <h3><?= sanitize($item['title']) ?></h3>
+                        <?php if ($item['description']): ?>
+                        <p><?= sanitize($item['description']) ?></p>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
-            <div class="tl-item">
-                <div class="tl-dot"></div>
-                <div class="tl-content">
-                    <span class="tl-time">22:30</span>
-                    <h3>Soirée dansante</h3>
-                    <p>Musique, danse et moments de joie jusqu'au bout de la nuit.</p>
-                </div>
-            </div>
-            <div class="tl-item">
-                <div class="tl-dot"></div>
-                <div class="tl-content">
-                    <span class="tl-time">11:00</span>
-                    <h3>Brunch du lendemain</h3>
-                    <p>Pour prolonger le bonheur autour d'un brunch convivial.</p>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>
