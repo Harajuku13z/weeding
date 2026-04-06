@@ -199,7 +199,11 @@ $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fet
             <?php else: ?>
                 <?php foreach ($lieux as $lieu): ?>
                 <div class="venue-card">
-                    <?php if ($lieu['maps_embed']): ?>
+                    <?php if (!empty($lieu['photo'])): ?>
+                    <div class="venue-photo">
+                        <img src="<?= sanitize(UPLOAD_URL_LIEUX . $lieu['photo']) ?>" alt="<?= sanitize($lieu['name']) ?>" loading="lazy">
+                    </div>
+                    <?php elseif ($lieu['maps_embed']): ?>
                     <div class="venue-map">
                         <iframe src="<?= sanitize($lieu['maps_embed']) ?>" allowfullscreen loading="lazy"></iframe>
                     </div>

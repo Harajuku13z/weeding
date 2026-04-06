@@ -11,6 +11,8 @@ define('ADMIN_PASS', 'motsdepasse');
 
 define('UPLOAD_DIR', __DIR__ . '/uploads/gallery/');
 define('UPLOAD_URL', 'uploads/gallery/');
+define('UPLOAD_DIR_LIEUX', __DIR__ . '/uploads/lieux/');
+define('UPLOAD_URL_LIEUX', 'uploads/lieux/');
 
 function db(): PDO {
     static $pdo = null;

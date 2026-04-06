@@ -7,3 +7,5 @@ Thumbs.db
 .vscode/
 uploads/gallery/*
 !uploads/gallery/.gitkeep
+uploads/lieux/*
+!uploads/lieux/.gitkeep

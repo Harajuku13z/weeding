@@ -37,6 +37,7 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS lieux (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL DEFAULT '',
     address VARCHAR(255) DEFAULT '',
+    photo VARCHAR(255) DEFAULT '',
     maps_url VARCHAR(500) DEFAULT '',
     maps_embed VARCHAR(500) DEFAULT '',
     icon VARCHAR(50) DEFAULT 'bi-geo-alt-fill',

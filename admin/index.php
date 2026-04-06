@@ -146,13 +146,14 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
             <h2>Lieux</h2>
             <div class="card">
                 <h3><i class="bi bi-plus-circle"></i> Ajouter un lieu</h3>
-                <form id="addLieuForm">
+                <form id="addLieuForm" enctype="multipart/form-data">
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
                         <div class="form-row" style="flex:1;min-width:180px"><label>Nom du lieu</label><input type="text" name="name" placeholder="Mairie de Chevigny" required></div>
                         <div class="form-row" style="flex:2;min-width:200px"><label>Adresse</label><input type="text" name="address" placeholder="Place du Général de Gaulle, 21800..."></div>
                         <div class="form-row" style="width:70px"><label>Ordre</label><input type="number" name="sort_order" value="0" min="0"></div>
                     </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                        <div class="form-row" style="flex:1;min-width:200px"><label>Photo du lieu</label><input type="file" name="photo" accept="image/*" style="padding:6px"></div>
                         <div class="form-row" style="flex:1;min-width:200px"><label>Lien Google Maps (itinéraire)</label><input type="url" name="maps_url" placeholder="https://maps.google.com/?q=..."></div>
                         <div class="form-row" style="flex:1;min-width:200px"><label>Lien iframe embed Maps</label><input type="url" name="maps_embed" placeholder="https://www.google.com/maps/embed?pb=..."></div>
                     </div>
@@ -318,12 +319,19 @@ async function loadLieux() {
     const json = await res.json();
     const box = document.getElementById('lieuxList');
     if (!json.data.length) { box.innerHTML = '<p style="color:#888;font-size:13px">Aucun lieu. Ajoutez-en via le formulaire.</p>'; return; }
+    const base = '../uploads/lieux/';
     box.innerHTML = json.data.map(l => `
         <div id="lieu-${l.id}" style="border:1px solid #eee;border-radius:8px;padding:20px;margin-bottom:12px">
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-                <div class="form-row" style="flex:1;min-width:160px"><label>Nom</label><input type="text" value="${l.name}" data-f="name" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
-                <div class="form-row" style="flex:2;min-width:200px"><label>Adresse</label><input type="text" value="${l.address||''}" data-f="address" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
-                <div class="form-row" style="width:60px"><label>Ordre</label><input type="number" value="${l.sort_order}" data-f="sort_order" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-start">
+                <div style="flex-shrink:0">
+                    ${l.photo ? `<img src="${base}${l.photo}" style="width:120px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd">` : '<div style="width:120px;height:80px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px">Pas de photo</div>'}
+                    <div style="margin-top:6px"><label style="font-size:11px;color:#888">Changer la photo</label><input type="file" accept="image/*" data-f="photo" data-lid="${l.id}" style="font-size:11px;width:120px"></div>
+                </div>
+                <div style="flex:1;display:flex;gap:10px;flex-wrap:wrap">
+                    <div class="form-row" style="flex:1;min-width:160px"><label>Nom</label><input type="text" value="${l.name}" data-f="name" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                    <div class="form-row" style="flex:2;min-width:200px"><label>Adresse</label><input type="text" value="${l.address||''}" data-f="address" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                    <div class="form-row" style="width:60px"><label>Ordre</label><input type="number" value="${l.sort_order}" data-f="sort_order" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                </div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
                 <div class="form-row" style="flex:1;min-width:200px"><label>Lien itinéraire</label><input type="url" value="${l.maps_url||''}" data-f="maps_url" data-lid="${l.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
@@ -352,11 +360,16 @@ async function saveLieu(id) {
     fd.append('action', 'lieux_update');
     fd.append('id', id);
     document.querySelectorAll('[data-lid="' + id + '"]').forEach(inp => {
-        fd.append(inp.dataset.f, inp.value);
+        if (inp.type === 'file') {
+            if (inp.files.length) fd.append('photo', inp.files[0]);
+        } else {
+            fd.append(inp.dataset.f, inp.value);
+        }
     });
     const res = await fetch(API, { method: 'POST', body: fd });
     const json = await res.json();
     toast(json.message);
+    if (json.success) loadLieux();
 }
 
 async function delLieu(id) {

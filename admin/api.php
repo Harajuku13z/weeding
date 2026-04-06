@@ -126,8 +126,23 @@ switch ($action) {
         $icon    = sanitize($_POST['icon'] ?? 'bi-geo-alt-fill');
         $order   = (int) ($_POST['sort_order'] ?? 0);
         if (empty($name)) jsonResponse(['success' => false, 'message' => 'Nom du lieu requis.']);
-        $stmt = $pdo->prepare("INSERT INTO lieux (name, address, maps_url, maps_embed, icon, sort_order) VALUES (:n, :a, :mu, :me, :ic, :s)");
-        $stmt->execute(['n' => $name, 'a' => $address, 'mu' => $mapsUrl, 'me' => $embed, 'ic' => $icon, 's' => $order]);
+
+        $photo = '';
+        if (!empty($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['photo'];
+            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!in_array($file['type'], $allowed)) jsonResponse(['success' => false, 'message' => 'Format photo non supporté.']);
+            if ($file['size'] > 5 * 1024 * 1024) jsonResponse(['success' => false, 'message' => 'Photo trop lourde (max 5 Mo).']);
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $photo = uniqid('lieu_') . '.' . $ext;
+            if (!is_dir(UPLOAD_DIR_LIEUX)) mkdir(UPLOAD_DIR_LIEUX, 0775, true);
+            if (!move_uploaded_file($file['tmp_name'], UPLOAD_DIR_LIEUX . $photo)) {
+                jsonResponse(['success' => false, 'message' => 'Erreur upload photo.']);
+            }
+        }
+
+        $stmt = $pdo->prepare("INSERT INTO lieux (name, address, photo, maps_url, maps_embed, icon, sort_order) VALUES (:n, :a, :p, :mu, :me, :ic, :s)");
+        $stmt->execute(['n' => $name, 'a' => $address, 'p' => $photo, 'mu' => $mapsUrl, 'me' => $embed, 'ic' => $icon, 's' => $order]);
         jsonResponse(['success' => true, 'message' => 'Lieu ajouté.']);
         break;
 
@@ -140,13 +155,40 @@ switch ($action) {
         $icon    = sanitize($_POST['icon'] ?? 'bi-geo-alt-fill');
         $order   = (int) ($_POST['sort_order'] ?? 0);
         if (!$id || empty($name)) jsonResponse(['success' => false, 'message' => 'Données manquantes.']);
-        $stmt = $pdo->prepare("UPDATE lieux SET name = :n, address = :a, maps_url = :mu, maps_embed = :me, icon = :ic, sort_order = :s WHERE id = :id");
-        $stmt->execute(['n' => $name, 'a' => $address, 'mu' => $mapsUrl, 'me' => $embed, 'ic' => $icon, 's' => $order, 'id' => $id]);
+
+        $photoSql = '';
+        $params = ['n' => $name, 'a' => $address, 'mu' => $mapsUrl, 'me' => $embed, 'ic' => $icon, 's' => $order, 'id' => $id];
+
+        if (!empty($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['photo'];
+            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!in_array($file['type'], $allowed)) jsonResponse(['success' => false, 'message' => 'Format photo non supporté.']);
+            if ($file['size'] > 5 * 1024 * 1024) jsonResponse(['success' => false, 'message' => 'Photo trop lourde (max 5 Mo).']);
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $newPhoto = uniqid('lieu_') . '.' . $ext;
+            if (!is_dir(UPLOAD_DIR_LIEUX)) mkdir(UPLOAD_DIR_LIEUX, 0775, true);
+            if (!move_uploaded_file($file['tmp_name'], UPLOAD_DIR_LIEUX . $newPhoto)) {
+                jsonResponse(['success' => false, 'message' => 'Erreur upload photo.']);
+            }
+            $old = $pdo->prepare("SELECT photo FROM lieux WHERE id = :id");
+            $old->execute(['id' => $id]);
+            $oldRow = $old->fetch();
+            if ($oldRow && $oldRow['photo']) @unlink(UPLOAD_DIR_LIEUX . $oldRow['photo']);
+            $photoSql = ', photo = :p';
+            $params['p'] = $newPhoto;
+        }
+
+        $stmt = $pdo->prepare("UPDATE lieux SET name = :n, address = :a, maps_url = :mu, maps_embed = :me, icon = :ic, sort_order = :s{$photoSql} WHERE id = :id");
+        $stmt->execute($params);
         jsonResponse(['success' => true, 'message' => 'Lieu mis à jour.']);
         break;
 
     case 'lieux_delete':
         $id = (int) ($_POST['id'] ?? 0);
+        $old = $pdo->prepare("SELECT photo FROM lieux WHERE id = :id");
+        $old->execute(['id' => $id]);
+        $oldRow = $old->fetch();
+        if ($oldRow && $oldRow['photo']) @unlink(UPLOAD_DIR_LIEUX . $oldRow['photo']);
         $pdo->prepare("DELETE FROM lieux WHERE id = :id")->execute(['id' => $id]);
         jsonResponse(['success' => true, 'message' => 'Lieu supprimé.']);
         break;
