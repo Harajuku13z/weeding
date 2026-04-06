@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Démarre le serveur Laravel avec les limites d'upload nécessaires pour la galerie (64M).
+# Usage: ./serve   ou   ./serve --port=8080
+cd "$(dirname "$0")"
+exec php -c php.ini artisan serve "$@"
