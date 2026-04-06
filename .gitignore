@@ -11,3 +11,5 @@ uploads/lieux/*
 !uploads/lieux/.gitkeep
 uploads/ambiance/*
 !uploads/ambiance/.gitkeep
+uploads/hebergements/*
+!uploads/hebergements/.gitkeep

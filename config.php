@@ -15,6 +15,8 @@ define('UPLOAD_DIR_LIEUX', __DIR__ . '/uploads/lieux/');
 define('UPLOAD_URL_LIEUX', 'uploads/lieux/');
 define('UPLOAD_DIR_AMBIANCE', __DIR__ . '/uploads/ambiance/');
 define('UPLOAD_URL_AMBIANCE', 'uploads/ambiance/');
+define('UPLOAD_DIR_HOTEL', __DIR__ . '/uploads/hebergements/');
+define('UPLOAD_URL_HOTEL', 'uploads/hebergements/');
 
 function db(): PDO {
     static $pdo = null;

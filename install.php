@@ -78,6 +78,17 @@ run($pdo, "CREATE TABLE IF NOT EXISTS ambiance_colors (
     sort_order INT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table ambiance_colors', $log);
 
+run($pdo, "CREATE TABLE IF NOT EXISTS hebergements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL DEFAULT '',
+    distance VARCHAR(100) DEFAULT '',
+    description TEXT,
+    photo VARCHAR(255) DEFAULT '',
+    link VARCHAR(500) DEFAULT '',
+    sort_order INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4", 'Table hebergements', $log);
+
 run($pdo, "CREATE TABLE IF NOT EXISTS settings (
     skey VARCHAR(50) PRIMARY KEY,
     svalue TEXT

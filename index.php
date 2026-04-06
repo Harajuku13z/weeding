@@ -16,6 +16,7 @@ $groom = $s('groom_name', 'Christ');
 
 $programme = $pdo->query("SELECT * FROM programme ORDER BY sort_order ASC, id ASC")->fetchAll();
 $lieux = $pdo->query("SELECT * FROM lieux ORDER BY sort_order ASC, id ASC")->fetchAll();
+$hebergements = $pdo->query("SELECT * FROM hebergements ORDER BY sort_order ASC, id ASC")->fetchAll();
 $ambiancePhotos = $pdo->query("SELECT * FROM ambiance_photos ORDER BY sort_order ASC, id DESC")->fetchAll();
 $ambianceColors = $pdo->query("SELECT * FROM ambiance_colors ORDER BY sort_order ASC, id ASC")->fetchAll();
 
@@ -348,16 +349,37 @@ $groomInitial = mb_strtoupper(mb_substr($groom, 0, 1));
             <h2 class="section-title">Où poser vos valises</h2>
         </div>
         <div class="hotels" data-anim="fade-up">
-            <div class="hotel-card">
-                <i class="bi bi-building"></i>
-                <h3>Château de la Forêt</h3>
-                <p>À 5 minutes du lieu de réception</p>
-            </div>
-            <div class="hotel-card">
-                <i class="bi bi-building"></i>
-                <h3>Hôtel des Arts</h3>
-                <p>À 10 minutes du lieu de réception</p>
-            </div>
+            <?php if (empty($hebergements)): ?>
+            <p style="text-align:center;color:var(--muted)">Hébergements à venir.</p>
+            <?php else: ?>
+                <?php foreach ($hebergements as $hotel): ?>
+                <div class="hotel-card">
+                    <?php if (!empty($hotel['photo'])): ?>
+                    <div class="hotel-photo">
+                        <img src="<?= sanitize(UPLOAD_URL_HOTEL . $hotel['photo']) ?>" alt="<?= sanitize($hotel['name']) ?>" loading="lazy">
+                    </div>
+                    <?php else: ?>
+                    <div class="hotel-photo hotel-photo-empty">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <?php endif; ?>
+                    <div class="hotel-body">
+                        <h3><?= sanitize($hotel['name']) ?></h3>
+                        <?php if ($hotel['distance']): ?>
+                        <div class="hotel-distance"><i class="bi bi-geo-alt-fill"></i> <?= sanitize($hotel['distance']) ?></div>
+                        <?php endif; ?>
+                        <?php if ($hotel['description']): ?>
+                        <p><?= sanitize($hotel['description']) ?></p>
+                        <?php endif; ?>
+                        <?php if ($hotel['link']): ?>
+                        <a href="<?= sanitize($hotel['link']) ?>" target="_blank" class="btn btn-sm" style="margin-top:12px">
+                            <i class="bi bi-box-arrow-up-right"></i> Voir
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>

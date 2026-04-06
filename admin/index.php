@@ -90,6 +90,7 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
             <a href="#" data-page="programme"><i class="bi bi-clock-history"></i><span>Programme</span></a>
             <a href="#" data-page="ambiance"><i class="bi bi-brush"></i><span>Ambiance</span></a>
             <a href="#" data-page="lieux"><i class="bi bi-geo-alt"></i><span>Lieux</span></a>
+            <a href="#" data-page="hotels"><i class="bi bi-house-heart"></i><span>Hébergement</span></a>
             <a href="#" data-page="guests"><i class="bi bi-people"></i><span>Invités</span></a>
             <a href="#" data-page="theme"><i class="bi bi-palette"></i><span>Thème</span></a>
             <a href="#" data-page="settings"><i class="bi bi-gear"></i><span>Paramètres</span></a>
@@ -204,6 +205,31 @@ td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
             <div class="card">
                 <h3><i class="bi bi-geo-alt-fill"></i> Lieux actuels</h3>
                 <div id="lieuxList"></div>
+            </div>
+        </div>
+
+        <!-- HÉBERGEMENT -->
+        <div class="page" id="page-hotels">
+            <h2>Hébergement</h2>
+            <div class="card">
+                <h3><i class="bi bi-plus-circle"></i> Ajouter un hébergement</h3>
+                <form id="addHotelForm" enctype="multipart/form-data">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                        <div class="form-row" style="flex:1;min-width:180px"><label>Nom</label><input type="text" name="name" placeholder="Château de la Forêt" required></div>
+                        <div class="form-row" style="flex:1;min-width:150px"><label>Distance</label><input type="text" name="distance" placeholder="À 5 min du lieu"></div>
+                        <div class="form-row" style="width:70px"><label>Ordre</label><input type="number" name="sort_order" value="0" min="0"></div>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                        <div class="form-row" style="flex:1;min-width:200px"><label>Description</label><input type="text" name="description" placeholder="Cadre champêtre, piscine..."></div>
+                        <div class="form-row" style="flex:1;min-width:200px"><label>Lien (site web)</label><input type="url" name="link" placeholder="https://..."></div>
+                        <div class="form-row" style="flex:1;min-width:160px"><label>Photo</label><input type="file" name="photo" accept="image/*" style="padding:6px"></div>
+                    </div>
+                    <button type="submit" class="btn btn-blue"><i class="bi bi-plus"></i> Ajouter</button>
+                </form>
+            </div>
+            <div class="card">
+                <h3><i class="bi bi-house-heart-fill"></i> Hébergements actuels</h3>
+                <div id="hotelsList"></div>
             </div>
         </div>
 
@@ -553,6 +579,76 @@ async function delLieu(id) {
     loadLieux();
 }
 
+/* ─── HOTELS ─────────────────────────────────────── */
+async function loadHotels() {
+    const res = await fetch(API + '?action=hotel_list');
+    const json = await res.json();
+    const box = document.getElementById('hotelsList');
+    if (!json.data.length) { box.innerHTML = '<p style="color:#888;font-size:13px">Aucun hébergement.</p>'; return; }
+    const base = '../uploads/hebergements/';
+    box.innerHTML = json.data.map(h => `
+        <div style="border:1px solid #eee;border-radius:8px;padding:20px;margin-bottom:12px">
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-start">
+                <div style="flex-shrink:0">
+                    ${h.photo ? `<img src="${base}${h.photo}" style="width:120px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd">` : '<div style="width:120px;height:80px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:24px"><i class="bi bi-building"></i></div>'}
+                    <div style="margin-top:6px"><label style="font-size:11px;color:#888">Photo</label><input type="file" accept="image/*" data-hf="photo" data-hid="${h.id}" style="font-size:11px;width:120px"></div>
+                </div>
+                <div style="flex:1;display:flex;gap:10px;flex-wrap:wrap">
+                    <div class="form-row" style="flex:1;min-width:140px"><label>Nom</label><input type="text" value="${h.name}" data-hf="name" data-hid="${h.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                    <div class="form-row" style="flex:1;min-width:120px"><label>Distance</label><input type="text" value="${h.distance||''}" data-hf="distance" data-hid="${h.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                    <div class="form-row" style="width:60px"><label>Ordre</label><input type="number" value="${h.sort_order}" data-hf="sort_order" data-hid="${h.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                <div class="form-row" style="flex:1;min-width:200px"><label>Description</label><input type="text" value="${h.description||''}" data-hf="description" data-hid="${h.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+                <div class="form-row" style="flex:1;min-width:200px"><label>Lien</label><input type="url" value="${h.link||''}" data-hf="link" data-hid="${h.id}" style="width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-blue btn-sm" onclick="saveHotel(${h.id})"><i class="bi bi-check-lg"></i> Sauvegarder</button>
+                <button class="btn btn-red btn-sm" onclick="delHotel(${h.id})"><i class="bi bi-trash"></i> Supprimer</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+document.getElementById('addHotelForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    fd.append('action', 'hotel_add');
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    if (json.success) { e.target.reset(); loadHotels(); }
+});
+
+async function saveHotel(id) {
+    const fd = new FormData();
+    fd.append('action', 'hotel_update');
+    fd.append('id', id);
+    document.querySelectorAll('[data-hid="' + id + '"]').forEach(inp => {
+        if (inp.type === 'file') {
+            if (inp.files.length) fd.append('photo', inp.files[0]);
+        } else {
+            fd.append(inp.dataset.hf, inp.value);
+        }
+    });
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    if (json.success) loadHotels();
+}
+
+async function delHotel(id) {
+    if (!confirm('Supprimer cet hébergement ?')) return;
+    const fd = new FormData();
+    fd.append('action', 'hotel_delete');
+    fd.append('id', id);
+    const res = await fetch(API, { method: 'POST', body: fd });
+    const json = await res.json();
+    toast(json.message);
+    loadHotels();
+}
+
 /* ─── GUESTS ─────────────────────────────────────── */
 async function loadGuests() {
     const res = await fetch(API + '?action=guests_list');
@@ -657,6 +753,7 @@ loadProgramme();
 loadAmbiancePhotos();
 loadAmbianceColors();
 loadLieux();
+loadHotels();
 loadGuests();
 loadSettings();
 </script>

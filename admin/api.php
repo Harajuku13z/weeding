@@ -193,6 +193,81 @@ switch ($action) {
         jsonResponse(['success' => true, 'message' => 'Lieu supprimé.']);
         break;
 
+    /* ─── HÉBERGEMENTS ────────────────────────────────── */
+    case 'hotel_list':
+        $rows = $pdo->query("SELECT * FROM hebergements ORDER BY sort_order ASC, id ASC")->fetchAll();
+        jsonResponse(['success' => true, 'data' => $rows]);
+        break;
+
+    case 'hotel_add':
+        $name  = sanitize($_POST['name'] ?? '');
+        $dist  = sanitize($_POST['distance'] ?? '');
+        $desc  = sanitize($_POST['description'] ?? '');
+        $link  = trim($_POST['link'] ?? '');
+        $order = (int) ($_POST['sort_order'] ?? 0);
+        if (empty($name)) jsonResponse(['success' => false, 'message' => 'Nom requis.']);
+
+        $photo = '';
+        if (!empty($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['photo'];
+            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (!in_array($file['type'], $allowed)) jsonResponse(['success' => false, 'message' => 'Format non supporté.']);
+            if ($file['size'] > 5 * 1024 * 1024) jsonResponse(['success' => false, 'message' => 'Fichier trop lourd.']);
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $photo = uniqid('hotel_') . '.' . $ext;
+            if (!is_dir(UPLOAD_DIR_HOTEL)) mkdir(UPLOAD_DIR_HOTEL, 0775, true);
+            move_uploaded_file($file['tmp_name'], UPLOAD_DIR_HOTEL . $photo);
+        }
+
+        $stmt = $pdo->prepare("INSERT INTO hebergements (name, distance, description, photo, link, sort_order) VALUES (:n, :d, :desc, :p, :l, :s)");
+        $stmt->execute(['n' => $name, 'd' => $dist, 'desc' => $desc, 'p' => $photo, 'l' => $link, 's' => $order]);
+        jsonResponse(['success' => true, 'message' => 'Hébergement ajouté.']);
+        break;
+
+    case 'hotel_update':
+        $id    = (int) ($_POST['id'] ?? 0);
+        $name  = sanitize($_POST['name'] ?? '');
+        $dist  = sanitize($_POST['distance'] ?? '');
+        $desc  = sanitize($_POST['description'] ?? '');
+        $link  = trim($_POST['link'] ?? '');
+        $order = (int) ($_POST['sort_order'] ?? 0);
+        if (!$id || empty($name)) jsonResponse(['success' => false, 'message' => 'Données manquantes.']);
+
+        $photoSql = '';
+        $params = ['n' => $name, 'd' => $dist, 'desc' => $desc, 'l' => $link, 's' => $order, 'id' => $id];
+
+        if (!empty($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['photo'];
+            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (in_array($file['type'], $allowed) && $file['size'] <= 5 * 1024 * 1024) {
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $newPhoto = uniqid('hotel_') . '.' . $ext;
+                if (!is_dir(UPLOAD_DIR_HOTEL)) mkdir(UPLOAD_DIR_HOTEL, 0775, true);
+                move_uploaded_file($file['tmp_name'], UPLOAD_DIR_HOTEL . $newPhoto);
+                $old = $pdo->prepare("SELECT photo FROM hebergements WHERE id = :id");
+                $old->execute(['id' => $id]);
+                $r = $old->fetch();
+                if ($r && $r['photo']) @unlink(UPLOAD_DIR_HOTEL . $r['photo']);
+                $photoSql = ', photo = :p';
+                $params['p'] = $newPhoto;
+            }
+        }
+
+        $stmt = $pdo->prepare("UPDATE hebergements SET name = :n, distance = :d, description = :desc, link = :l, sort_order = :s{$photoSql} WHERE id = :id");
+        $stmt->execute($params);
+        jsonResponse(['success' => true, 'message' => 'Hébergement mis à jour.']);
+        break;
+
+    case 'hotel_delete':
+        $id = (int) ($_POST['id'] ?? 0);
+        $old = $pdo->prepare("SELECT photo FROM hebergements WHERE id = :id");
+        $old->execute(['id' => $id]);
+        $r = $old->fetch();
+        if ($r && $r['photo']) @unlink(UPLOAD_DIR_HOTEL . $r['photo']);
+        $pdo->prepare("DELETE FROM hebergements WHERE id = :id")->execute(['id' => $id]);
+        jsonResponse(['success' => true, 'message' => 'Hébergement supprimé.']);
+        break;
+
     /* ─── AMBIANCE PHOTOS ─────────────────────────────── */
     case 'ambiance_photos_list':
         $rows = $pdo->query("SELECT * FROM ambiance_photos ORDER BY sort_order ASC, id DESC")->fetchAll();
