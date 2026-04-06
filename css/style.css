@@ -304,13 +304,8 @@ body.env-locked { overflow: hidden; }
     z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px;
     text-decoration: none; color: rgba(255,255,255,.35);
     font-size: 9px; letter-spacing: .3em; text-transform: uppercase;
-    animation: gentleFloat 4s ease-in-out infinite;
 }
 .scroll-down i { font-size: 14px; color: var(--sky); opacity: .6; }
-@keyframes gentleFloat {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(3px); }
-}
 
 /* ═══════════════════════════════════════════════════
    BUTTONS
