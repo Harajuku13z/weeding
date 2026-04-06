@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <link rel="stylesheet" href="{{ asset('css/wedding.css') }}">
 
     @php $theme = $wedding->theme; @endphp
@@ -66,11 +67,10 @@
     ═══════════════════════════════════════════════════════ */
     .envelope-overlay {
         position: fixed; inset: 0; z-index: 9999;
-        background: #0e0b08;
+        background: radial-gradient(ellipse at 50% 40%, #1a150f 0%, #0a0806 100%);
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
         cursor: pointer;
-        transition: opacity .9s cubic-bezier(.4,0,.2,1), visibility .9s;
     }
     .envelope-overlay.is-dismissed {
         opacity: 0; visibility: hidden; pointer-events: none;
@@ -117,6 +117,7 @@
     .env-clip {
         position: absolute; inset: 0;
         overflow: hidden; border-radius: var(--radius);
+        perspective: 1200px;
     }
 
     .env-back {
@@ -158,6 +159,8 @@
         background: linear-gradient(170deg, #372d1e 0%, #261f14 100%);
         transform-origin: top center;
         transition: transform 1s cubic-bezier(.4,0,.2,1);
+        backface-visibility: hidden;
+        will-change: transform;
     }
     .envelope-body.is-open .envelope-flap { transform: rotateX(-180deg); }
 
@@ -182,13 +185,12 @@
         background: linear-gradient(155deg, #fdf9f5 0%, #f3e9df 100%);
         border-radius: 3px; z-index: 2;
         display: flex; flex-direction: column;
-        align-items: center; justify-content: center; gap: 10px;
+        align-items: center; justify-content: center; gap: 12px;
         overflow: hidden;
         box-shadow: 0 -16px 48px rgba(0,0,0,.45);
-        transform: translateY(0);
-        transition: transform 1.2s cubic-bezier(.22,1,.36,1) .5s;
         text-align: center;
         padding: 10px 16px;
+        will-change: transform;
     }
     .envelope-card::before {
         content: '';
@@ -197,7 +199,12 @@
         border-radius: 2px;
         pointer-events: none;
     }
-    .envelope-body.is-open .envelope-card { transform: translateY(-108%); }
+    .envelope-card::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(to bottom, rgba(184,151,90,.06) 0%, transparent 30%);
+        pointer-events: none;
+    }
 
     .envelope-hint {
         display: flex; flex-direction: column; align-items: center; gap: 12px;
@@ -276,12 +283,11 @@
     .hero-bg {
         position: absolute;
         inset: -30px;
-        background:
-            linear-gradient(160deg, rgba(20,18,16,.74) 0%, rgba(30,25,21,.52) 50%, rgba(20,18,16,.78) 100%);
         background-size: cover;
         background-position: center;
         transform: scale(1.06);
         will-change: transform;
+        filter: brightness(0.85) saturate(1.1);
     }
 
     .hero-overlay {
@@ -289,8 +295,8 @@
         inset: 0;
         z-index: 1;
         background:
-            radial-gradient(circle at 50% 32%, rgba(184,151,90,.16), transparent 35%),
-            linear-gradient(to bottom, rgba(0,0,0,.26) 0%, rgba(0,0,0,.50) 55%, rgba(0,0,0,.78) 100%);
+            radial-gradient(circle at 50% 30%, rgba(184,151,90,.12), transparent 40%),
+            linear-gradient(to bottom, rgba(0,0,0,.18) 0%, rgba(0,0,0,.42) 50%, rgba(0,0,0,.72) 100%);
     }
 
     .hero-grid {
@@ -538,16 +544,25 @@
         font-weight: 600;
         color: var(--dark);
         background: linear-gradient(135deg, var(--gold), var(--gold-light));
-        padding: 18px 34px;
+        padding: 18px 38px;
         text-decoration: none;
         border-radius: 999px;
-        transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
-        box-shadow: 0 12px 30px rgba(0,0,0,.28);
+        transition: transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s ease, filter .35s ease;
+        box-shadow: 0 12px 30px rgba(184,151,90,.25), 0 4px 12px rgba(0,0,0,.15);
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-cta::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,.2), transparent 50%);
+        pointer-events: none;
     }
     .hero-cta:hover {
-        transform: translateY(-3px);
+        transform: translateY(-4px) scale(1.02);
         color: var(--dark);
-        box-shadow: 0 18px 38px rgba(0,0,0,.34);
+        box-shadow: 0 20px 44px rgba(184,151,90,.35), 0 6px 16px rgba(0,0,0,.2);
+        filter: brightness(1.05);
     }
 
     .hero-cta-secondary {
@@ -590,10 +605,10 @@
     /* ═══════════════════════════════════════════════════════
        SECTIONS
     ═══════════════════════════════════════════════════════ */
-    .wedding-section { padding: 120px 0; position: relative; }
+    .wedding-section { padding: 130px 0; position: relative; overflow: hidden; }
     .section-inner { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
     .alt-bg { background: var(--ivory); }
-    .dark-bg { background: var(--dark); color: var(--cream); }
+    .dark-bg { background: linear-gradient(160deg, var(--dark) 0%, #0f0c09 100%); color: var(--cream); }
 
     .section-header { text-align: center; margin-bottom: 72px; }
     .section-ornament {
@@ -720,17 +735,19 @@
         gap: 18px;
     }
     .detail-card {
-        background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.82));
-        border: 1px solid rgba(184,151,90,.08);
+        background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.85));
+        border: 1px solid rgba(184,151,90,.12);
         padding: 42px 28px;
         text-align: center;
         border-radius: calc(var(--radius) + 6px);
         box-shadow: 0 18px 50px rgba(20,18,16,.04);
-        transition: transform .25s ease, box-shadow .25s ease;
+        transition: transform .35s cubic-bezier(.4,0,.2,1), box-shadow .35s ease, border-color .35s ease;
+        backdrop-filter: blur(8px);
     }
     .detail-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 24px 70px rgba(20,18,16,.08);
+        transform: translateY(-6px);
+        box-shadow: 0 28px 70px rgba(20,18,16,.10);
+        border-color: rgba(184,151,90,.22);
     }
     .detail-icon { font-size: 22px; color: var(--gold); margin-bottom: 20px; }
     .detail-label {
@@ -849,14 +866,19 @@
         aspect-ratio: 3/4;
         border-radius: calc(var(--radius) + 4px);
         box-shadow: 0 12px 36px rgba(20,18,16,.08);
+        transition: transform .4s cubic-bezier(.4,0,.2,1), box-shadow .4s ease;
+    }
+    .venue-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 50px rgba(20,18,16,.14);
     }
     .venue-card img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform .8s ease;
+        transition: transform .8s cubic-bezier(.4,0,.2,1);
     }
-    .venue-card:hover img { transform: scale(1.05); }
+    .venue-card:hover img { transform: scale(1.08); }
     .venue-photo { width: 100%; height: 100%; }
     .venue-photo-placeholder {
         width: 100%; height: 100%;
@@ -1082,30 +1104,33 @@
 
     /* RSVP */
     .rsvp-section {
-        background: var(--dark);
+        background: linear-gradient(160deg, var(--dark) 0%, #0f0c09 100%);
         position: relative;
         overflow: hidden;
     }
     .rsvp-section::before {
         content: '';
         position: absolute; inset: 0;
-        background: radial-gradient(ellipse 600px 600px at 50% 0%, rgba(184,151,90,.06), transparent);
+        background:
+            radial-gradient(ellipse 700px 500px at 50% 0%, rgba(184,151,90,.08), transparent),
+            radial-gradient(ellipse 400px 400px at 20% 80%, rgba(184,151,90,.04), transparent);
     }
     .rsvp-form-card {
-        max-width: 600px; margin: 0 auto;
-        background: rgba(255,255,255,.03);
-        border: 1px solid rgba(184,151,90,.15);
+        max-width: 620px; margin: 0 auto;
+        background: rgba(255,255,255,.04);
+        border: 1px solid rgba(184,151,90,.18);
         padding: 56px;
         position: relative;
-        border-radius: calc(var(--radius) + 6px);
-        backdrop-filter: blur(10px);
+        border-radius: calc(var(--radius) + 8px);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 32px 80px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
     }
     .rsvp-form-card::before {
         content: '';
         position: absolute; inset: 6px;
-        border: 1px solid rgba(184,151,90,.06);
+        border: 1px solid rgba(184,151,90,.08);
         pointer-events: none;
-        border-radius: calc(var(--radius) + 2px);
+        border-radius: calc(var(--radius) + 4px);
     }
     .rsvp-form-title {
         font-family: var(--ft);
@@ -1227,16 +1252,23 @@
 
     /* FOOTER */
     .wedding-footer {
-        background: #0e0b08;
+        background: linear-gradient(180deg, #0e0b08 0%, #080604 100%);
         text-align: center;
-        padding: 72px 40px;
+        padding: 80px 40px;
+        position: relative;
+    }
+    .wedding-footer::before {
+        content: '';
+        position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(184,151,90,.2), transparent);
     }
     .footer-couple {
         font-family: var(--ft);
-        font-size: 36px;
+        font-size: 38px;
         font-weight: 400;
         color: white;
         margin-bottom: 12px;
+        letter-spacing: .02em;
     }
     .footer-date {
         font-family: var(--fb);
@@ -1326,9 +1358,43 @@
         .rsvp-form-card { padding: 32px 24px; }
     }
 
+    /* ═══════ MOBILE NAV TOGGLE ═══════ */
+    .mobile-nav-toggle {
+        display: none;
+        flex-direction: column; gap: 5px;
+        background: none; border: none; cursor: pointer;
+        padding: 8px; z-index: 101;
+    }
+    .mobile-nav-toggle span {
+        display: block; width: 22px; height: 1.5px;
+        background: rgba(255,255,255,.7);
+        transition: transform .3s ease, opacity .3s ease, background .3s ease;
+    }
+    .wedding-nav.scrolled .mobile-nav-toggle span { background: var(--dark); }
+    .mobile-nav-toggle.is-open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .mobile-nav-toggle.is-open span:nth-child(2) { opacity: 0; }
+    .mobile-nav-toggle.is-open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
     @media (max-width: 600px) {
+        .mobile-nav-toggle { display: flex; }
         .wedding-nav { padding: 0 20px; height: 64px; }
-        .nav-links { display: none; }
+        .nav-links {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10,8,6,.96); backdrop-filter: blur(20px);
+            flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 28px; z-index: 100;
+        }
+        .nav-links.is-open {
+            display: flex;
+        }
+        .nav-links a {
+            font-size: 13px !important;
+            letter-spacing: 4px !important;
+            color: rgba(255,255,255,.7) !important;
+        }
+        .nav-links a:hover { color: var(--gold) !important; }
 
         .envelope-body { width: 300px; height: 200px; }
 
@@ -1469,6 +1535,9 @@
 
 <nav class="wedding-nav" id="weddingNav">
     <div class="nav-couple">{{ $wedding->bride_name }} &amp; {{ $wedding->groom_name }}</div>
+    <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+    </button>
     <div class="nav-links">
         @if($sectionKeys['story'] ?? true) <a href="#story">Histoire</a> @endif
         @if($sectionKeys['program'] ?? true) <a href="#programme">Programme</a> @endif
@@ -2101,7 +2170,7 @@ GLightbox({ selector: '[data-gallery]' });
 @if($wedding->envelope_animation)
 (function () {
     const container = document.getElementById('envParticles');
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
         const p = document.createElement('div');
         p.className = 'env-particle';
         const size = Math.random() * 3 + 1;
@@ -2111,7 +2180,7 @@ GLightbox({ selector: '[data-gallery]' });
             top:${Math.random() * 100}%;
             --dur:${Math.random() * 8 + 5}s;
             --delay:${Math.random() * 6}s;
-            --op:${Math.random() * 0.2 + 0.05};
+            --op:${Math.random() * 0.25 + 0.05};
         `;
         container.appendChild(p);
     }
@@ -2119,15 +2188,48 @@ GLightbox({ selector: '[data-gallery]' });
     const overlay = document.getElementById('envelopeOverlay');
     const body = document.getElementById('envelopeBody');
     const clip = document.getElementById('envClip');
+    const seal = body.querySelector('.envelope-seal');
+    const flap = body.querySelector('.envelope-flap');
+    const card = body.querySelector('.envelope-card');
+    const hint = document.querySelector('.envelope-hint');
     let opened = false;
+
+    gsap.set(flap, { rotateX: 0 });
+    gsap.set(card, { y: 0 });
 
     overlay.addEventListener('click', function () {
         if (opened) return;
         opened = true;
 
-        body.classList.add('is-open');
-        setTimeout(() => { clip.style.overflow = 'visible'; }, 500);
-        setTimeout(() => { overlay.classList.add('is-dismissed'); }, 1900);
+        if (hint) gsap.to(hint, { opacity: 0, y: 10, duration: 0.3, ease: 'power2.in' });
+
+        const tl = gsap.timeline();
+
+        tl.to(seal, {
+            scale: 0, opacity: 0, duration: 0.5,
+            ease: 'back.in(2.5)',
+        });
+
+        tl.to(flap, {
+            rotateX: -180, duration: 1,
+            ease: 'power3.inOut',
+        }, '-=0.15');
+
+        tl.call(() => { clip.style.overflow = 'visible'; }, null, '-=0.3');
+
+        tl.to(card, {
+            y: '-110%', duration: 1.3,
+            ease: 'power3.out',
+        }, '-=0.5');
+
+        tl.to(overlay, {
+            opacity: 0, duration: 1,
+            ease: 'power2.inOut',
+            onComplete: () => {
+                overlay.style.visibility = 'hidden';
+                overlay.style.pointerEvents = 'none';
+            }
+        }, '-=0.3');
     });
 })();
 @endif
@@ -2137,10 +2239,9 @@ GLightbox({ selector: '[data-gallery]' });
     const heroBg = document.getElementById('heroBg');
 
     if (heroParticles) {
-        for (let i = 0; i < 22; i++) {
+        for (let i = 0; i < 28; i++) {
             const p = document.createElement('span');
             p.className = 'hero-particle';
-
             const size = Math.random() * 4 + 2;
             p.style.width = `${size}px`;
             p.style.height = `${size}px`;
@@ -2149,16 +2250,41 @@ GLightbox({ selector: '[data-gallery]' });
             p.style.setProperty('--dur', `${Math.random() * 8 + 8}s`);
             p.style.setProperty('--op', `${Math.random() * 0.18 + 0.05}`);
             p.style.animationDelay = `${Math.random() * 8}s`;
-
             heroParticles.appendChild(p);
+        }
+    }
+
+    const heroContent = document.querySelector('.hero-content');
+    if (heroContent && typeof gsap !== 'undefined') {
+        const heroElements = heroContent.children;
+        gsap.set(heroElements, { opacity: 0, y: 40 });
+
+        function animateHero() {
+            gsap.to(heroElements, {
+                opacity: 1, y: 0, duration: 1,
+                stagger: 0.12, ease: 'power3.out', delay: 0.2
+            });
+        }
+
+        const overlay = document.getElementById('envelopeOverlay');
+        if (overlay) {
+            const observer = new MutationObserver(() => {
+                if (overlay.style.visibility === 'hidden' || overlay.classList.contains('is-dismissed')) {
+                    animateHero();
+                    observer.disconnect();
+                }
+            });
+            observer.observe(overlay, { attributes: true, attributeFilter: ['style', 'class'] });
+        } else {
+            animateHero();
         }
     }
 
     let ticking = false;
     function updateHeroParallax() {
         const scrolled = window.scrollY;
-        if (heroBg) {
-            heroBg.style.transform = `scale(1.06) translateY(${scrolled * 0.12}px)`;
+        if (heroBg && scrolled < window.innerHeight) {
+            heroBg.style.transform = `scale(1.06) translateY(${scrolled * 0.15}px)`;
         }
         ticking = false;
     }
@@ -2193,21 +2319,7 @@ GLightbox({ selector: '[data-gallery]' });
 })();
 @endif
 
-const weddingNav = document.getElementById('weddingNav');
-window.addEventListener('scroll', () => {
-    weddingNav.classList.toggle('scrolled', window.scrollY > 80);
-}, { passive: true });
-
-document.querySelectorAll('.rsvp-status-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const status = this.dataset.status;
-        document.getElementById('rsvpStatusInput').value = status;
-        document.querySelectorAll('.rsvp-status-btn').forEach(b => b.className = 'rsvp-status-btn');
-        this.classList.add('active-' + status);
-        document.getElementById('companionsField').style.display =
-            (status === 'accepted') ? 'block' : 'none';
-    });
-});
+/* Nav scroll & RSVP buttons handled by wedding.js */
 </script>
 </body>
 </html>

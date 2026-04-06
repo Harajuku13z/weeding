@@ -1,22 +1,10 @@
-/* Version avec enveloppe d'ouverture + JS simple */
+/* ═══════════════════════════════════════════════════════
+   INVITATION MARIAGE — Wedding JS (animations & interactions)
+   ═══════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', function () {
-  // ─── Animation enveloppe (CSS + petite dose de JS) ─────
-  const overlay = document.getElementById('envelopeOverlay');
-  const wrapper = document.getElementById('envelopeWrapper');
 
-  if (overlay && wrapper) {
-    wrapper.addEventListener('click', () => {
-      // Lance l'ouverture (géré par CSS)
-      overlay.classList.add('is-open');
-      // Puis on masque l'overlay après l'animation
-      setTimeout(() => {
-        overlay.classList.add('is-hidden');
-      }, 1400); // durée cohérente avec les transitions CSS
-    });
-  }
-
-  // ─── Compte à rebours simple ───────────────────────────
+  // ─── Compte à rebours ──────────────────────────────────
   const weddingDateEl = document.getElementById('weddingDate');
   if (weddingDateEl && weddingDateEl.dataset.date) {
     const weddingDate = new Date(weddingDateEl.dataset.date);
@@ -29,49 +17,54 @@ document.addEventListener('DOMContentLoaded', function () {
         if (timer) timer.style.display = 'none';
         return;
       }
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+      const days  = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins  = Math.floor((diff % 3600000) / 60000);
+      const secs  = Math.floor((diff % 60000) / 1000);
 
+      const pad = n => String(n).padStart(2, '0');
       const d = document.getElementById('cd-days');
       const h = document.getElementById('cd-hours');
       const m = document.getElementById('cd-mins');
       const s = document.getElementById('cd-secs');
-      if (d) d.textContent = String(days).padStart(2, '0');
-      if (h) h.textContent = String(hours).padStart(2, '0');
-      if (m) m.textContent = String(mins).padStart(2, '0');
-      if (s) s.textContent = String(secs).padStart(2, '0');
+      if (d) d.textContent = pad(days);
+      if (h) h.textContent = pad(hours);
+      if (m) m.textContent = pad(mins);
+      if (s) s.textContent = pad(secs);
     }
 
     updateCountdown();
     setInterval(updateCountdown, 1000);
   }
 
-  // ─── Barre de navigation simple (fond blanc au scroll) ─
+  // ─── Navigation au scroll ──────────────────────────────
   const nav = document.querySelector('.wedding-nav');
   if (nav) {
     window.addEventListener('scroll', () => {
-      nav.classList.toggle('scrolled', window.scrollY > 40);
+      nav.classList.toggle('scrolled', window.scrollY > 60);
     }, { passive: true });
   }
 
-  // ─── Gestion du choix RSVP (page publique) ─────────────
+  // ─── RSVP boutons de statut ────────────────────────────
   document.querySelectorAll('.rsvp-status-btn').forEach(btn => {
     btn.addEventListener('click', function () {
-      document.querySelectorAll('.rsvp-status-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
+      const status = this.dataset.status;
+      document.querySelectorAll('.rsvp-status-btn').forEach(b => {
+        b.className = 'rsvp-status-btn';
+      });
+      this.classList.add('active-' + status);
+
       const input = document.getElementById('rsvpStatusInput');
-      if (input) input.value = this.dataset.status;
+      if (input) input.value = status;
 
       const companionsField = document.getElementById('companionsField');
       if (companionsField) {
-        companionsField.style.display = this.dataset.status === 'accepted' ? 'block' : 'none';
+        companionsField.style.display = status === 'accepted' ? 'block' : 'none';
       }
     });
   });
 
-  // ─── Ajout accompagnants (page publique) ───────────────
+  // ─── Ajout accompagnants ───────────────────────────────
   const addCompanionBtn = document.getElementById('addCompanion');
   if (addCompanionBtn) {
     let companionCount = 0;
@@ -102,8 +95,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ─── Scroll doux sur les liens du menu ─────────────────
-  document.querySelectorAll('.nav-links a[href^="#"]').forEach(a => {
+  // ─── Scroll doux (liens de navigation) ─────────────────
+  document.querySelectorAll('.nav-links a[href^="#"], a.hero-cta[href^="#"], a.hero-scroll-indicator[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const target = document.querySelector(a.getAttribute('href'));
       if (target) {
@@ -112,4 +105,21 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+
+  // ─── Menu mobile toggle ────────────────────────────────
+  const mobileToggle = document.getElementById('mobileNavToggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (mobileToggle && navLinks) {
+    mobileToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('is-open');
+      mobileToggle.classList.toggle('is-open');
+    });
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        navLinks.classList.remove('is-open');
+        mobileToggle.classList.remove('is-open');
+      });
+    });
+  }
+
 });
